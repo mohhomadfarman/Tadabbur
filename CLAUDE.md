@@ -111,12 +111,12 @@ tadabbur/
 ## Phase 1 Sprint Status
 
 - [x] Phase A — Infrastructure Scaffold (Docker + auth + DB connections)
-- [ ] Phase B — Curriculum Data Layer (MongoDB models + REST API)
-- [ ] Phase C — Frontend Curriculum Browsing (Vue SPA)
-- [ ] Phase D — Lesson Reader (content block renderer)
-- [ ] Phase E — Progress Tracking & Dashboard
-- [ ] Phase F — Content Authoring & Admin Panel
-- [ ] Phase G — Polish, RTL & Launch
+- [x] Phase B — Curriculum Data Layer (MongoDB models + REST API)
+- [x] Phase C — Frontend Curriculum Browsing (Vue SPA)
+- [x] Phase D — Lesson Reader (content block renderer)
+- [x] Phase E — Progress Tracking & Dashboard
+- [x] Phase F — Content Authoring & Admin Panel
+- [x] Phase G — Polish, RTL & Launch
 
 ---
 
