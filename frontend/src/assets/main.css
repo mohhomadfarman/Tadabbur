@@ -1,17 +1,78 @@
+/* Al Majeed Quranic — local font for Quranic and Arabic decorative text */
+@font-face {
+  font-family: 'Al Majeed Quranic';
+  src: url('./fonts/Al Majeed Quranic Font_shiped.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
+/* ── Animation keyframes ──────────────────────────────────────────── */
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(28px); }
+  to   { opacity: 1; transform: translateY(0);    }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+@keyframes slideDown {
+  from { opacity: 0; transform: translateY(-32px); }
+  to   { opacity: 1; transform: translateY(0);     }
+}
+
+@keyframes slideLeft {
+  from { opacity: 0; transform: translateX(40px); }
+  to   { opacity: 1; transform: translateX(0);    }
+}
+
+@keyframes slideRight {
+  from { opacity: 0; transform: translateX(-40px); }
+  to   { opacity: 1; transform: translateX(0);     }
+}
+
+@keyframes scaleIn {
+  from { opacity: 0; transform: scale(0.92); }
+  to   { opacity: 1; transform: scale(1);    }
+}
+
+@keyframes floatArabic {
+  0%, 100% { transform: translateY(0px);   }
+  50%       { transform: translateY(-16px); }
+}
+
+@keyframes bounceChevron {
+  0%, 100% { transform: translateY(0px); }
+  50%       { transform: translateY(6px); }
+}
+
+@keyframes shimmer {
+  0%   { background-position: -200% center; }
+  100% { background-position:  200% center; }
+}
+
+@keyframes pulse-glow {
+  0%, 100% { opacity: 0.4; transform: scale(1);    }
+  50%       { opacity: 0.7; transform: scale(1.05); }
+}
+
+/* ── Base layer ───────────────────────────────────────────────────── */
 @layer base {
-  /* Arabic Quran/hadith content — Amiri serif, always RTL */
+  /* Arabic Quran/hadith content — Al Majeed Quranic, always RTL */
   .arabic-text {
-    font-family: 'Amiri', 'Traditional Arabic', serif;
+    font-family: 'Al Majeed Quranic', 'Traditional Arabic', serif;
     direction: rtl;
     text-align: right;
     line-height: 2;
   }
 
-  /* Arabic UI mode — Cairo sans-serif for all body text */
+  /* Arabic UI mode — Cairo for all body text */
   [dir="rtl"] body {
     font-family: 'Cairo', sans-serif;
   }
@@ -23,5 +84,130 @@
 
   html {
     scroll-behavior: smooth;
+  }
+
+  /* Global minimum readable size for paragraph text */
+  p {
+    font-size: 1.125rem;
+    line-height: 1.75;
+  }
+}
+
+/* ── Component layer ──────────────────────────────────────────────── */
+@layer components {
+
+  /* Center Arabic text utility */
+  .arabic-center {
+    font-family: 'Al Majeed Quranic', 'Traditional Arabic', serif;
+    direction: rtl;
+    text-align: center;
+    line-height: 2;
+  }
+
+  /* ── Scroll reveal — hidden state ─────────────────────────────── */
+  .reveal {
+    opacity: 0;
+    transform: translateY(24px);
+    transition: opacity 0.6s cubic-bezier(0.16, 1, 0.3, 1),
+                transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  .reveal-left {
+    opacity: 0;
+    transform: translateX(-32px);
+    transition: opacity 0.6s cubic-bezier(0.16, 1, 0.3, 1),
+                transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  .reveal-right {
+    opacity: 0;
+    transform: translateX(32px);
+    transition: opacity 0.6s cubic-bezier(0.16, 1, 0.3, 1),
+                transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  .reveal-scale {
+    opacity: 0;
+    transform: scale(0.95);
+    transition: opacity 0.6s cubic-bezier(0.16, 1, 0.3, 1),
+                transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  /* ── Scroll reveal — visible state ───────────────────────────── */
+  .reveal.is-visible,
+  .reveal-left.is-visible,
+  .reveal-right.is-visible,
+  .reveal-scale.is-visible {
+    opacity: 1;
+    transform: translateY(0) translateX(0) scale(1);
+  }
+
+  /* Stagger delays */
+  .reveal-delay-1 { transition-delay: 0.08s; }
+  .reveal-delay-2 { transition-delay: 0.16s; }
+  .reveal-delay-3 { transition-delay: 0.24s; }
+  .reveal-delay-4 { transition-delay: 0.32s; }
+  .reveal-delay-5 { transition-delay: 0.40s; }
+  .reveal-delay-6 { transition-delay: 0.48s; }
+
+  /* ── Hero section slide animations ───────────────────────────── */
+  .hero-slide-down  { animation: slideDown  0.8s cubic-bezier(0.16, 1, 0.3, 1) both; animation-delay: 0.1s; }
+  .hero-slide-up    { animation: fadeInUp   0.8s cubic-bezier(0.16, 1, 0.3, 1) both; animation-delay: 0.25s; }
+  .hero-slide-left  { animation: slideLeft  0.8s cubic-bezier(0.16, 1, 0.3, 1) both; animation-delay: 0.4s; }
+  .hero-scale-in    { animation: scaleIn    0.8s cubic-bezier(0.16, 1, 0.3, 1) both; animation-delay: 0.55s; }
+  .hero-enter-fade  { animation: fadeIn     1.2s ease both; animation-delay: 0.8s; }
+
+  /* Legacy hero animations (kept for compatibility) */
+  .hero-enter-1    { animation: fadeInUp 0.7s ease both; animation-delay: 0.10s; }
+  .hero-enter-2    { animation: fadeInUp 0.7s ease both; animation-delay: 0.30s; }
+  .hero-enter-3    { animation: fadeInUp 0.7s ease both; animation-delay: 0.50s; }
+  .hero-enter-4    { animation: fadeInUp 0.7s ease both; animation-delay: 0.70s; }
+
+  /* ── Decorative floating calligraphy ──────────────────────────── */
+  .float-arabic      { animation: floatArabic  7s  ease-in-out infinite; }
+  .float-arabic-slow { animation: floatArabic  10s ease-in-out infinite; animation-delay: 2s; }
+
+  /* Scroll indicator bounce */
+  .bounce-chevron { animation: bounceChevron 1.5s ease-in-out infinite; }
+
+  /* ── Dark section backgrounds ─────────────────────────────────── */
+  .section-dark   { background-color: #0a0a0a; }
+  .section-medium { background-color: #111827; }
+
+  /* ── Header transition ────────────────────────────────────────── */
+  .header-pill {
+    background: rgba(255, 255, 255, 0.97);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border-radius: 16px;
+    box-shadow: 0 4px 24px rgba(0,0,0,0.10), 0 1px 4px rgba(0,0,0,0.06);
+    border: 1px solid rgba(0,0,0,0.06);
+  }
+
+  /* ── Glow pulse for hero accent ───────────────────────────────── */
+  .glow-pulse {
+    animation: pulse-glow 4s ease-in-out infinite;
+  }
+
+  /* ── Icon circle ──────────────────────────────────────────────── */
+  .icon-circle {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 3rem;
+    height: 3rem;
+    border-radius: 12px;
+    flex-shrink: 0;
+  }
+
+  /* ── Section heading style ─────────────────────────────────────── */
+  .section-eyebrow {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
   }
 }

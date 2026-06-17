@@ -6,7 +6,7 @@
 <p><em>"Tadabbur" (تدبّر) — to reflect deeply, to ponder with purpose</em></p>
 
 [![Open Source](https://img.shields.io/badge/Open%20Source-Yes-green?style=flat-square)](https://github.com)
-[![Roadmap](https://img.shields.io/badge/Roadmap-2025--2028-blue?style=flat-square)](#roadmap)
+[![Roadmap](https://img.shields.io/badge/Roadmap-2026--2028-blue?style=flat-square)](#roadmap)
 [![Contributions Welcome](https://img.shields.io/badge/Contributions-Welcome-brightgreen?style=flat-square)](CONTRIBUTING.md)
 [![License](https://img.shields.io/badge/License-MIT-yellow?style=flat-square)](LICENSE)
 
@@ -223,7 +223,7 @@ Your donation funds:
 
 | Phase | Status | Target |
 |-------|--------|--------|
-| Phase 1 — Structured Learning Paths | 🟡 In Development | 2025 |
+| Phase 1 — Structured Learning Paths | 🟡 In Development | 2026 |
 | Phase 2 — Active Learning | ⬜ Planned | 2026 |
 | Phase 3 — AI Research Assistant | ⬜ Planned | 2026 |
 | Phase 4 — Primary Source Library | ⬜ Planned | 2027 |
