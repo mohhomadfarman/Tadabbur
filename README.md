@@ -197,7 +197,7 @@ Your donation funds:
 | Platform | Link |
 |----------|------|
 | 💳 Open Collective | *Coming soon* |
-| ☕ Buy Me a Coffee | *Coming soon* |
+| ☕ Buy Me a Coffee | [Donate here](https://buymeacoffee.com/muhammadfarman) |
 | 🌙 LaunchGood | *Coming soon* |
 | ₿ Crypto | *Coming soon* |
 
