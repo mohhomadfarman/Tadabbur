@@ -12,7 +12,7 @@
 
 **Built by Muslims. For Muslims. For the entire world.**
 
-[🌐 Website](#) · [📢 Discuss](https://github.com/discussions) · [💰 Donate](#support-this-project) · [🤝 Contribute](#contributing)
+[🌐 Website](#) · [📢 Discuss](https://github.com/discussions) · [💰 Donate](https://buymeacoffee.com/muhammadfarman) · [🤝 Contribute](#contributing)
 
 </div>
 
