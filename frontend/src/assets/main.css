@@ -1,0 +1,27 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  /* Arabic Quran/hadith content — Amiri serif, always RTL */
+  .arabic-text {
+    font-family: 'Amiri', 'Traditional Arabic', serif;
+    direction: rtl;
+    text-align: right;
+    line-height: 2;
+  }
+
+  /* Arabic UI mode — Cairo sans-serif for all body text */
+  [dir="rtl"] body {
+    font-family: 'Cairo', sans-serif;
+  }
+
+  /* Flip directional icons (arrows, chevrons) in RTL */
+  [dir="rtl"] .icon-dir {
+    transform: scaleX(-1);
+  }
+
+  html {
+    scroll-behavior: smooth;
+  }
+}

@@ -1,0 +1,107 @@
+# ============================================================
+# SENSITIVE — NEVER COMMIT THESE
+# ============================================================
+
+# Real environment files (only .env.example is allowed)
+.env
+.env.*
+!.env.example
+
+# Private project planning (strategy docs, roadmaps, build plans)
+Plan/
+
+# Local Django admin database (not for source control)
+backend/db.sqlite3
+
+# ============================================================
+# PYTHON / DJANGO
+# ============================================================
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+*.egg
+*.egg-info/
+dist/
+build/
+eggs/
+parts/
+var/
+sdist/
+develop-eggs/
+.installed.cfg
+lib/
+lib64/
+*.pyc
+*.pyo
+*.pyd
+.Python
+pip-log.txt
+pip-delete-this-directory.txt
+.tox/
+.coverage
+.coverage.*
+.cache
+nosetests.xml
+coverage.xml
+*.cover
+.hypothesis/
+.pytest_cache/
+htmlcov/
+.mypy_cache/
+.dmypy.json
+dmypy.json
+venv/
+env/
+ENV/
+.venv/
+staticfiles/
+mediafiles/
+
+# ============================================================
+# NODE / FRONTEND
+# ============================================================
+node_modules/
+frontend/dist/
+frontend/.vite/
+frontend/coverage/
+*.local
+
+# ============================================================
+# DOCKER DATA VOLUMES (local dev persistence)
+# ============================================================
+mongo-data/
+minio-data/
+redis-data/
+
+# ============================================================
+# EDITORS & OS
+# ============================================================
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# ============================================================
+# CLAUDE CODE / PLAYWRIGHT MCP (dev tool artifacts)
+# ============================================================
+.playwright-mcp/
+.claude/
+
+# ============================================================
+# LOGS
+# ============================================================
+*.log
+logs/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*

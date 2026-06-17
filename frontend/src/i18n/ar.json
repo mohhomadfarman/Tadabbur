@@ -1,0 +1,123 @@
+{
+  "nav": {
+    "learn": "تعلّم",
+    "dashboard": "لوحتي",
+    "admin": "الإدارة",
+    "logout": "تسجيل الخروج",
+    "login": "تسجيل الدخول",
+    "getStarted": "ابدأ الآن"
+  },
+  "home": {
+    "verseTranslation": "«وَقُل رَّبِّ زِدْنِي عِلْمًا» — القرآن الكريم 20:114",
+    "headline": "تعلّم إسلامي منهجي للأمة",
+    "subheadline": "ليس مجرد تطبيق لأوقات الصلاة. تدبّر يمنحك منهجًا منظمًا ومتصاعد المستوى — من المبتدئ إلى المتقدم — مبنيًا على العلم الشرعي الأصيل. مجاني للأبد.",
+    "ctaLearn": "ابدأ التعلّم",
+    "ctaRegister": "إنشاء حساب مجاني",
+    "featuresTitle": "مختلف بالفعل",
+    "feature1Title": "منهج منظّم",
+    "feature1Desc": "مسارات تدريجية من المبتدئ إلى المتقدم. الدروس تتراكم وتتكامل — لا محتوى عشوائيًا.",
+    "feature2Title": "مُراجَع علميًا",
+    "feature2Desc": "كل درس يُراجع ويُعتمد من قِبَل علماء مؤهلين قبل نشره.",
+    "feature3Title": "للأمة",
+    "feature3Desc": "متعدد اللغات، مفتوح المصدر، مجاني للأبد. لا حواجز، لا اشتراكات. بُني بأيدي مسلمين، للمسلمين."
+  },
+  "curriculum": {
+    "title": "مسارات التعلّم",
+    "subtitle": "اختر مجالًا من مجالات العلم الإسلامي لتبدأ رحلتك.",
+    "empty": "لا توجد مسارات منشورة بعد. تابعنا قريبًا.",
+    "loadError": "تعذّر تحميل المسارات. حاول مرة أخرى.",
+    "startLearning": "ابدأ التعلّم"
+  },
+  "track": {
+    "enroll": "الالتحاق بالمسار",
+    "enrolling": "جارٍ الالتحاق…",
+    "enrolled": "ملتحق",
+    "loginToEnroll": "سجّل دخولك للالتحاق",
+    "subjects": "الموضوعات",
+    "noSubjects": "لا توجد موضوعات منشورة بعد.",
+    "viewLessons": "عرض الدروس",
+    "notFound": "المسار غير موجود.",
+    "loadError": "تعذّر تحميل المسار."
+  },
+  "subject": {
+    "lessons": "الدروس",
+    "noLessons": "لا توجد دروس منشورة بعد.",
+    "min": "د",
+    "notFound": "الموضوع غير موجود.",
+    "loadError": "تعذّر تحميل الموضوع."
+  },
+  "lesson": {
+    "minRead": "د قراءة",
+    "completed": "مكتمل",
+    "quickCheck": "اختبار سريع",
+    "explanation": "التفسير",
+    "previous": "السابق",
+    "next": "التالي",
+    "markComplete": "تحديد كمكتمل",
+    "saving": "جارٍ الحفظ…",
+    "lessonCompleted": "اكتمل الدرس",
+    "surah": "سورة",
+    "ayah": "آية",
+    "narratedBy": "رواه",
+    "previewNote": "شاهدت معاينة لهذا الدرس",
+    "continueReading": "واصل القراءة — مجانًا",
+    "gateDesc": "أنشئ حسابًا مجانيًا للوصول إلى هذا الدرس وكل محتوى تدبّر.",
+    "createAccount": "إنشاء حساب مجاني",
+    "logIn": "تسجيل الدخول",
+    "notFound": "الدرس غير موجود.",
+    "loadError": "تعذّر تحميل الدرس."
+  },
+  "dashboard": {
+    "welcome": "أهلاً وسهلاً",
+    "welcomeName": "أهلاً وسهلاً، {name}",
+    "subtitle": "رحلتك التعليمية تستمر هنا.",
+    "lessonsCompleted": "الدروس المكتملة",
+    "tracksEnrolled": "المسارات المسجّلة",
+    "dayStreak": "أيام متتالية",
+    "bestStreak": "الأفضل: {count}",
+    "lastActivity": "آخر نشاط",
+    "today": "اليوم",
+    "yesterday": "أمس",
+    "daysAgo": "منذ {count} أيام",
+    "continueLearning": "استكمال التعلّم",
+    "resume": "استئناف",
+    "yourTracks": "مساراتك",
+    "lessonsProgress": "{completed} / {total} دروس",
+    "emptyTitle": "ابدأ أول مسار",
+    "emptyDesc": "تصفّح المنهج والتحق بمسار لتبدأ رحلتك التعليمية.",
+    "browseCurriculum": "← تصفّح المنهج"
+  },
+  "auth": {
+    "login": {
+      "title": "أهلاً بعودتك",
+      "subtitle": "سجّل دخولك لمتابعة التعلّم",
+      "email": "البريد الإلكتروني",
+      "password": "كلمة المرور",
+      "signingIn": "جارٍ تسجيل الدخول…",
+      "signIn": "تسجيل الدخول",
+      "noAccount": "ليس لديك حساب؟",
+      "createFree": "أنشئ حسابًا مجانيًا",
+      "error": "فشل تسجيل الدخول. حاول مرة أخرى.",
+      "emailPlaceholder": "example@mail.com",
+      "passwordPlaceholder": "••••••••"
+    },
+    "register": {
+      "title": "انضم إلى تدبّر",
+      "subtitle": "مجاني للأبد. لا بطاقة ائتمانية.",
+      "fullName": "الاسم الكامل",
+      "optional": "(اختياري)",
+      "username": "اسم المستخدم",
+      "email": "البريد الإلكتروني",
+      "password": "كلمة المرور",
+      "passwordHint": "8 أحرف على الأقل",
+      "creating": "جارٍ إنشاء الحساب…",
+      "create": "إنشاء حساب مجاني",
+      "hasAccount": "لديك حساب بالفعل؟",
+      "signIn": "تسجيل الدخول",
+      "error": "فشل إنشاء الحساب. حاول مرة أخرى.",
+      "namePlaceholder": "اسمك",
+      "usernamePlaceholder": "learner123",
+      "emailPlaceholder": "example@mail.com"
+    }
+  }
+}

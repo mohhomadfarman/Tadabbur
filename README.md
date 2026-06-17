@@ -1,6 +1,6 @@
 <div align="center">
 
-<h1>📖 Tadabbur</h1>
+<h1><img src="logos/Rounded.png" alt="Tadabbur" width="120" /></h1>
 <h3>A Research & Learning Platform for the Muslim World</h3>
 
 <p><em>"Tadabbur" (تدبّر) — to reflect deeply, to ponder with purpose</em></p>
@@ -169,16 +169,16 @@ We welcome contributions from Muslim developers, designers, translators, Islamic
 ```bash
 # Clone the repo
 git clone https://github.com/your-username/tadabbur.git
-
-# Install dependencies
 cd tadabbur
-npm install
 
-# Start development server
-npm run dev
+# Copy environment template and fill in your values
+cp .env.example .env
+
+# Start all services (frontend, backend, MongoDB, Redis, MinIO)
+docker compose -f docker-compose.dev.yml up --build
 ```
 
-Read [CONTRIBUTING.md](CONTRIBUTING.md) for full guidelines.
+Read [CONTRIBUTING.md](CONTRIBUTING.md) for the full setup guide, workflow, and contribution guidelines.
 
 ---
 

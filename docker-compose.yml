@@ -1,0 +1,98 @@
+services:
+
+  mongo:
+    image: mongo:7.0
+    container_name: tadabbur_mongo
+    restart: unless-stopped
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ${MONGO_USERNAME}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_PASSWORD}
+      MONGO_INITDB_DATABASE: ${MONGO_DB_NAME}
+    volumes:
+      - mongo_data:/data/db
+    networks:
+      - tadabbur_net
+
+  redis:
+    image: redis:7-alpine
+    container_name: tadabbur_redis
+    restart: unless-stopped
+    networks:
+      - tadabbur_net
+
+  minio:
+    image: minio/minio:latest
+    container_name: tadabbur_minio
+    restart: unless-stopped
+    command: server /data --console-address ":9001"
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ACCESS_KEY}
+      MINIO_ROOT_PASSWORD: ${MINIO_SECRET_KEY}
+    volumes:
+      - minio_data:/data
+    networks:
+      - tadabbur_net
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: tadabbur_backend
+    restart: unless-stopped
+    command: gunicorn config.wsgi:application --bind 0.0.0.0:8000 --workers 4 --timeout 120
+    env_file: .env
+    volumes:
+      - static_files:/app/staticfiles
+    depends_on:
+      - mongo
+      - redis
+      - minio
+    networks:
+      - tadabbur_net
+
+  celery:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: tadabbur_celery
+    restart: unless-stopped
+    command: celery -A celery_app worker --loglevel=info
+    env_file: .env
+    depends_on:
+      - redis
+      - mongo
+    networks:
+      - tadabbur_net
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: tadabbur_frontend
+    networks:
+      - tadabbur_net
+
+  nginx:
+    build:
+      context: ./nginx
+      dockerfile: Dockerfile
+    container_name: tadabbur_nginx
+    restart: unless-stopped
+    ports:
+      - "80:80"
+    volumes:
+      - static_files:/app/staticfiles:ro
+    depends_on:
+      - backend
+      - frontend
+    networks:
+      - tadabbur_net
+
+networks:
+  tadabbur_net:
+    driver: bridge
+
+volumes:
+  mongo_data:
+  minio_data:
+  static_files:
