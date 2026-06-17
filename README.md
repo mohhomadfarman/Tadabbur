@@ -256,8 +256,8 @@ Your donation funds:
 ## 📬 Contact & Community
 
 - **GitHub Discussions:** [Join the conversation](#)
-- **Discord:** *Coming soon*
-- **Email:** *Coming soon*
+- **Discord:** [JOIN HERE](https://discord.gg/RfCn2nU2F)
+- **Email:** [mohhomadfarman@gmail.com](mailto:mohhomadfarman@gmail.com)
 
 ---
 
