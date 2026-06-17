@@ -6,7 +6,7 @@
         <p class="text-gray-500 mt-1">{{ t('auth.login.subtitle') }}</p>
       </div>
 
-      <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-8">
+      <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-5 sm:p-8">
         <form @submit.prevent="handleLogin" class="space-y-5">
           <div v-if="error" class="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg text-sm">
             {{ error }}
@@ -19,7 +19,7 @@
               type="email"
               required
               autocomplete="email"
-              class="w-full px-4 py-2.5 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
+              class="w-full px-4 py-2.5 text-base border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
               :placeholder="t('auth.login.emailPlaceholder')"
             />
           </div>
@@ -31,7 +31,7 @@
               type="password"
               required
               autocomplete="current-password"
-              class="w-full px-4 py-2.5 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
+              class="w-full px-4 py-2.5 text-base border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
               :placeholder="t('auth.login.passwordPlaceholder')"
             />
           </div>

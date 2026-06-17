@@ -1,5 +1,5 @@
 <template>
-  <div class="max-w-4xl mx-auto px-4 py-12">
+  <div class="max-w-4xl mx-auto px-4 py-6 sm:py-12">
 
     <!-- Breadcrumb -->
     <nav class="text-sm text-gray-400 mb-8 flex items-center gap-2 flex-wrap">
@@ -32,7 +32,7 @@
     <template v-else-if="subject">
       <!-- Subject header -->
       <div class="mb-10">
-        <h1 class="text-3xl font-bold text-gray-900 mb-2">{{ subject.title }}</h1>
+        <h1 class="text-2xl sm:text-3xl font-bold text-gray-900 mb-2">{{ subject.title }}</h1>
         <p class="text-gray-500">{{ subject.description }}</p>
       </div>
 
@@ -48,7 +48,7 @@
           v-for="(lesson, idx) in subject.lessons"
           :key="lesson.id"
           :to="{ name: 'lesson', params: { lessonSlug: lesson.slug } }"
-          class="group flex items-center gap-4 bg-white border border-gray-100 rounded-xl px-5 py-4 shadow-sm hover:shadow-md hover:border-emerald-200 transition-all"
+          class="group flex items-center gap-3 sm:gap-4 bg-white border border-gray-100 rounded-xl px-4 py-3 sm:px-5 sm:py-4 shadow-sm hover:shadow-md hover:border-emerald-200 transition-all"
         >
           <span class="flex-shrink-0 w-8 h-8 rounded-full bg-emerald-50 text-emerald-700 flex items-center justify-center text-sm font-semibold group-hover:bg-emerald-100 transition-colors">
             {{ idx + 1 }}

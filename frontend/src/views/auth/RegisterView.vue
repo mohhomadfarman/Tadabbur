@@ -6,7 +6,7 @@
         <p class="text-gray-500 mt-1">{{ t('auth.register.subtitle') }}</p>
       </div>
 
-      <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-8">
+      <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-5 sm:p-8">
         <form @submit.prevent="handleRegister" class="space-y-5">
           <div v-if="errors.general" class="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg text-sm">
             {{ errors.general }}
@@ -21,7 +21,7 @@
               v-model="form.fullName"
               type="text"
               autocomplete="name"
-              class="w-full px-4 py-2.5 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
+              class="w-full px-4 py-2.5 text-base border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
               :placeholder="t('auth.register.namePlaceholder')"
             />
           </div>
@@ -33,7 +33,7 @@
               type="text"
               required
               autocomplete="username"
-              class="w-full px-4 py-2.5 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
+              class="w-full px-4 py-2.5 text-base border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
               :class="{ 'border-red-400': errors.username }"
               :placeholder="t('auth.register.usernamePlaceholder')"
             />
@@ -47,7 +47,7 @@
               type="email"
               required
               autocomplete="email"
-              class="w-full px-4 py-2.5 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
+              class="w-full px-4 py-2.5 text-base border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
               :class="{ 'border-red-400': errors.email }"
               :placeholder="t('auth.register.emailPlaceholder')"
             />
@@ -62,7 +62,7 @@
               required
               minlength="8"
               autocomplete="new-password"
-              class="w-full px-4 py-2.5 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
+              class="w-full px-4 py-2.5 text-base border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
               :placeholder="t('auth.register.passwordHint')"
             />
           </div>

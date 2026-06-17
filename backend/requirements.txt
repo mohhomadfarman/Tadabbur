@@ -20,6 +20,9 @@ boto3==1.35.0
 celery==5.4.0
 redis==5.0.8
 
+# HTTP client (used by apps/videos for YouTube API calls)
+requests==2.32.3
+
 # Config
 python-decouple==3.8
 

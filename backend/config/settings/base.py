@@ -23,6 +23,8 @@ INSTALLED_APPS = [
     'apps.lessons',
     'apps.progress',
     'apps.media',
+    'apps.library',
+    'apps.videos',
 ]
 
 MIDDLEWARE = [
@@ -111,6 +113,10 @@ CELERY_BROKER_URL = config('REDIS_URL', default='redis://localhost:6379/0')
 CELERY_RESULT_BACKEND = config('REDIS_URL', default='redis://localhost:6379/0')
 CELERY_ACCEPT_CONTENT = ['json']
 CELERY_TASK_SERIALIZER = 'json'
+
+# YouTube Data API v3
+YOUTUBE_API_KEY    = config('YOUTUBE_API_KEY',    default='')
+YOUTUBE_CHANNEL_ID = config('YOUTUBE_CHANNEL_ID', default='')
 
 STATIC_URL = '/static/'
 STATIC_ROOT = BASE_DIR / 'staticfiles'

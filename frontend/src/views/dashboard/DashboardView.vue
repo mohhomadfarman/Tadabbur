@@ -1,9 +1,9 @@
 <template>
-  <div class="max-w-5xl mx-auto px-4 py-10">
+  <div class="max-w-5xl mx-auto px-4 py-6 sm:py-10">
 
     <!-- Header -->
     <div class="mb-8">
-      <h1 class="text-2xl font-bold text-gray-900">
+      <h1 class="text-xl sm:text-2xl font-bold text-gray-900">
         {{ auth.user?.full_name ? t('dashboard.welcomeName', { name: auth.user.full_name }) : t('dashboard.welcome') }}
       </h1>
       <p class="text-gray-500 mt-1 text-sm">{{ t('dashboard.subtitle') }}</p>
@@ -21,17 +21,19 @@
       <!-- Stats row -->
       <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
         <div class="bg-white rounded-xl p-5 border border-gray-100 shadow-sm text-center">
-          <div class="text-3xl font-bold text-emerald-700">{{ progress.totalCompleted }}</div>
+          <div class="text-2xl sm:text-3xl font-bold text-emerald-700">{{ progress.totalCompleted }}</div>
           <div class="text-xs text-gray-500 mt-1">{{ t('dashboard.lessonsCompleted') }}</div>
         </div>
         <div class="bg-white rounded-xl p-5 border border-gray-100 shadow-sm text-center">
-          <div class="text-3xl font-bold text-emerald-700">{{ progress.enrolledTracks.length }}</div>
+          <div class="text-2xl sm:text-3xl font-bold text-emerald-700">{{ progress.enrolledTracks.length }}</div>
           <div class="text-xs text-gray-500 mt-1">{{ t('dashboard.tracksEnrolled') }}</div>
         </div>
         <div class="bg-white rounded-xl p-5 border border-gray-100 shadow-sm text-center">
-          <div class="text-3xl font-bold text-emerald-700 flex items-center justify-center gap-1">
+          <div class="text-2xl sm:text-3xl font-bold text-emerald-700 flex items-center justify-center gap-1">
             {{ progress.currentStreak }}
-            <span class="text-xl" v-if="progress.currentStreak > 0">🔥</span>
+            <svg v-if="progress.currentStreak > 0" class="w-5 h-5 text-orange-400" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+              <path fill-rule="evenodd" d="M12.963 2.286a.75.75 0 00-1.071-.136 9.742 9.742 0 00-3.539 6.177A7.547 7.547 0 016.648 6.61a.75.75 0 00-1.152-.082A9 9 0 1015.68 4.534a7.46 7.46 0 01-2.717-2.248ZM15.75 14.25a3.75 3.75 0 11-7.313-1.172c.628.465 1.35.81 2.133 1A5.99 5.99 0 0112 12.75a.75.75 0 01.75.75v.008l-.001.008a3.75 3.75 0 013.001 2.734Z" clip-rule="evenodd"/>
+            </svg>
           </div>
           <div class="text-xs text-gray-500 mt-1">{{ t('dashboard.dayStreak') }}</div>
           <div v-if="progress.longestStreak > 1" class="text-xs text-gray-400 mt-0.5">
@@ -39,7 +41,7 @@
           </div>
         </div>
         <div class="bg-white rounded-xl p-5 border border-gray-100 shadow-sm text-center">
-          <div class="text-3xl font-bold text-emerald-700">{{ lastActivityLabel }}</div>
+          <div class="text-2xl sm:text-3xl font-bold text-emerald-700">{{ lastActivityLabel }}</div>
           <div class="text-xs text-gray-500 mt-1">{{ t('dashboard.lastActivity') }}</div>
         </div>
       </div>
@@ -49,7 +51,7 @@
         <h2 class="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-3">{{ t('dashboard.continueLearning') }}</h2>
         <RouterLink
           :to="{ name: 'lesson', params: { lessonSlug: progress.continueLesson.lesson_slug } }"
-          class="group flex items-center justify-between bg-white border border-gray-100 shadow-sm rounded-xl px-6 py-4 hover:border-emerald-200 hover:shadow-md transition-all"
+          class="group flex items-center justify-between bg-white border border-gray-100 shadow-sm rounded-xl px-4 py-3 sm:px-6 sm:py-4 hover:border-emerald-200 hover:shadow-md transition-all"
         >
           <div>
             <p class="text-xs text-emerald-700 font-medium mb-0.5">{{ progress.continueLesson.subject_title }}</p>
@@ -107,7 +109,11 @@
 
       <!-- Empty state — no tracks enrolled -->
       <div v-else class="bg-emerald-50 border border-emerald-100 rounded-xl p-8 text-center">
-        <div class="text-4xl mb-3">📚</div>
+        <div class="mb-3 flex justify-center">
+          <svg class="w-12 h-12 text-emerald-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/>
+          </svg>
+        </div>
         <h2 class="font-semibold text-emerald-900 mb-1">{{ t('dashboard.emptyTitle') }}</h2>
         <p class="text-emerald-700 text-sm mb-5">{{ t('dashboard.emptyDesc') }}</p>
         <RouterLink

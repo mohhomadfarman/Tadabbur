@@ -46,6 +46,30 @@ const routes = [
     meta: { requiresAuth: true },
   },
 
+  // Library
+  {
+    path: '/library',
+    name: 'library',
+    component: () => import('@/views/library/LibraryView.vue'),
+  },
+  {
+    path: '/library/:slug',
+    name: 'book',
+    component: () => import('@/views/library/BookView.vue'),
+  },
+
+  // Videos
+  {
+    path: '/videos',
+    name: 'videos',
+    component: () => import('@/views/videos/VideosView.vue'),
+  },
+  {
+    path: '/videos/:id',
+    name: 'video',
+    component: () => import('@/views/videos/VideoView.vue'),
+  },
+
   // Admin panel — authors/scholars/admins only
   {
     path: '/admin',

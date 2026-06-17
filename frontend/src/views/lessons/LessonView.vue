@@ -8,13 +8,13 @@
       />
     </div>
 
-    <div class="max-w-3xl mx-auto px-4 py-12">
+    <div class="max-w-3xl mx-auto px-4 py-6 sm:py-12">
 
       <!-- Breadcrumb -->
       <nav class="text-sm text-gray-400 mb-8 flex items-center gap-2 flex-wrap">
         <RouterLink to="/learn" class="hover:text-emerald-700 transition-colors">{{ t('nav.learn') }}</RouterLink>
         <span>/</span>
-        <span class="text-gray-600 truncate max-w-[200px]">{{ lesson?.subject_title || '…' }}</span>
+        <span class="text-gray-600 truncate max-w-[140px] sm:max-w-[200px]">{{ lesson?.subject_title || '…' }}</span>
       </nav>
 
       <!-- Loading -->
@@ -34,7 +34,7 @@
 
         <!-- Lesson header -->
         <div class="mb-8">
-          <h1 class="text-3xl font-bold text-gray-900 mb-3 leading-snug">{{ lesson.title }}</h1>
+          <h1 class="text-2xl sm:text-3xl font-bold text-gray-900 mb-3 leading-snug">{{ lesson.title }}</h1>
           <div class="flex items-center gap-3 text-sm text-gray-400 flex-wrap">
             <span v-if="lesson.estimated_minutes" class="flex items-center gap-1">
               <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -45,7 +45,7 @@
             <span class="text-gray-200">|</span>
             <RouterLink
               :to="{ name: 'subject', params: { trackSlug: '_', subjectSlug: lesson.subject_slug } }"
-              class="hover:text-emerald-700 transition-colors truncate max-w-[200px]"
+              class="hover:text-emerald-700 transition-colors truncate max-w-[140px] sm:max-w-[200px]"
             >
               {{ lesson.subject_title }}
             </RouterLink>
@@ -75,7 +75,7 @@
             <!-- Verse -->
             <div
               v-else-if="block.type === 'verse'"
-              class="bg-emerald-50 border-l-4 rtl:border-l-0 rtl:border-r-4 border-emerald-500 rounded-r-2xl rtl:rounded-r-none rtl:rounded-l-2xl px-6 py-5"
+              class="bg-emerald-50 border-l-4 rtl:border-l-0 rtl:border-r-4 border-emerald-500 rounded-r-2xl rtl:rounded-r-none rtl:rounded-l-2xl px-4 py-4 sm:px-6 sm:py-5"
             >
               <p class="text-2xl text-right arabic-text text-gray-900 leading-loose mb-3 font-medium">
                 {{ block.body.arabic }}
@@ -89,7 +89,7 @@
             <!-- Hadith -->
             <div
               v-else-if="block.type === 'hadith'"
-              class="bg-amber-50 border-l-4 rtl:border-l-0 rtl:border-r-4 border-amber-400 rounded-r-2xl rtl:rounded-r-none rtl:rounded-l-2xl px-6 py-5"
+              class="bg-amber-50 border-l-4 rtl:border-l-0 rtl:border-r-4 border-amber-400 rounded-r-2xl rtl:rounded-r-none rtl:rounded-l-2xl px-4 py-4 sm:px-6 sm:py-5"
             >
               <p class="text-gray-700 italic mb-3 leading-relaxed">"{{ block.body.text }}"</p>
               <p class="text-xs text-amber-700 font-medium">— {{ block.body.source }}</p>
@@ -208,7 +208,7 @@
         </div>
 
         <!-- Prev / Next navigation -->
-        <div class="mt-12 pt-8 border-t border-gray-100 grid grid-cols-2 gap-4">
+        <div class="mt-12 pt-8 border-t border-gray-100 grid grid-cols-2 gap-3">
           <RouterLink
             v-if="lesson.prev_lesson"
             :to="{ name: 'lesson', params: { lessonSlug: lesson.prev_lesson.slug } }"

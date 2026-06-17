@@ -1,5 +1,5 @@
 <template>
-  <div class="max-w-7xl mx-auto px-4 py-12">
+  <div class="max-w-7xl mx-auto px-4 py-6 sm:py-12">
 
     <!-- Breadcrumb -->
     <nav class="text-sm text-gray-400 mb-8 flex items-center gap-2">
@@ -11,7 +11,7 @@
     <!-- Loading -->
     <div v-if="loading">
       <div class="bg-gray-100 rounded-2xl h-24 w-2/3 mb-10 animate-pulse" />
-      <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 sm:gap-6">
         <div v-for="n in 3" :key="n" class="bg-gray-100 rounded-2xl h-40 animate-pulse" />
       </div>
     </div>
@@ -25,7 +25,7 @@
       <!-- Track header -->
       <div class="mb-10 flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
         <div>
-          <h1 class="text-3xl font-bold text-gray-900 mb-2">{{ track.title }}</h1>
+          <h1 class="text-2xl sm:text-3xl font-bold text-gray-900 mb-2">{{ track.title }}</h1>
           <p class="text-gray-500 max-w-2xl">{{ track.description }}</p>
         </div>
 
@@ -68,7 +68,7 @@
         {{ t('track.noSubjects') }}
       </div>
 
-      <div v-else class="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div v-else class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 sm:gap-6">
         <RouterLink
           v-for="subject in track.subjects"
           :key="subject.id"

@@ -13,14 +13,18 @@ ALLOWED_TYPES = {
     'image/jpeg', 'image/png', 'image/webp', 'image/gif',
     'audio/mpeg', 'audio/mp4', 'audio/ogg', 'audio/wav',
     'video/mp4', 'video/webm',
+    'application/pdf',
 }
 
 FOLDER_MAP = {
-    'image': 'lessons/images',
-    'audio': 'lessons/audio',
-    'video': 'lessons/video',
-    'avatar': 'users/avatars',
+    'image':     'lessons/images',
+    'audio':     'lessons/audio',
+    'video':     'lessons/video',
+    'avatar':    'users/avatars',
     'thumbnail': 'thumbnails',
+    'book_pdf':  'library/pdfs',
+    'book_audio':'library/audio',
+    'book_cover':'library/covers',
 }
 
 

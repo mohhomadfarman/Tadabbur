@@ -7,5 +7,7 @@ urlpatterns = [
     path('api/v1/curriculum/', include('apps.curriculum.urls')),
     path('api/v1/lessons/', include('apps.lessons.urls')),
     path('api/v1/progress/', include('apps.progress.urls')),
-    path('api/v1/media/', include('apps.media.urls')),
+    path('api/v1/media/',   include('apps.media.urls')),
+    path('api/v1/library/', include('apps.library.urls')),
+    path('api/v1/videos/',  include('apps.videos.urls')),
 ]
