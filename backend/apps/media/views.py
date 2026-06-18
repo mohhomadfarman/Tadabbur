@@ -53,9 +53,10 @@ class GenerateUploadURLView(APIView):
         ext = os.path.splitext(filename)[1].lower()
         key = f"{folder}/{uuid.uuid4()}{ext}"
 
+        public_base = getattr(settings, 'MINIO_PUBLIC_URL', settings.AWS_S3_ENDPOINT_URL).rstrip('/')
         s3 = boto3.client(
             's3',
-            endpoint_url=settings.AWS_S3_ENDPOINT_URL,
+            endpoint_url=public_base,
             aws_access_key_id=settings.AWS_ACCESS_KEY_ID,
             aws_secret_access_key=settings.AWS_SECRET_ACCESS_KEY,
             config=Config(signature_version='s3v4'),
@@ -72,7 +73,7 @@ class GenerateUploadURLView(APIView):
             ExpiresIn=300,
         )
 
-        public_url = f"{settings.AWS_S3_ENDPOINT_URL}/{settings.AWS_STORAGE_BUCKET_NAME}/{key}"
+        public_url = f"{public_base}/{settings.AWS_STORAGE_BUCKET_NAME}/{key}"
 
         return Response({
             'upload_url': presigned_url,

@@ -1,26 +1,17 @@
-import boto3
-from botocore.client import Config
 from django.conf import settings
 from rest_framework import serializers
 
 
-def _presign(key, expires=3600):
-    """Return a presigned GET URL for a MinIO object key, or '' if key is empty."""
+def _public_url(key):
+    """Return a direct public URL for a MinIO object key.
+
+    Works because tadabbur-media has a public-read bucket policy.
+    Simpler and more reliable than presigned URLs — no signatures, no expiry.
+    """
     if not key:
         return ''
-    s3 = boto3.client(
-        's3',
-        endpoint_url=settings.AWS_S3_ENDPOINT_URL,
-        aws_access_key_id=settings.AWS_ACCESS_KEY_ID,
-        aws_secret_access_key=settings.AWS_SECRET_ACCESS_KEY,
-        config=Config(signature_version='s3v4'),
-        verify=False,
-    )
-    return s3.generate_presigned_url(
-        'get_object',
-        Params={'Bucket': settings.AWS_STORAGE_BUCKET_NAME, 'Key': key},
-        ExpiresIn=expires,
-    )
+    public_base = getattr(settings, 'MINIO_PUBLIC_URL', settings.AWS_S3_ENDPOINT_URL).rstrip('/')
+    return f"{public_base}/{settings.AWS_STORAGE_BUCKET_NAME}/{key}"
 
 
 class BookListSerializer(serializers.Serializer):
@@ -43,8 +34,7 @@ class BookListSerializer(serializers.Serializer):
         return str(obj.id)
 
     def get_cover_url(self, obj):
-        # Cover images can be long-lived (24h)
-        return _presign(obj.cover_key, 86400) if obj.cover_key else ''
+        return _public_url(obj.cover_key)
 
     def get_has_pdf(self, obj):
         return bool(obj.pdf_key)
@@ -54,12 +44,11 @@ class BookListSerializer(serializers.Serializer):
 
 
 class BookDetailSerializer(BookListSerializer):
-    pdf_url      = serializers.SerializerMethodField()
-    audio_url    = serializers.SerializerMethodField()
+    pdf_url   = serializers.SerializerMethodField()
+    audio_url = serializers.SerializerMethodField()
 
     def get_pdf_url(self, obj):
-        # PDF URLs expire in 2 hours — enough time to read
-        return _presign(obj.pdf_key, 7200) if obj.pdf_key else ''
+        return _public_url(obj.pdf_key)
 
     def get_audio_url(self, obj):
-        return _presign(obj.audio_key, 7200) if obj.audio_key else ''
+        return _public_url(obj.audio_key)

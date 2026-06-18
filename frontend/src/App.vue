@@ -1,11 +1,12 @@
 <template>
   <div id="tadabbur-app">
-    <AppHeader />
+    <AppHeader v-if="!route.meta.fullScreen" />
     <!-- Home page: hero sits behind the transparent header (no padding needed).
+         Admin pages (fullScreen): own their own chrome entirely, no header padding.
          All other pages: add padding so content isn't hidden under the fixed header. -->
     <main
       class="min-h-screen"
-      :class="isHomePage ? '' : 'pt-24'"
+      :class="(isHomePage || route.meta.fullScreen) ? '' : 'pt-24'"
     >
       <RouterView />
     </main>

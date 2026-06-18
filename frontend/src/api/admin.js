@@ -25,4 +25,11 @@ export const adminApi = {
   // Media upload
   getUploadUrl: (filename, contentType, folder) =>
     client.post('/media/upload-url/', { filename, content_type: contentType, folder }).then(r => r.data),
+
+  // Library (Books)
+  listBooks:  ()            => client.get('/library/admin/books/').then(r => r.data),
+  getBook:    (slug)        => client.get(`/library/admin/books/${slug}/`).then(r => r.data),
+  createBook: (data)        => client.post('/library/admin/books/', data).then(r => r.data),
+  updateBook: (slug, data)  => client.patch(`/library/admin/books/${slug}/`, data).then(r => r.data),
+  deleteBook: (slug)        => client.delete(`/library/admin/books/${slug}/`),
 }

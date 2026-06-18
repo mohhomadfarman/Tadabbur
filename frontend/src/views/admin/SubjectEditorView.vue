@@ -1,114 +1,129 @@
 <template>
-  <div class="max-w-2xl mx-auto px-4 py-10">
+  <div class="px-6 py-8 max-w-6xl mx-auto">
 
-    <nav class="text-sm text-gray-400 mb-8 flex items-center gap-2">
-      <RouterLink to="/admin" class="hover:text-emerald-700 transition-colors">Admin</RouterLink>
-      <span>/</span>
-      <span class="text-gray-600">{{ isEdit ? 'Edit Subject' : 'New Subject' }}</span>
-    </nav>
-
-    <h1 class="text-2xl font-bold text-gray-900 mb-8">{{ isEdit ? 'Edit Subject' : 'New Subject' }}</h1>
-
-    <div v-if="loadingSubject" class="space-y-4 animate-pulse">
-      <div class="bg-gray-100 rounded-xl h-12" />
-      <div class="bg-gray-100 rounded-xl h-12" />
-    </div>
-
-    <form v-else @submit.prevent="save" class="space-y-5">
-
-      <div>
-        <label class="block text-sm font-medium text-gray-700 mb-1.5">Track <span class="text-red-500">*</span></label>
-        <select
-          v-model="form.track_slug"
-          required
-          :disabled="isEdit"
-          class="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-400 bg-white disabled:bg-gray-50 disabled:text-gray-500"
-        >
-          <option value="" disabled>Select a track…</option>
-          <option v-for="t in tracks" :key="t.slug" :value="t.slug">{{ t.title }}</option>
-        </select>
-      </div>
-
-      <div>
-        <label class="block text-sm font-medium text-gray-700 mb-1.5">Title <span class="text-red-500">*</span></label>
-        <input
-          v-model="form.title"
-          @input="autofillSlug"
-          type="text"
-          required
-          placeholder="e.g. Pillars of Islam"
-          class="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-400"
-        />
-      </div>
-
-      <div>
-        <label class="block text-sm font-medium text-gray-700 mb-1.5">Slug <span class="text-red-500">*</span></label>
-        <input
-          v-model="form.slug"
-          @input="slugWasEdited = true"
-          type="text"
-          required
-          placeholder="e.g. pillars-of-islam"
-          class="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-emerald-400"
-        />
-      </div>
-
-      <div>
-        <label class="block text-sm font-medium text-gray-700 mb-1.5">Description</label>
-        <textarea
-          v-model="form.description"
-          rows="3"
-          placeholder="Short description…"
-          class="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-400 resize-none"
-        />
-      </div>
-
-      <div>
-        <label class="block text-sm font-medium text-gray-700 mb-1.5">Display Order</label>
-        <input
-          v-model.number="form.order"
-          type="number"
-          min="0"
-          class="w-32 border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-400"
-        />
-      </div>
-
-      <div class="flex items-center justify-between bg-gray-50 border border-gray-100 rounded-xl px-5 py-4">
-        <div>
-          <p class="text-sm font-medium text-gray-800">Published</p>
-          <p class="text-xs text-gray-400 mt-0.5">Visible to learners when on.</p>
+    <!-- Sticky top bar -->
+    <div class="sticky top-0 z-10 bg-white/95 backdrop-blur border-b border-gray-200 -mx-6 px-6 py-3 flex items-center justify-between mb-8">
+      <nav class="text-sm text-gray-400 flex items-center gap-2">
+        <RouterLink to="/admin" class="hover:text-gray-600 transition-colors">Admin</RouterLink>
+        <span>/</span>
+        <span class="text-gray-600">{{ isEdit ? 'Edit Subject' : 'New Subject' }}</span>
+      </nav>
+      <div class="flex items-center gap-3">
+        <div class="flex items-center gap-2">
+          <span class="text-xs text-gray-500">{{ form.is_published ? 'Published' : 'Draft' }}</span>
+          <button
+            type="button"
+            @click="form.is_published = !form.is_published"
+            class="relative inline-flex h-5 w-9 items-center rounded-full transition-colors"
+            :class="form.is_published ? 'bg-[#234ecc]' : 'bg-gray-300'"
+          >
+            <span
+              class="inline-block h-3.5 w-3.5 transform rounded-full bg-white shadow transition-transform"
+              :class="form.is_published ? 'translate-x-4' : 'translate-x-1'"
+            />
+          </button>
         </div>
         <button
           type="button"
-          @click="form.is_published = !form.is_published"
-          class="relative inline-flex h-6 w-11 items-center rounded-full transition-colors"
-          :class="form.is_published ? 'bg-emerald-600' : 'bg-gray-300'"
-        >
-          <span
-            class="inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform"
-            :class="form.is_published ? 'translate-x-6' : 'translate-x-1'"
-          />
-        </button>
-      </div>
-
-      <div v-if="apiError" class="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-xl text-sm">
-        {{ apiError }}
-      </div>
-
-      <div class="flex gap-3 pt-2">
-        <button
-          type="submit"
           :disabled="saving"
-          class="flex-1 bg-emerald-700 hover:bg-emerald-800 disabled:opacity-60 text-white py-2.5 rounded-xl text-sm font-semibold transition-colors"
+          @click="save"
+          class="bg-[#234ecc] hover:bg-[#1a3ba8] disabled:opacity-60 text-white px-4 py-2 rounded-lg text-sm font-semibold transition-colors"
         >
           {{ saving ? 'Saving…' : (isEdit ? 'Save Changes' : 'Create Subject') }}
         </button>
-        <RouterLink
-          to="/admin"
-          class="px-5 py-2.5 border border-gray-200 hover:border-gray-300 text-gray-600 rounded-xl text-sm font-medium transition-colors"
-        >
+        <RouterLink to="/admin" class="text-sm text-gray-500 hover:text-gray-700 transition-colors">
           Cancel
         </RouterLink>
+      </div>
+    </div>
+
+    <div v-if="loadingSubject" class="grid grid-cols-1 lg:grid-cols-3 gap-6 animate-pulse">
+      <div class="lg:col-span-2 bg-gray-100 rounded-2xl h-64" />
+      <div class="bg-gray-100 rounded-2xl h-48" />
+    </div>
+
+    <form v-else @submit.prevent="save">
+      <div v-if="apiError" class="mb-6 bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-xl text-sm">
+        {{ apiError }}
+      </div>
+
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+
+        <!-- Left: main fields -->
+        <div class="lg:col-span-2 bg-white border border-gray-200 rounded-2xl p-6 shadow-sm space-y-5">
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1.5">Track <span class="text-red-500">*</span></label>
+            <select
+              v-model="form.track_slug"
+              required
+              :disabled="isEdit"
+              class="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#234ecc]/40 bg-white disabled:bg-gray-50 disabled:text-gray-500"
+            >
+              <option value="" disabled>Select a track…</option>
+              <option v-for="t in tracks" :key="t.slug" :value="t.slug">{{ t.title }}</option>
+            </select>
+          </div>
+
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1.5">Title <span class="text-red-500">*</span></label>
+            <input
+              v-model="form.title"
+              @input="autofillSlug"
+              type="text"
+              required
+              placeholder="e.g. Pillars of Islam"
+              class="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#234ecc]/40"
+            />
+          </div>
+
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1.5">Slug <span class="text-red-500">*</span></label>
+            <div class="flex gap-2">
+              <input
+                v-model="form.slug"
+                @input="slugWasEdited = true"
+                type="text"
+                required
+                placeholder="e.g. pillars-of-islam"
+                class="flex-1 border border-gray-200 rounded-xl px-4 py-2.5 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-[#234ecc]/40"
+              />
+              <button
+                type="button"
+                @click="regenerateSlug"
+                class="px-3 py-2.5 text-xs text-gray-500 border border-gray-200 rounded-xl hover:border-[#234ecc]/40 hover:text-[#234ecc] transition-colors"
+              >
+                Regenerate
+              </button>
+            </div>
+            <p class="text-xs text-gray-400 mt-1">URL-safe identifier. Auto-filled from title.</p>
+          </div>
+
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1.5">Description</label>
+            <textarea
+              v-model="form.description"
+              rows="4"
+              placeholder="Short description of this subject…"
+              class="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#234ecc]/40 resize-none"
+            />
+          </div>
+        </div>
+
+        <!-- Right: metadata -->
+        <div class="lg:col-span-1 lg:sticky lg:top-24 space-y-4">
+          <div class="bg-white border border-gray-200 rounded-2xl p-5 shadow-sm space-y-4">
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1.5">Display Order</label>
+              <input
+                v-model.number="form.order"
+                type="number"
+                min="0"
+                class="w-32 border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#234ecc]/40"
+              />
+            </div>
+          </div>
+        </div>
+
       </div>
     </form>
 
@@ -147,6 +162,11 @@ function autofillSlug() {
   if (!slugWasEdited) form.value.slug = slugify(form.value.title)
 }
 
+function regenerateSlug() {
+  form.value.slug = slugify(form.value.title)
+  slugWasEdited = false
+}
+
 async function save() {
   apiError.value = ''
   saving.value = true
@@ -160,7 +180,7 @@ async function save() {
         is_published: form.value.is_published,
       })
     } else {
-      await adminApi.createSubject(form.value)
+      await adminApi.createSubject({ ...form.value })
     }
     router.push({ name: 'admin' })
   } catch (e) {
@@ -175,7 +195,6 @@ async function save() {
 
 onMounted(async () => {
   tracks.value = await adminApi.listTracks()
-
   if (!isEdit.value) return
   loadingSubject.value = true
   try {

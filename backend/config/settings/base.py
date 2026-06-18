@@ -107,6 +107,9 @@ AWS_S3_ENDPOINT_URL = config('MINIO_ENDPOINT', default='http://localhost:9000')
 AWS_S3_FILE_OVERWRITE = False
 AWS_DEFAULT_ACL = None
 AWS_S3_VERIFY = False
+# Public URL the browser uses to reach MinIO — differs from AWS_S3_ENDPOINT_URL
+# inside Docker (where the backend uses the container hostname 'minio').
+MINIO_PUBLIC_URL = config('MINIO_PUBLIC_URL', default='http://localhost:9000')
 
 # Celery (wired Phase A, actual jobs added in Phase 3)
 CELERY_BROKER_URL = config('REDIS_URL', default='redis://localhost:6379/0')
@@ -127,3 +130,20 @@ USE_I18N = True
 USE_TZ = True
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'handlers': {
+        'console': {
+            'class': 'logging.StreamHandler',
+        },
+    },
+    'loggers': {
+        # Silence verbose pymongo internals — they log every query at DEBUG
+        # including full document contents (user passwords, emails, etc.)
+        'pymongo': {'level': 'WARNING', 'handlers': ['console'], 'propagate': False},
+        # Keep Django request logs at INFO
+        'django.request': {'level': 'INFO', 'handlers': ['console'], 'propagate': False},
+    },
+}

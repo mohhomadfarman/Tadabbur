@@ -89,8 +89,8 @@ class AdminBookListView(APIView):
             cover_key=d.get('cover_key', ''),
             pdf_key=d.get('pdf_key', ''),
             audio_key=d.get('audio_key', ''),
-            file_size_mb=float(d.get('file_size_mb', 0)),
-            page_count=int(d.get('page_count', 0)),
+            file_size_mb=float(d.get('file_size_mb') or 0),
+            page_count=int(d.get('page_count') or 0),
             tags=d.get('tags', []),
             order=int(d.get('order', 0)),
             is_published=bool(d.get('is_published', False)),
@@ -108,6 +108,29 @@ class AdminBookDetailView(APIView):
         except DoesNotExist:
             return None
 
+    def get(self, request, slug):
+        book = self._get_book(slug)
+        if not book:
+            return Response({'detail': 'Not found.'}, status=status.HTTP_404_NOT_FOUND)
+        data = {
+            'id': str(book.id),
+            'title': book.title,
+            'slug': book.slug,
+            'author': book.author,
+            'description': book.description,
+            'category': book.category,
+            'language': book.language,
+            'cover_key': book.cover_key,
+            'pdf_key': book.pdf_key,
+            'audio_key': book.audio_key,
+            'file_size_mb': book.file_size_mb,
+            'page_count': book.page_count,
+            'tags': list(book.tags),
+            'order': book.order,
+            'is_published': book.is_published,
+        }
+        return Response(data)
+
     def patch(self, request, slug):
         book = self._get_book(slug)
         if not book:
@@ -120,7 +143,12 @@ class AdminBookDetailView(APIView):
         )
         for field in updatable:
             if field in request.data:
-                setattr(book, field, request.data[field])
+                val = request.data[field]
+                if field == 'file_size_mb':
+                    val = float(val or 0)
+                elif field in ('page_count', 'order'):
+                    val = int(val or 0)
+                setattr(book, field, val)
 
         book.updated_at = datetime.now(timezone.utc)
         book.save()
