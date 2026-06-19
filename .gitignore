@@ -107,3 +107,4 @@ yarn-debug.log*
 yarn-error.log*
 # Added by code-review-graph
 .code-review-graph/
+.mcp.json
