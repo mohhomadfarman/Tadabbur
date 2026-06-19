@@ -25,7 +25,10 @@ class LessonDetailSerializer(LessonListSerializer):
     subject_id = serializers.SerializerMethodField()
     subject_title = serializers.SerializerMethodField()
     subject_slug = serializers.SerializerMethodField()
+    track_slug = serializers.SerializerMethodField()
+    track_title = serializers.SerializerMethodField()
     is_truncated = serializers.SerializerMethodField()
+    needs_enrollment = serializers.SerializerMethodField()
     content_blocks = serializers.SerializerMethodField()
     prev_lesson = serializers.SerializerMethodField()
     next_lesson = serializers.SerializerMethodField()
@@ -39,11 +42,23 @@ class LessonDetailSerializer(LessonListSerializer):
     def get_subject_slug(self, obj):
         return obj.subject.slug
 
+    def get_track_slug(self, obj):
+        return self.context.get('track_slug', '')
+
+    def get_track_title(self, obj):
+        return self.context.get('track_title', '')
+
     def get_is_truncated(self, obj):
         return self.context.get('truncate', False)
 
+    def get_needs_enrollment(self, obj):
+        return self.context.get('needs_enrollment', False)
+
     def get_content_blocks(self, obj):
         blocks = sorted(obj.content_blocks, key=lambda b: b.order)
+        if self.context.get('needs_enrollment', False):
+            # Authenticated but not enrolled — send no content
+            return []
         if self.context.get('truncate', False):
             visible = max(1, math.ceil(len(blocks) * 0.25))
             blocks = blocks[:visible]

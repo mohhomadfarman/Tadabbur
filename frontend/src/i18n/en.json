@@ -104,7 +104,19 @@
     "subtitle": "Choose a field of Islamic knowledge to begin your journey.",
     "empty": "No tracks published yet. Check back soon.",
     "loadError": "Could not load tracks. Please try again.",
-    "startLearning": "Start learning"
+    "startLearning": "Start learning",
+    "searchPlaceholder": "Search tracks…",
+    "sortDefault": "Default order",
+    "sortAZ": "A → Z",
+    "sortZA": "Z → A",
+    "filterAll": "All",
+    "filterEnrolled": "Enrolled",
+    "filterNotEnrolled": "Not enrolled",
+    "viewIcon": "Icon view",
+    "viewCard": "Card view",
+    "enrolled": "Enrolled",
+    "noResults": "No tracks match your search.",
+    "clearFilters": "Clear filters"
   },
   "track": {
     "enroll": "Enroll in Track",
@@ -115,14 +127,22 @@
     "noSubjects": "No subjects published yet.",
     "viewLessons": "View lessons",
     "notFound": "Track not found.",
-    "loadError": "Could not load track."
+    "loadError": "Could not load track.",
+    "lessons": "lessons",
+    "subjectCompleted": "Completed",
+    "subjectInProgress": "In Progress"
   },
   "subject": {
     "lessons": "Lessons",
     "noLessons": "No lessons published yet.",
     "min": "min",
     "notFound": "Subject not found.",
-    "loadError": "Could not load subject."
+    "loadError": "Could not load subject.",
+    "progressLabel": "Your Progress",
+    "lessonsCompleted": "completed",
+    "percentComplete": "complete",
+    "statusCompleted": "Completed",
+    "statusInProgress": "In Progress"
   },
   "lesson": {
     "minRead": "min read",
@@ -143,7 +163,12 @@
     "createAccount": "Create Free Account",
     "logIn": "Log In",
     "notFound": "Lesson not found.",
-    "loadError": "Could not load lesson."
+    "loadError": "Could not load lesson.",
+    "enrollRequired": "Enroll to Access This Lesson",
+    "enrollRequiredDesc": "This lesson is part of a structured track. Enroll for free to unlock all lessons and track your progress.",
+    "enrollBtn": "Enroll in Track",
+    "enrolling": "Enrolling…",
+    "enrolledReloading": "Enrolled! Loading lesson…"
   },
   "dashboard": {
     "welcome": "Welcome back",
@@ -163,7 +188,12 @@
     "lessonsProgress": "{completed} / {total} lessons",
     "emptyTitle": "Start your first track",
     "emptyDesc": "Browse the curriculum and enroll in a track to begin your learning journey.",
-    "browseCurriculum": "Browse Curriculum →"
+    "browseCurriculum": "Browse Curriculum →",
+    "startStreak": "Study today to start!",
+    "streakAtRisk": "Study today to keep it!",
+    "streakActive": "Keep it up!",
+    "noActivityYet": "Complete a lesson to start",
+    "lessons": "lessons"
   },
   "auth": {
     "login": {

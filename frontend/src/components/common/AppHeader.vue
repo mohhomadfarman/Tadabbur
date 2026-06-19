@@ -98,13 +98,38 @@
       <!-- ── Right Actions ───────────────────────────────────── -->
       <div class="flex items-center gap-2">
 
+        <!-- Dark / Light toggle (home page only) -->
+        <button
+          v-if="isHomePage"
+          @click="homeTheme.toggle()"
+          :title="homeTheme.theme.value === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'"
+          :class="isHomePage && !isScrolled
+            ? homeTheme.theme.value === 'dark'
+              ? 'text-white/70 hover:text-white border-white/20 hover:border-white/50 hover:bg-white/10'
+              : 'text-gray-700 hover:text-gray-900 border-gray-300 hover:border-gray-400 hover:bg-gray-100'
+            : 'text-gray-500 hover:text-gray-800 border-gray-200 hover:border-gray-300 hover:bg-gray-50'"
+          class="hidden sm:flex items-center justify-center w-8 h-8 border rounded-lg transition-all duration-200"
+        >
+          <!-- Sun: currently dark → click to go light -->
+          <svg v-if="homeTheme.theme.value === 'dark'" class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true">
+            <circle cx="12" cy="12" r="4"/>
+            <path stroke-linecap="round" d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/>
+          </svg>
+          <!-- Moon: currently light → click to go dark -->
+          <svg v-else class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+          </svg>
+        </button>
+
         <!-- Language toggle (desktop only) -->
         <button
           id="lang-toggle-btn"
           @click="toggleLocale"
           :title="locale === 'en' ? 'Switch to Arabic' : 'Switch to English'"
           :class="isHomePage && !isScrolled
-            ? 'text-white/70 hover:text-white border-white/20 hover:border-white/50 hover:bg-white/10'
+            ? homeTheme.theme.value === 'dark'
+              ? 'text-white/70 hover:text-white border-white/20 hover:border-white/50 hover:bg-white/10'
+              : 'text-gray-700 hover:text-gray-900 border-gray-300 hover:border-gray-400 hover:bg-gray-100'
             : 'text-gray-500 hover:text-gray-800 border-gray-200 hover:border-gray-300 hover:bg-gray-50'"
           class="hidden sm:flex items-center gap-1.5 text-xs font-semibold border rounded-lg px-2.5 py-1.5 transition-all duration-200"
         >
@@ -121,7 +146,7 @@
             id="logout-btn"
             @click="handleLogout"
             :class="isHomePage && !isScrolled
-              ? 'text-white/60 hover:text-red-400'
+              ? homeTheme.theme.value === 'dark' ? 'text-white/60 hover:text-red-400' : 'text-gray-500 hover:text-red-500'
               : 'text-gray-400 hover:text-red-500'"
             class="hidden sm:flex items-center gap-1.5 text-sm font-medium transition-colors duration-200 px-2 py-1"
             :title="t('nav.logout')"
@@ -141,7 +166,7 @@
             id="login-btn"
             to="/login"
             :class="isHomePage && !isScrolled
-              ? 'text-white/70 hover:text-white'
+              ? homeTheme.theme.value === 'dark' ? 'text-white/70 hover:text-white' : 'text-gray-700 hover:text-gray-900'
               : 'text-gray-600 hover:text-gray-900'"
             class="hidden sm:block text-sm font-medium transition-colors duration-200 px-2 py-1"
           >
@@ -166,7 +191,9 @@
         <button
           @click="mobileMenuOpen = !mobileMenuOpen"
           :class="isHomePage && !isScrolled
-            ? 'text-white/80 hover:text-white hover:bg-white/10'
+            ? homeTheme.theme.value === 'dark'
+              ? 'text-white/80 hover:text-white hover:bg-white/10'
+              : 'text-gray-800 hover:text-gray-900 hover:bg-black/[0.06]'
             : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'"
           class="md:hidden flex items-center justify-center w-9 h-9 rounded-lg transition-all duration-200"
           :aria-label="mobileMenuOpen ? 'Close menu' : 'Open menu'"
@@ -287,6 +314,25 @@
               {{ locale === 'en' ? 'العربية' : 'English' }}
             </button>
 
+            <!-- Dark / Light toggle (home page only) -->
+            <button
+              v-if="isHomePage"
+              @click="homeTheme.toggle()"
+              :title="homeTheme.theme.value === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'"
+              class="flex items-center gap-1.5 text-xs font-semibold border border-gray-200 text-gray-500
+                     hover:text-gray-800 hover:border-gray-300 hover:bg-gray-50 rounded-lg px-3 py-2
+                     transition-all duration-200"
+            >
+              <svg v-if="homeTheme.theme.value === 'dark'" class="w-3.5 h-3.5 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <circle cx="12" cy="12" r="4"/>
+                <path stroke-linecap="round" d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/>
+              </svg>
+              <svg v-else class="w-3.5 h-3.5 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+              </svg>
+              {{ homeTheme.theme.value === 'dark' ? 'Light mode' : 'Dark mode' }}
+            </button>
+
             <!-- Auth actions -->
             <div class="flex items-center gap-2">
               <template v-if="auth.isLoggedIn">
@@ -334,10 +380,12 @@ import { useRoute, useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import { useAuthStore } from '@/stores/auth'
 import { setLocale } from '@/i18n'
+import { useHomeTheme } from '@/composables/useHomeTheme'
 
-const auth   = useAuthStore()
-const route  = useRoute()
-const router = useRouter()
+const auth      = useAuthStore()
+const route     = useRoute()
+const router    = useRouter()
+const homeTheme = useHomeTheme()
 const { t, locale } = useI18n({ useScope: 'global' })
 
 // ── Scroll state ───────────────────────────────────────────────────
@@ -367,11 +415,12 @@ watch(() => route.path, () => { mobileMenuOpen.value = false })
 const isHomePage = computed(() => route.name === 'home')
 
 // ── Dynamic nav link classes ───────────────────────────────────────
-const navLinkClass = computed(() =>
-  isHomePage.value && !isScrolled.value
+const navLinkClass = computed(() => {
+  if (!isHomePage.value || isScrolled.value) return 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
+  return homeTheme.theme.value === 'dark'
     ? 'text-white/70 hover:text-white hover:bg-white/10'
-    : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
-)
+    : 'text-gray-800 hover:text-gray-900 hover:bg-black/[0.06]'
+})
 
 // ── Auth ───────────────────────────────────────────────────────────
 function handleLogout() {

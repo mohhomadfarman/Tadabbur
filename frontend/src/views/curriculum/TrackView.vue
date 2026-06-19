@@ -73,12 +73,69 @@
           v-for="subject in track.subjects"
           :key="subject.id"
           :to="{ name: 'subject', params: { trackSlug: $route.params.trackSlug, subjectSlug: subject.slug } }"
-          class="group bg-white border border-gray-100 rounded-2xl p-6 shadow-sm hover:shadow-md hover:border-emerald-200 transition-all"
+          class="group relative bg-white border rounded-2xl p-6 shadow-sm hover:shadow-md transition-all"
+          :class="subjectStatus(subject.slug) === 'completed'
+            ? 'border-emerald-200 hover:border-emerald-300'
+            : subjectStatus(subject.slug) === 'inprogress'
+              ? 'border-blue-100 hover:border-blue-200'
+              : 'border-gray-100 hover:border-emerald-200'"
         >
-          <h3 class="font-semibold text-gray-900 group-hover:text-emerald-700 transition-colors mb-2">
+          <!-- Status badge (top-right corner) -->
+          <!-- Completed: green tick -->
+          <span
+            v-if="subjectStatus(subject.slug) === 'completed'"
+            class="absolute top-4 right-4 rtl:right-auto rtl:left-4 w-7 h-7 rounded-full bg-emerald-100 flex items-center justify-center"
+            :title="t('track.subjectCompleted')"
+          >
+            <svg class="w-4 h-4 text-emerald-600" fill="currentColor" viewBox="0 0 20 20">
+              <path fill-rule="evenodd"
+                d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                clip-rule="evenodd"/>
+            </svg>
+          </span>
+          <!-- In Progress: blue play dot -->
+          <span
+            v-else-if="subjectStatus(subject.slug) === 'inprogress'"
+            class="absolute top-4 right-4 rtl:right-auto rtl:left-4 inline-flex items-center gap-1
+                   text-[10px] font-bold uppercase tracking-wider bg-blue-50 text-[#234ecc]
+                   border border-blue-200 px-2 py-0.5 rounded-full"
+            :title="t('track.subjectInProgress')"
+          >
+            <span class="w-1.5 h-1.5 rounded-full bg-[#234ecc] animate-pulse inline-block"></span>
+            {{ t('track.subjectInProgress') }}
+          </span>
+
+          <h3
+            class="font-semibold text-gray-900 group-hover:text-emerald-700 transition-colors mb-2"
+            :class="subjectStatus(subject.slug) === 'completed' ? 'pr-9 rtl:pr-0 rtl:pl-9' : ''"
+          >
             {{ subject.title }}
           </h3>
           <p class="text-sm text-gray-500 line-clamp-2 mb-4">{{ subject.description }}</p>
+
+          <!-- Progress mini-bar (only when enrolled and has some progress) -->
+          <div
+            v-if="subjectData(subject.slug) && subjectData(subject.slug).total_lessons > 0"
+            class="mb-4"
+          >
+            <div class="flex items-center justify-between mb-1">
+              <span class="text-[11px] text-gray-400">
+                {{ subjectData(subject.slug).completed_lessons }}/{{ subjectData(subject.slug).total_lessons }} {{ t('track.lessons') }}
+              </span>
+              <span class="text-[11px] font-medium"
+                :class="subjectStatus(subject.slug) === 'completed' ? 'text-emerald-600' : 'text-[#234ecc]'">
+                {{ subjectData(subject.slug).percent }}%
+              </span>
+            </div>
+            <div class="w-full bg-gray-100 rounded-full h-1.5 overflow-hidden">
+              <div
+                class="h-1.5 rounded-full transition-all duration-500"
+                :class="subjectStatus(subject.slug) === 'completed' ? 'bg-emerald-500' : 'bg-[#234ecc]'"
+                :style="{ width: subjectData(subject.slug).percent + '%' }"
+              />
+            </div>
+          </div>
+
           <span class="inline-flex items-center gap-1 text-xs text-emerald-700 font-medium">
             {{ t('track.viewLessons') }}
             <svg class="w-3.5 h-3.5 icon-dir" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -108,6 +165,19 @@ const { t } = useI18n()
 const track = ref(null)
 const loading = ref(true)
 const error = ref('')
+const trackProgressData = ref(null)
+
+function subjectData(slug) {
+  return trackProgressData.value?.subjects?.find(s => s.subject_slug === slug) ?? null
+}
+
+function subjectStatus(slug) {
+  const d = subjectData(slug)
+  if (!d || d.total_lessons === 0) return null
+  if (d.percent === 100) return 'completed'
+  if (d.completed_lessons > 0) return 'inprogress'
+  return null
+}
 
 async function handleEnroll() {
   await progress.enrollTrack(track.value.slug)
@@ -116,7 +186,12 @@ async function handleEnroll() {
 onMounted(async () => {
   try {
     track.value = await curriculumApi.getTrack(route.params.trackSlug)
-    if (auth.isLoggedIn) await progress.fetchProgress()
+    if (auth.isLoggedIn) {
+      await progress.fetchProgress()
+      // Always fetch fresh — don't serve a stale cached 0% result
+      delete progress.trackProgressCache[route.params.trackSlug]
+      trackProgressData.value = await progress.fetchTrackProgress(route.params.trackSlug)
+    }
   } catch (e) {
     error.value = e.response?.status === 404 ? t('track.notFound') : t('track.loadError')
   } finally {

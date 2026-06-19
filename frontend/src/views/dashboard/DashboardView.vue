@@ -69,76 +69,78 @@
               <div class="text-2xl sm:text-3xl font-bold text-gray-900">{{ progress.enrolledTracks.length }}</div>
               <div class="text-xs text-gray-500 mt-1">{{ t('dashboard.tracksEnrolled') }}</div>
             </div>
+            <!-- Day Streak stat -->
             <div class="bg-white border border-gray-200 rounded-2xl p-5 shadow-sm">
-              <div class="w-10 h-10 rounded-xl bg-orange-50 flex items-center justify-center mb-3">
-                <svg class="w-5 h-5 text-orange-500" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+              <div class="w-10 h-10 rounded-xl flex items-center justify-center mb-3"
+                :class="progress.currentStreak > 0 ? 'bg-orange-50' : 'bg-gray-50'">
+                <svg class="w-5 h-5" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"
+                  :class="streakFlameClass">
                   <path fill-rule="evenodd" d="M12.963 2.286a.75.75 0 00-1.071-.136 9.742 9.742 0 00-3.539 6.177A7.547 7.547 0 016.648 6.61a.75.75 0 00-1.152-.082A9 9 0 1015.68 4.534a7.46 7.46 0 01-2.717-2.248ZM15.75 14.25a3.75 3.75 0 11-7.313-1.172c.628.465 1.35.81 2.133 1A5.99 5.99 0 0112 12.75a.75.75 0 01.75.75v.008l-.001.008a3.75 3.75 0 013.001 2.734Z" clip-rule="evenodd"/>
                 </svg>
               </div>
-              <div class="text-2xl sm:text-3xl font-bold text-gray-900">{{ progress.currentStreak }}</div>
+              <div class="text-2xl sm:text-3xl font-bold"
+                :class="progress.currentStreak > 0 ? 'text-gray-900' : 'text-gray-300'">
+                {{ progress.currentStreak }}
+              </div>
               <div class="text-xs text-gray-500 mt-1">{{ t('dashboard.dayStreak') }}</div>
+              <div class="text-[10px] mt-1"
+                :class="progress.currentStreak === 0 ? 'text-[#234ecc]' : streakAtRisk ? 'text-orange-500' : 'text-emerald-600'">
+                {{ streakSubtext }}
+              </div>
             </div>
+
+            <!-- Last Activity stat -->
             <div class="bg-white border border-gray-200 rounded-2xl p-5 shadow-sm">
-              <div class="w-10 h-10 rounded-xl bg-teal-50 flex items-center justify-center mb-3">
-                <svg class="w-5 h-5 text-teal-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <div class="w-10 h-10 rounded-xl flex items-center justify-center mb-3"
+                :class="progress.lastActivity ? 'bg-teal-50' : 'bg-gray-50'">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"
+                  :class="progress.lastActivity ? 'text-teal-600' : 'text-gray-300'">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
                 </svg>
               </div>
-              <div class="text-2xl sm:text-3xl font-bold text-gray-900">{{ lastActivityLabel }}</div>
+              <div class="text-2xl sm:text-3xl font-bold"
+                :class="progress.lastActivity ? 'text-gray-900' : 'text-gray-300'">
+                {{ lastActivityLabel }}
+              </div>
               <div class="text-xs text-gray-500 mt-1">{{ t('dashboard.lastActivity') }}</div>
+              <div v-if="lastActivityDate" class="text-[10px] text-gray-400 mt-1">{{ lastActivityDate }}</div>
+              <div v-else class="text-[10px] text-[#234ecc] mt-1">{{ t('dashboard.noActivityYet') }}</div>
             </div>
           </div>
 
-          <!-- Enrolled tracks with subject breakdown -->
+          <!-- Subject cards grid -->
           <div v-if="progress.enrolledTracks.length > 0">
             <h2 class="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-3">{{ t('dashboard.yourTracks') }}</h2>
-            <div class="space-y-3">
-              <div
-                v-for="slug in progress.enrolledTracks"
-                :key="slug"
-                class="bg-white border border-gray-200 rounded-2xl p-5 shadow-sm"
-              >
-                <div v-if="trackStats[slug]">
-                  <div class="flex items-start justify-between mb-3">
-                    <RouterLink
-                      :to="{ name: 'track', params: { trackSlug: slug } }"
-                      class="font-semibold text-gray-900 hover:text-[#234ecc] transition-colors"
-                    >
-                      {{ trackStats[slug].track_title }}
-                    </RouterLink>
-                    <span class="text-sm font-semibold text-[#234ecc] ms-4 shrink-0">
-                      {{ trackStats[slug].percent }}%
-                    </span>
-                  </div>
-                  <div class="w-full bg-gray-100 rounded-full h-2 mb-3">
-                    <div
-                      class="bg-[#234ecc] h-2 rounded-full transition-all duration-500"
-                      :style="{ width: trackStats[slug].percent + '%' }"
-                    />
-                  </div>
-                  <p class="text-xs text-gray-400 mb-3">
-                    {{ t('dashboard.lessonsProgress', { completed: trackStats[slug].completed_lessons, total: trackStats[slug].total_lessons }) }}
-                  </p>
-                  <!-- Subject breakdown -->
-                  <div v-if="trackStats[slug]?.subjects?.length" class="mt-3 space-y-1.5 border-t border-gray-50 pt-3">
-                    <div
-                      v-for="subj in trackStats[slug].subjects"
-                      :key="subj.subject_slug"
-                      class="flex items-center gap-3 text-xs"
-                    >
-                      <span class="text-gray-500 truncate w-28">{{ subj.subject_title }}</span>
-                      <div class="flex-1 bg-gray-100 rounded-full h-1.5">
-                        <div class="bg-[#234ecc]/50 h-1.5 rounded-full" :style="{ width: subj.percent + '%' }" />
-                      </div>
-                      <span class="text-gray-400 w-7 text-right">{{ subj.percent }}%</span>
+            <div class="grid grid-cols-2 gap-3">
+              <template v-for="slug in progress.enrolledTracks" :key="slug">
+                <template v-if="trackStats[slug]?.subjects?.length">
+                  <RouterLink
+                    v-for="subj in trackStats[slug].subjects"
+                    :key="subj.subject_slug"
+                    :to="{ name: 'track', params: { trackSlug: slug } }"
+                    class="bg-white border border-gray-200 rounded-2xl p-4 shadow-sm hover:border-[#234ecc]/40 hover:shadow-md transition-all"
+                  >
+                    <p class="text-[10px] text-[#234ecc] font-semibold uppercase tracking-wide mb-1.5 truncate">{{ trackStats[slug].track_title }}</p>
+                    <p class="font-semibold text-gray-900 text-sm mb-3 line-clamp-2 leading-snug">{{ subj.subject_title }}</p>
+                    <div class="w-full bg-gray-100 rounded-full h-1.5 mb-2">
+                      <div class="bg-[#234ecc] h-1.5 rounded-full transition-all duration-500" :style="{ width: subj.percent + '%' }" />
                     </div>
+                    <div class="flex items-center justify-between">
+                      <span class="text-xs text-gray-400">{{ subj.completed_lessons }}/{{ subj.total_lessons }} {{ t('dashboard.lessons') }}</span>
+                      <span class="text-xs font-bold text-[#234ecc]">{{ subj.percent }}%</span>
+                    </div>
+                  </RouterLink>
+                </template>
+                <div v-else class="bg-white border border-gray-200 rounded-2xl p-4 shadow-sm animate-pulse">
+                  <div class="bg-gray-100 rounded h-2 w-16 mb-2" />
+                  <div class="bg-gray-100 rounded h-4 w-3/4 mb-3" />
+                  <div class="bg-gray-100 rounded-full h-1.5 mb-2" />
+                  <div class="flex justify-between">
+                    <div class="bg-gray-100 rounded h-3 w-14" />
+                    <div class="bg-gray-100 rounded h-3 w-8" />
                   </div>
                 </div>
-                <div v-else class="animate-pulse flex items-center gap-3">
-                  <div class="bg-gray-100 rounded h-4 flex-1" />
-                  <div class="bg-gray-100 rounded h-4 w-10" />
-                </div>
-              </div>
+              </template>
             </div>
           </div>
 
@@ -166,13 +168,21 @@
 
           <!-- Streak card -->
           <div class="bg-white border border-gray-200 rounded-2xl p-5 shadow-sm text-center">
-            <svg class="w-10 h-10 text-orange-400 mx-auto mb-2" viewBox="0 0 24 24" fill="currentColor">
+            <svg class="w-10 h-10 mx-auto mb-2 transition-colors" viewBox="0 0 24 24" fill="currentColor"
+              :class="streakFlameClass">
               <path fill-rule="evenodd" d="M12.963 2.286a.75.75 0 00-1.071-.136 9.742 9.742 0 00-3.539 6.177A7.547 7.547 0 016.648 6.61a.75.75 0 00-1.152-.082A9 9 0 1015.68 4.534a7.46 7.46 0 01-2.717-2.248ZM15.75 14.25a3.75 3.75 0 11-7.313-1.172c.628.465 1.35.81 2.133 1A5.99 5.99 0 0112 12.75a.75.75 0 01.75.75v.008l-.001.008a3.75 3.75 0 013.001 2.734Z" clip-rule="evenodd"/>
             </svg>
-            <div class="text-4xl font-black text-gray-900">{{ progress.currentStreak }}</div>
+            <div class="text-4xl font-black transition-colors"
+              :class="progress.currentStreak > 0 ? 'text-gray-900' : 'text-gray-300'">
+              {{ progress.currentStreak }}
+            </div>
             <div class="text-sm text-gray-500 mt-1">{{ t('dashboard.dayStreak') }}</div>
             <div v-if="progress.longestStreak > 1" class="text-xs text-gray-400 mt-1">
               {{ t('dashboard.bestStreak', { count: progress.longestStreak }) }}
+            </div>
+            <div class="text-xs font-medium mt-2"
+              :class="progress.currentStreak === 0 ? 'text-[#234ecc]' : streakAtRisk ? 'text-orange-500' : 'text-emerald-600'">
+              {{ streakSubtext }}
             </div>
           </div>
 
@@ -222,19 +232,64 @@ import { useProgressStore } from '@/stores/progress'
 
 const auth = useAuthStore()
 const progress = useProgressStore()
-const { t } = useI18n()
+const { t, locale } = useI18n()
 
 const loading = ref(true)
 const trackStats = ref({})
 
+// Parse "YYYY-MM-DD" as local midnight (not UTC) to avoid timezone off-by-one
+function parseLocalDate(str) {
+  const [y, m, d] = str.split('-').map(Number)
+  return new Date(y, m - 1, d)
+}
+
+function localToday() {
+  const d = new Date()
+  d.setHours(0, 0, 0, 0)
+  return d
+}
+
+function dayDiff(dateStr) {
+  if (!dateStr) return null
+  const diff = Math.round((localToday() - parseLocalDate(dateStr)) / 86400000)
+  return diff
+}
+
 const lastActivityLabel = computed(() => {
-  if (!progress.lastActivity) return '—'
-  const d = new Date(progress.lastActivity)
-  const today = new Date()
-  const diff = Math.floor((today - d) / 86400000)
+  const diff = dayDiff(progress.lastActivity)
+  if (diff === null) return '—'
   if (diff === 0) return t('dashboard.today')
   if (diff === 1) return t('dashboard.yesterday')
   return t('dashboard.daysAgo', { count: diff })
+})
+
+const lastActivityDate = computed(() => {
+  if (!progress.lastActivity) return null
+  return parseLocalDate(progress.lastActivity).toLocaleDateString(
+    locale.value === 'ar' ? 'ar-SA' : 'en-US',
+    { month: 'short', day: 'numeric', year: 'numeric' }
+  )
+})
+
+// Flame colour scales with streak length
+const streakFlameClass = computed(() => {
+  const s = progress.currentStreak
+  if (s === 0) return 'text-gray-300'
+  if (s < 3)  return 'text-yellow-400'
+  if (s < 7)  return 'text-orange-400'
+  return 'text-red-500'
+})
+
+// At risk = last activity was yesterday and user hasn't studied today yet
+const streakAtRisk = computed(() => {
+  if (!progress.lastActivity || progress.currentStreak === 0) return false
+  return dayDiff(progress.lastActivity) === 1
+})
+
+const streakSubtext = computed(() => {
+  if (progress.currentStreak === 0) return t('dashboard.startStreak')
+  if (streakAtRisk.value)          return t('dashboard.streakAtRisk')
+  return t('dashboard.streakActive')
 })
 
 async function loadTrackStats() {

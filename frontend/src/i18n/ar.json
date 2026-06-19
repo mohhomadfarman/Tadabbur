@@ -104,7 +104,19 @@
     "subtitle": "اختر مجالًا من مجالات العلم الإسلامي لتبدأ رحلتك.",
     "empty": "لا توجد مسارات منشورة بعد. تابعنا قريبًا.",
     "loadError": "تعذّر تحميل المسارات. حاول مرة أخرى.",
-    "startLearning": "ابدأ التعلّم"
+    "startLearning": "ابدأ التعلّم",
+    "searchPlaceholder": "ابحث عن مسار…",
+    "sortDefault": "الترتيب الافتراضي",
+    "sortAZ": "أ ← ي",
+    "sortZA": "ي ← أ",
+    "filterAll": "الكل",
+    "filterEnrolled": "مسجّل",
+    "filterNotEnrolled": "غير مسجّل",
+    "viewIcon": "عرض الأيقونات",
+    "viewCard": "عرض البطاقات",
+    "enrolled": "مسجّل",
+    "noResults": "لا توجد مسارات تطابق بحثك.",
+    "clearFilters": "مسح الفلاتر"
   },
   "track": {
     "enroll": "الالتحاق بالمسار",
@@ -115,14 +127,22 @@
     "noSubjects": "لا توجد موضوعات منشورة بعد.",
     "viewLessons": "عرض الدروس",
     "notFound": "المسار غير موجود.",
-    "loadError": "تعذّر تحميل المسار."
+    "loadError": "تعذّر تحميل المسار.",
+    "lessons": "دروس",
+    "subjectCompleted": "مكتمل",
+    "subjectInProgress": "جارٍ"
   },
   "subject": {
     "lessons": "الدروس",
     "noLessons": "لا توجد دروس منشورة بعد.",
     "min": "د",
     "notFound": "الموضوع غير موجود.",
-    "loadError": "تعذّر تحميل الموضوع."
+    "loadError": "تعذّر تحميل الموضوع.",
+    "progressLabel": "تقدّمك",
+    "lessonsCompleted": "مكتملة",
+    "percentComplete": "مكتمل",
+    "statusCompleted": "مكتمل",
+    "statusInProgress": "جارٍ"
   },
   "lesson": {
     "minRead": "د قراءة",
@@ -143,7 +163,12 @@
     "createAccount": "إنشاء حساب مجاني",
     "logIn": "تسجيل الدخول",
     "notFound": "الدرس غير موجود.",
-    "loadError": "تعذّر تحميل الدرس."
+    "loadError": "تعذّر تحميل الدرس.",
+    "enrollRequired": "سجّل في المسار للوصول إلى هذا الدرس",
+    "enrollRequiredDesc": "هذا الدرس جزء من مسار منظّم. سجّل مجانًا لفتح جميع الدروس وتتبّع تقدّمك.",
+    "enrollBtn": "الالتحاق بالمسار",
+    "enrolling": "جارٍ الالتحاق…",
+    "enrolledReloading": "تم الالتحاق! جارٍ تحميل الدرس…"
   },
   "dashboard": {
     "welcome": "أهلاً وسهلاً",
@@ -163,7 +188,12 @@
     "lessonsProgress": "{completed} / {total} دروس",
     "emptyTitle": "ابدأ أول مسار",
     "emptyDesc": "تصفّح المنهج والتحق بمسار لتبدأ رحلتك التعليمية.",
-    "browseCurriculum": "← تصفّح المنهج"
+    "browseCurriculum": "← تصفّح المنهج",
+    "startStreak": "ابدأ الدراسة اليوم!",
+    "streakAtRisk": "ادرس اليوم للحفاظ على سلسلتك!",
+    "streakActive": "أحسنت، واصل!",
+    "noActivityYet": "أكمل درسًا للبدء",
+    "lessons": "دروس"
   },
   "auth": {
     "login": {

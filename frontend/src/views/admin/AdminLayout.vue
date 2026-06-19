@@ -71,6 +71,19 @@
             </svg>
             Library
           </RouterLink>
+
+          <!-- Analytics -->
+          <RouterLink
+            :to="{ name: 'admin-analytics' }"
+            class="flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-sm transition-colors"
+            :class="isActive('analytics') ? 'bg-[#234ecc] text-white font-medium' : 'text-white/50 hover:text-white hover:bg-white/5'"
+            @click="sidebarOpen = false"
+          >
+            <svg class="w-4 h-4 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M18 20V10M12 20V4M6 20v-6"/>
+            </svg>
+            Analytics
+          </RouterLink>
         </nav>
 
         <!-- Divider -->
@@ -138,6 +151,7 @@ function isActive(section) {
   if (section === 'overview')   return p === '/admin'
   if (section === 'curriculum') return p.startsWith('/admin/tracks') || p.startsWith('/admin/subjects') || p.startsWith('/admin/lessons')
   if (section === 'library')    return p.startsWith('/admin/library')
+  if (section === 'analytics')  return p.startsWith('/admin/analytics')
   return false
 }
 

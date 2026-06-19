@@ -7,6 +7,28 @@ from apps.users.models import User
 from apps.lessons.models import Lesson
 
 
+class QuizAttempt(Document):
+    """Records which answer a user selected for a quiz block."""
+    user = ReferenceField(User, required=True)
+    lesson_slug = StringField(required=True)
+    block_order = IntField(required=True)   # index of the quiz block in content_blocks
+    question = StringField()
+    selected_index = IntField(required=True)
+    selected_answer = StringField()
+    correct_index = IntField()
+    is_correct = BooleanField()
+    attempted_at = DateTimeField()
+
+    meta = {
+        'collection': 'quiz_attempts',
+        'indexes': [
+            'lesson_slug',
+            'user',
+            ('user', 'lesson_slug', 'block_order'),
+        ],
+    }
+
+
 class LessonProgress(Document):
     user = ReferenceField(User, required=True)
     lesson = ReferenceField(Lesson, required=True)

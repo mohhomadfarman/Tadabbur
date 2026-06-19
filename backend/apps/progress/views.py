@@ -6,7 +6,8 @@ from rest_framework.permissions import IsAuthenticated
 
 from apps.lessons.models import Lesson
 from apps.curriculum.models import Track, Subject
-from .models import LessonProgress, UserProgress
+from apps.common.permissions import IsAuthorOrAdmin
+from .models import LessonProgress, UserProgress, QuizAttempt
 
 
 def _get_or_create_user_progress(user):
@@ -71,8 +72,9 @@ class UserProgressView(APIView):
             longest_streak = up.longest_streak_days or 0
             last_activity = up.last_activity_date.isoformat() if up.last_activity_date else None
 
-        # Continue learning: last completed lesson, pick its next sibling if available
+        # Continue learning: find the next uncompleted lesson after the last activity
         continue_learning = None
+        completed_set = set(completed_slugs)
         last_lp = LessonProgress.objects(
             user=request.user, completed=True
         ).order_by('-completed_at').first()
@@ -80,19 +82,31 @@ class UserProgressView(APIView):
         if last_lp:
             try:
                 last_lesson = last_lp.lesson
+                # Try next lesson in same subject that isn't completed yet
                 nxt = Lesson.objects(
                     subject=last_lesson.subject,
                     status='published',
                     order__gt=last_lesson.order,
                 ).order_by('order').first()
-                target = nxt if nxt else last_lesson
-                continue_learning = {
-                    'lesson_slug': target.slug,
-                    'lesson_title': target.title,
-                    'subject_title': target.subject.title,
-                    'subject_slug': target.subject.slug,
-                    'track_slug': last_lp.track_slug,
-                }
+
+                if nxt and nxt.slug in completed_set:
+                    nxt = None  # already done, don't suggest it
+
+                target = nxt if nxt else None
+
+                # If nothing left in this subject, fall back to last lesson
+                # only if it itself is NOT completed (shouldn't happen, but guard it)
+                if target is None and last_lesson.slug not in completed_set:
+                    target = last_lesson
+
+                if target:
+                    continue_learning = {
+                        'lesson_slug': target.slug,
+                        'lesson_title': target.title,
+                        'subject_title': target.subject.title,
+                        'subject_slug': target.subject.slug,
+                        'track_slug': last_lp.track_slug,
+                    }
             except Exception:
                 pass
 
@@ -143,20 +157,25 @@ class TrackProgressView(APIView):
             return Response({'detail': 'Track not found.'}, status=status.HTTP_404_NOT_FOUND)
 
         subjects = Subject.objects(track=track, is_published=True).order_by('order')
-        completed_in_track = set(
+
+        # Use all completed lesson slugs for the user (not filtered by track_slug,
+        # because track_slug may have been empty when older records were created).
+        all_completed = set(
             LessonProgress.objects(
-                user=request.user, track_slug=track_slug, completed=True
+                user=request.user, completed=True
             ).scalar('lesson_slug')
         )
 
         total_all = 0
+        completed_all = 0
         subjects_data = []
 
         for subj in subjects:
             lessons = list(Lesson.objects(subject=subj, status='published').scalar('slug'))
             total = len(lessons)
-            done = sum(1 for s in lessons if s in completed_in_track)
+            done = sum(1 for s in lessons if s in all_completed)
             total_all += total
+            completed_all += done
             subjects_data.append({
                 'subject_slug': subj.slug,
                 'subject_title': subj.title,
@@ -165,7 +184,6 @@ class TrackProgressView(APIView):
                 'percent': round(done / total * 100) if total else 0,
             })
 
-        completed_all = len(completed_in_track)
         return Response({
             'track_slug': track_slug,
             'track_title': track.title,
@@ -174,3 +192,112 @@ class TrackProgressView(APIView):
             'percent': round(completed_all / total_all * 100) if total_all else 0,
             'subjects': subjects_data,
         })
+
+
+class SaveQuizAnswerView(APIView):
+    """Save a user's quiz answer for a specific block in a lesson."""
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request, slug):
+        lesson = Lesson.objects(slug=slug, status='published').first()
+        if not lesson:
+            return Response({'detail': 'Lesson not found.'}, status=status.HTTP_404_NOT_FOUND)
+
+        block_order = request.data.get('block_order')
+        selected_index = request.data.get('selected_index')
+        if block_order is None or selected_index is None:
+            return Response({'detail': 'block_order and selected_index are required.'}, status=status.HTTP_400_BAD_REQUEST)
+
+        # Find the quiz block for metadata
+        quiz_block = next(
+            (b for b in lesson.content_blocks if b.order == block_order and b.type == 'quiz'),
+            None
+        )
+        question = ''
+        selected_answer = ''
+        correct_index = None
+        is_correct = False
+
+        if quiz_block:
+            question = quiz_block.body.get('question', '')
+            options = quiz_block.body.get('options', [])
+            correct_index = quiz_block.body.get('correct')
+            selected_answer = options[selected_index] if 0 <= selected_index < len(options) else ''
+            is_correct = (selected_index == correct_index)
+
+        # Upsert — one record per user per lesson per block
+        attempt = QuizAttempt.objects(
+            user=request.user,
+            lesson_slug=slug,
+            block_order=block_order,
+        ).first()
+
+        if attempt:
+            attempt.selected_index = selected_index
+            attempt.selected_answer = selected_answer
+            attempt.is_correct = is_correct
+            attempt.attempted_at = datetime.now(timezone.utc)
+        else:
+            attempt = QuizAttempt(
+                user=request.user,
+                lesson_slug=slug,
+                block_order=block_order,
+                question=question,
+                selected_index=selected_index,
+                selected_answer=selected_answer,
+                correct_index=correct_index,
+                is_correct=is_correct,
+                attempted_at=datetime.now(timezone.utc),
+            )
+        attempt.save()
+
+        return Response({'saved': True, 'is_correct': is_correct})
+
+
+class AdminLessonStatsView(APIView):
+    """Admin: completion counts + quiz answer breakdown per lesson."""
+    permission_classes = [IsAuthorOrAdmin]
+
+    def get(self, request):
+        lesson_slug = request.query_params.get('lesson')
+
+        if lesson_slug:
+            # Per-lesson detail: who completed it + quiz answers
+            completed_users = LessonProgress.objects(lesson_slug=lesson_slug, completed=True)
+            completion_count = completed_users.count()
+
+            # Quiz answer breakdown grouped by block_order
+            attempts = QuizAttempt.objects(lesson_slug=lesson_slug)
+            quiz_stats = {}
+            for a in attempts:
+                key = str(a.block_order)
+                if key not in quiz_stats:
+                    quiz_stats[key] = {
+                        'question': a.question,
+                        'correct_index': a.correct_index,
+                        'total_attempts': 0,
+                        'correct_count': 0,
+                        'answer_distribution': {},
+                    }
+                quiz_stats[key]['total_attempts'] += 1
+                if a.is_correct:
+                    quiz_stats[key]['correct_count'] += 1
+                ans_key = str(a.selected_index)
+                quiz_stats[key]['answer_distribution'][ans_key] = \
+                    quiz_stats[key]['answer_distribution'].get(ans_key, 0) + 1
+
+            return Response({
+                'lesson_slug': lesson_slug,
+                'completion_count': completion_count,
+                'quiz_stats': quiz_stats,
+            })
+
+        # Summary: completion count per lesson slug
+        pipeline = [
+            {'$match': {'completed': True}},
+            {'$group': {'_id': '$lesson_slug', 'count': {'$sum': 1}}},
+            {'$sort': {'count': -1}},
+            {'$limit': 50},
+        ]
+        results = list(LessonProgress.objects.aggregate(pipeline))
+        return Response([{'lesson_slug': r['_id'], 'completion_count': r['count']} for r in results])

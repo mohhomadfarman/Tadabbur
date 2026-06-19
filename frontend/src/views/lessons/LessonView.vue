@@ -63,8 +63,38 @@
 
         <hr class="border-gray-100 mb-8" />
 
+        <!-- Enrollment gate (logged in, not enrolled) -->
+        <div v-if="lesson.needs_enrollment" class="mt-2">
+          <div class="border border-gray-200 rounded-2xl shadow-lg overflow-hidden">
+            <div class="bg-gradient-to-br from-[#234ecc] to-[#1a3ba8] px-8 py-8 text-center text-white">
+              <div class="w-14 h-14 rounded-2xl bg-white/10 flex items-center justify-center mx-auto mb-4">
+                <svg class="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+                    d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/>
+                </svg>
+              </div>
+              <h3 class="text-xl font-bold mb-1">{{ t('lesson.enrollRequired') }}</h3>
+              <p class="text-white/70 text-sm">{{ lesson.track_title }}</p>
+            </div>
+            <div class="bg-white px-8 py-7 text-center">
+              <p class="text-gray-500 text-sm mb-6 max-w-sm mx-auto">{{ t('lesson.enrollRequiredDesc') }}</p>
+              <button
+                :disabled="progress.enrolling || enrolling"
+                @click="handleEnroll"
+                class="inline-flex items-center gap-2 bg-[#234ecc] hover:bg-[#1a3ba8] disabled:opacity-60
+                       text-white px-8 py-3 rounded-xl font-semibold transition-colors"
+              >
+                <svg v-if="!progress.enrolling && !enrolling" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+                </svg>
+                {{ (progress.enrolling || enrolling) ? t('lesson.enrolling') : t('lesson.enrollBtn') }}
+              </button>
+            </div>
+          </div>
+        </div>
+
         <!-- Content blocks -->
-        <div class="space-y-7">
+        <div v-else class="space-y-7">
           <div v-for="block in lesson.content_blocks" :key="block.order">
 
             <!-- Text -->
@@ -153,9 +183,9 @@
             </div>
 
           </div>
-        </div>
+        </div><!-- end v-else content blocks -->
 
-        <!-- 25% gate -->
+        <!-- 25% gate (unauthenticated) -->
         <div v-if="lesson.is_truncated" class="relative mt-10">
           <div class="absolute inset-x-0 -top-24 h-24 bg-gradient-to-b from-transparent to-white pointer-events-none" />
           <div class="border border-gray-200 rounded-2xl shadow-lg overflow-hidden">
@@ -183,8 +213,8 @@
           </div>
         </div>
 
-        <!-- Mark complete (logged in, full content) -->
-        <div v-else-if="auth.isLoggedIn" class="mt-10 flex justify-center">
+        <!-- Mark complete (enrolled, full content) -->
+        <div v-else-if="auth.isLoggedIn && !lesson.needs_enrollment" class="mt-10 flex justify-center">
           <button
             v-if="!progress.isCompleted(lesson.slug)"
             :disabled="progress.marking"
@@ -253,6 +283,7 @@ import { ref, reactive, onMounted, onUnmounted, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import { curriculumApi } from '@/api/curriculum'
+import { progressApi } from '@/api/progress'
 import { useAuthStore } from '@/stores/auth'
 import { useProgressStore } from '@/stores/progress'
 
@@ -265,6 +296,7 @@ const lesson = ref(null)
 const loading = ref(true)
 const error = ref('')
 const readingProgress = ref(0)
+const enrolling = ref(false)
 
 const quizSelected = reactive({})
 const quizSubmitted = reactive({})
@@ -275,9 +307,16 @@ function youtubeId(url) {
   return match ? match[1] : null
 }
 
-function submitQuiz(blockOrder, selectedIdx, correctIdx) {
+async function submitQuiz(blockOrder, selectedIdx, correctIdx) {
   quizSelected[blockOrder] = selectedIdx
   quizSubmitted[blockOrder] = true
+  // Persist answer for enrolled users (fire-and-forget, non-blocking)
+  if (auth.isLoggedIn && lesson.value && !lesson.value.needs_enrollment) {
+    progressApi.saveQuizAnswer(lesson.value.slug, {
+      block_order: blockOrder,
+      selected_index: selectedIdx,
+    }).catch(() => {})
+  }
 }
 
 function quizOptionClass(blockOrder, idx, correctIdx) {
@@ -311,6 +350,18 @@ async function loadLesson(slug) {
 
 async function handleMarkComplete() {
   await progress.markComplete(lesson.value.slug)
+}
+
+async function handleEnroll() {
+  if (enrolling.value) return
+  enrolling.value = true
+  try {
+    await progress.enrollTrack(lesson.value.track_slug)
+    // Reload the lesson — backend will now return full content
+    await loadLesson(route.params.lessonSlug)
+  } finally {
+    enrolling.value = false
+  }
 }
 
 watch(() => route.params.lessonSlug, (slug) => { if (slug) loadLesson(slug) })

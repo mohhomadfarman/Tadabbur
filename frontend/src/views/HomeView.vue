@@ -1,4 +1,4 @@
-<template>
+﻿<template>
   <div class="home-page overflow-hidden">
 
     <!-- ══════════════════════════════════════════════════════════════ -->
@@ -144,18 +144,18 @@
               <!-- Track cards -->
               <div class="grid grid-cols-3 gap-2 mb-3">
 
-                <div class="rounded-xl p-3" style="background:rgba(35,78,204,0.1); border:1px solid rgba(35,78,204,0.25);">
+                <div data-hero-track-card class="rounded-xl p-3" style="background:rgba(35,78,204,0.1); border:1px solid rgba(35,78,204,0.25);">
                   <div class="mb-1.5">
                     <svg class="w-4 h-4 text-blue-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/></svg>
                   </div>
                   <p class="text-xs font-semibold leading-tight mb-0.5" style="color:rgba(255,255,255,0.9);">Quran Sciences</p>
                   <p class="text-[10px] mb-2" style="color:rgba(255,255,255,0.3);">12 subjects</p>
                   <div class="w-full rounded-full h-1" style="background:rgba(255,255,255,0.06);">
-                    <div class="h-1 rounded-full" style="width:34%;background:#234ecc;"></div>
+                    <div data-hero-progress class="h-1 rounded-full" style="width:0%;background:#234ecc;"></div>
                   </div>
                 </div>
 
-                <div class="rounded-xl p-3" style="background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.06);">
+                <div data-hero-track-card class="rounded-xl p-3" style="background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.06);">
                   <div class="mb-1.5">
                     <svg class="w-4 h-4 text-yellow-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v17.25m0 0c-1.472 0-2.882.265-4.185.75M12 20.25c1.472 0 2.882.265 4.185.75M18.75 4.97A48.416 48.416 0 0012 4.5c-2.291 0-4.545.16-6.75.47m13.5 0c1.01.143 2.01.317 3 .52m-3-.52l2.62 10.726c.122.499-.106 1.028-.589 1.202a5.988 5.988 0 01-2.031.352 5.988 5.988 0 01-2.031-.352c-.483-.174-.711-.703-.59-1.202L18.75 4.971zm-16.5.52c.99-.203 1.99-.377 3-.52m0 0l2.62 10.726c.122.499-.106 1.028-.589 1.202a5.989 5.989 0 01-2.031.352 5.989 5.989 0 01-2.031-.352c-.483-.174-.711-.703-.59-1.202L5.25 4.971z"/></svg>
                   </div>
@@ -164,7 +164,7 @@
                   <div class="w-full rounded-full h-1" style="background:rgba(255,255,255,0.06);"></div>
                 </div>
 
-                <div class="rounded-xl p-3" style="background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.06);">
+                <div data-hero-track-card class="rounded-xl p-3" style="background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.06);">
                   <div class="mb-1.5">
                     <svg class="w-4 h-4 text-purple-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21.752 15.002A9.718 9.718 0 0118 15.75c-5.385 0-9.75-4.365-9.75-9.75 0-1.33.266-2.597.748-3.752A9.753 9.753 0 003 11.25C3 16.635 7.365 21 12.75 21a9.753 9.753 0 009.002-5.998z"/></svg>
                   </div>
@@ -176,7 +176,7 @@
               </div>
 
               <!-- Recent lesson -->
-              <div class="rounded-xl p-3" style="background:rgba(255,255,255,0.02); border:1px solid rgba(255,255,255,0.04);">
+              <div data-hero-lesson-row class="rounded-xl p-3" style="background:rgba(255,255,255,0.02); border:1px solid rgba(255,255,255,0.04);">
                 <p class="text-[10px] uppercase tracking-wider font-medium mb-2" style="color:rgba(255,255,255,0.25);">
                   Continue Learning
                 </p>
@@ -200,7 +200,7 @@
           </div>
 
           <!-- Floating badge -->
-          <div class="absolute -bottom-4 -left-4 sm:-bottom-5 sm:-left-6 bg-emerald-900/80 backdrop-blur-sm border border-emerald-500/30 rounded-xl px-3 py-2 shadow-xl hidden sm:block">
+          <div data-hero-badge-success class="absolute -bottom-4 -left-4 sm:-bottom-5 sm:-left-6 bg-emerald-900/80 backdrop-blur-sm border border-emerald-500/30 rounded-xl px-3 py-2 shadow-xl hidden sm:block">
             <div class="flex items-center gap-2">
               <div class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse shrink-0"></div>
               <p class="text-emerald-300 text-xs font-medium">Lesson completed</p>
@@ -208,7 +208,7 @@
           </div>
 
           <!-- Floating streak badge -->
-          <div class="absolute -top-3 -right-3 sm:-top-4 sm:-right-4 bg-[#1a1a20] border border-white/10 rounded-xl px-3 py-2 shadow-xl hidden sm:block">
+          <div data-hero-badge-streak class="absolute -top-3 -right-3 sm:-top-4 sm:-right-4 bg-[#1a1a20] border border-white/10 rounded-xl px-3 py-2 shadow-xl hidden sm:block">
             <div class="flex items-center gap-1.5">
               <svg class="w-4 h-4 text-orange-400" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
                 <path fill-rule="evenodd" d="M12.963 2.286a.75.75 0 00-1.071-.136 9.742 9.742 0 00-3.539 6.177A7.547 7.547 0 016.648 6.61a.75.75 0 00-1.152-.082A9 9 0 1015.68 4.534a7.46 7.46 0 01-2.717-2.248ZM15.75 14.25a3.75 3.75 0 11-7.313-1.172c.628.465 1.35.81 2.133 1A5.99 5.99 0 0112 12.75a.75.75 0 01.75.75v.008l-.001.008a3.75 3.75 0 013.001 2.734Z" clip-rule="evenodd"/>
@@ -478,7 +478,7 @@
     <!-- ══════════════════════════════════════════════════════════════ -->
     <!-- SECTION 4 — LESSON READER SHOWCASE                            -->
     <!-- ══════════════════════════════════════════════════════════════ -->
-    <section class="py-24 sm:py-32 px-4" style="background:#040408;">
+    <section data-reader-section class="py-24 sm:py-32 px-4" style="background:#040408;">
       <div class="max-w-6xl mx-auto">
 
         <!-- Header -->
@@ -507,7 +507,7 @@
 
             <!-- Progress bar -->
             <div class="h-1" style="background:rgba(255,255,255,0.04);">
-              <div class="h-full" style="width:38%; background:linear-gradient(90deg,#234ecc,#3d65e8);"></div>
+              <div data-reader-progress class="h-full" style="width:0%; background:linear-gradient(90deg,#234ecc,#3d65e8);"></div>
             </div>
 
             <!-- Lesson header -->
@@ -531,13 +531,13 @@
 
               <!-- Text paragraph (skeleton lines) -->
               <div class="space-y-2">
-                <div class="h-2.5 rounded-full" style="background:rgba(255,255,255,0.06); width:100%;"></div>
-                <div class="h-2.5 rounded-full" style="background:rgba(255,255,255,0.06); width:92%;"></div>
-                <div class="h-2.5 rounded-full" style="background:rgba(255,255,255,0.06); width:78%;"></div>
+                <div data-reader-line class="h-2.5 rounded-full" style="background:rgba(255,255,255,0.06); width:100%;"></div>
+                <div data-reader-line class="h-2.5 rounded-full" style="background:rgba(255,255,255,0.06); width:92%;"></div>
+                <div data-reader-line class="h-2.5 rounded-full" style="background:rgba(255,255,255,0.06); width:78%;"></div>
               </div>
 
               <!-- Verse block -->
-              <div class="rounded-r-2xl ps-5 py-4 pe-4" style="border-left: 4px solid #10b981; background:rgba(5,150,105,0.08);">
+              <div data-reader-verse class="rounded-r-2xl ps-5 py-4 pe-4" style="border-left: 4px solid #10b981; background:rgba(5,150,105,0.08);">
                 <p class="arabic-text text-xl sm:text-2xl leading-loose mb-2" style="color:rgba(255,255,255,0.8);">
                   وَمَا آتَاكُمُ الرَّسُولُ فَخُذُوهُ
                 </p>
@@ -546,19 +546,28 @@
 
               <!-- More text -->
               <div class="space-y-2">
-                <div class="h-2.5 rounded-full" style="background:rgba(255,255,255,0.05); width:100%;"></div>
-                <div class="h-2.5 rounded-full" style="background:rgba(255,255,255,0.05); width:88%;"></div>
+                <div data-reader-line class="h-2.5 rounded-full" style="background:rgba(255,255,255,0.05); width:100%;"></div>
+                <div data-reader-line class="h-2.5 rounded-full" style="background:rgba(255,255,255,0.05); width:88%;"></div>
               </div>
 
               <!-- Quiz element -->
-              <div class="rounded-xl overflow-hidden" style="border:1px solid rgba(255,255,255,0.07);">
+              <div data-reader-quiz class="rounded-xl overflow-hidden" style="border:1px solid rgba(255,255,255,0.07);">
                 <div class="px-4 py-3" style="background:rgba(255,255,255,0.03);">
                   <p class="text-[10px] uppercase tracking-widest text-white/30 font-semibold mb-1">Quick Check</p>
                   <p class="text-xs text-white/50">Which is considered the second source of Islamic law?</p>
                 </div>
                 <div class="grid grid-cols-2 gap-1.5 p-3" style="background:rgba(0,0,0,0.2);">
                   <div class="text-[10px] px-2.5 py-2 rounded-lg text-white/25" style="border:1px solid rgba(255,255,255,0.05);">Ijma</div>
-                  <div class="text-[10px] px-2.5 py-2 rounded-lg text-emerald-300 flex items-center justify-center gap-1" style="border:1px solid rgba(5,150,105,0.3); background:rgba(5,150,105,0.1);">Sunnah <svg class="w-2.5 h-2.5 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4.5 12.75l6 6 9-13.5"/></svg></div>
+                  <div
+                    class="text-[10px] px-2.5 py-2 rounded-lg flex items-center justify-center gap-1 transition-all duration-500"
+                    :class="quizAnswered ? 'text-emerald-300' : 'text-white/25'"
+                    :style="quizAnswered
+                      ? 'border:1px solid rgba(5,150,105,0.3); background:rgba(5,150,105,0.1);'
+                      : 'border:1px solid rgba(255,255,255,0.05);'"
+                  >
+                    Sunnah
+                    <svg v-if="quizAnswered" class="w-2.5 h-2.5 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4.5 12.75l6 6 9-13.5"/></svg>
+                  </div>
                   <div class="text-[10px] px-2.5 py-2 rounded-lg text-white/25" style="border:1px solid rgba(255,255,255,0.05);">Qiyas</div>
                   <div class="text-[10px] px-2.5 py-2 rounded-lg text-white/25" style="border:1px solid rgba(255,255,255,0.05);">Istihsan</div>
                 </div>
@@ -929,6 +938,8 @@ import { useI18n } from 'vue-i18n'
 import { useAuthStore } from '@/stores/auth'
 import { useSeo } from '@/composables/useSeo'
 
+const quizAnswered = ref(false)
+
 const { t } = useI18n()
 const auth = useAuthStore()
 
@@ -1044,6 +1055,26 @@ onMounted(async () => {
       .from('[data-h-cta]',    { y: 20, opacity: 0, stagger: 0.1, duration: 0.5, ease: 'power2.out' }, '-=0.4')
       .from('[data-h-mockup]', { y: 70, opacity: 0, scale: 0.96, duration: 1.3, ease: 'power3.out' }, 0.25)
 
+    // ── Hero mockup internal "live demo" animations ───────────────
+    // Runs after mockup entrance completes (~1.7s from page load)
+    const mockupTL = gsap.timeline({ delay: 1.9 })
+    mockupTL
+      .from('[data-hero-badge-streak]', {
+        y: -20, opacity: 0, scale: 0.8, duration: 0.65, ease: 'back.out(1.8)',
+      })
+      .from('[data-hero-track-card]', {
+        y: 10, opacity: 0, stagger: 0.1, duration: 0.45, ease: 'power2.out',
+      }, '-=0.3')
+      .to('[data-hero-progress]', {
+        width: '34%', duration: 1.6, ease: 'power2.inOut',
+      }, '-=0.1')
+      .from('[data-hero-lesson-row]', {
+        y: 10, opacity: 0, duration: 0.45, ease: 'power2.out',
+      }, '-=1.3')
+      .from('[data-hero-badge-success]', {
+        y: 20, opacity: 0, scale: 0.8, duration: 0.65, ease: 'back.out(1.8)',
+      }, '-=0.8')
+
     // Hero glow parallax
     gsap.to('[data-hero-glow]', {
       y: -120,
@@ -1079,6 +1110,33 @@ onMounted(async () => {
       },
     })
 
+    // ── Lesson reader mockup "live demo" animations ───────────────
+    ScrollTrigger.create({
+      trigger: '[data-reader-section]',
+      start: 'top 72%',
+      once: true,
+      onEnter: () => {
+        const readerTL = gsap.timeline()
+        readerTL
+          .to('[data-reader-progress]', {
+            width: '38%', duration: 2, ease: 'power2.out',
+          })
+          .from('[data-reader-line]', {
+            scaleX: 0, transformOrigin: 'left center',
+            stagger: 0.1, duration: 0.45, ease: 'power2.out',
+          }, '-=1.7')
+          .from('[data-reader-verse]', {
+            x: 24, opacity: 0, duration: 0.7, ease: 'power2.out',
+          }, '-=0.9')
+          .from('[data-reader-quiz]', {
+            y: 18, opacity: 0, duration: 0.6, ease: 'power2.out',
+          }, '-=0.5')
+
+        // Quiz answer selection fires ~2.4s after section enters view
+        setTimeout(() => { quizAnswered.value = true }, 2400)
+      },
+    })
+
     // Generic [data-reveal] elements
     gsap.utils.toArray('[data-reveal]').forEach(el => {
       gsap.from(el, {
@@ -1093,5 +1151,7 @@ onMounted(async () => {
 onUnmounted(() => {
   gsapCtx?.revert()
   lenis?.destroy()
+  quizAnswered.value = false
 })
 </script>
+

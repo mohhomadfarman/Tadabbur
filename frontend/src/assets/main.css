@@ -211,3 +211,171 @@
     text-transform: uppercase;
   }
 }
+
+/* ══════════════════════════════════════════════════════════════════
+   HOME PAGE — LIGHT MODE
+   Activated by "home-light" class on <html> (set by useHomeTheme.js).
+   !important beats inline style="" attributes per the CSS cascade.
+   Browsers normalize style attr values (hex→rgb, spaces added),
+   so every rule has BOTH the author form AND the serialized form.
+   ══════════════════════════════════════════════════════════════════ */
+
+/* ─── Root ────────────────────────────────────────────────────── */
+:root.home-light .home-page { background: #f8f9fb; }
+
+/* ─── Hero: dark bg → soft blue-white gradient ───────────────── */
+:root.home-light .home-page [data-hero-section] {
+  background: linear-gradient(180deg, #d8e4f8 0%, #eef2fb 45%, #f5f7fd 100%) !important;
+}
+/* Hero gradient headline: dark-navy→blue */
+:root.home-light .home-page [data-hero-section] [style*="-webkit-background-clip: text"] {
+  background-image: linear-gradient(135deg, #1e293b 20%, #3d65e8 100%) !important;
+}
+
+/* ─── Section backgrounds — author hex form ──────────────────── */
+:root.home-light .home-page [style*="background:#020205"] { background: #ffffff !important; }
+:root.home-light .home-page [style*="background:#040408"] { background: #f8fafc !important; }
+/* ─── Section backgrounds — browser-serialized rgb() form ─────── */
+:root.home-light .home-page [style*="background: rgb(2, 2, 5)"]  { background: #ffffff !important; }
+:root.home-light .home-page [style*="background: rgb(4, 4, 8)"]  { background: #f8fafc !important; }
+
+/* ─── Text — Tailwind classes ────────────────────────────────── */
+:root.home-light .home-page .text-white             { color: #111827 !important; }
+:root.home-light .home-page [class*="text-white\/"] { color: #4b5563 !important; }
+
+/* ─── Text — inline color (author form) ──────────────────────── */
+:root.home-light .home-page [style*="color:rgba(255,255,255"]     { color: #374151 !important; }
+:root.home-light .home-page [style*="color:rgba(255,255,255,0.0"] { color: rgba(0,0,0,0.05) !important; }
+/* ─── Text — inline color (browser form, spaces) ─────────────── */
+:root.home-light .home-page [style*="color: rgba(255, 255, 255"]      { color: #374151 !important; }
+:root.home-light .home-page [style*="color: rgba(255, 255, 255, 0.0"] { color: rgba(0,0,0,0.05) !important; }
+
+/* ─── Card / panel backgrounds (author form) ─────────────────── */
+:root.home-light .home-page .rounded-2xl[style*="background:rgba(255,255,255"]  { background: #ffffff !important; }
+:root.home-light .home-page .rounded-xl[style*="background:rgba(255,255,255"]   { background: #f9fafb !important; }
+:root.home-light .home-page .rounded-lg[style*="background:rgba(255,255,255"]   { background: #f9fafb !important; }
+:root.home-light .home-page .rounded-full[style*="background:rgba(255,255,255"] { background: #e5e7eb !important; }
+/* ─── Card / panel backgrounds (browser form) ────────────────── */
+:root.home-light .home-page .rounded-2xl[style*="background: rgba(255, 255, 255"]  { background: #ffffff !important; }
+:root.home-light .home-page .rounded-xl[style*="background: rgba(255, 255, 255"]   { background: #f9fafb !important; }
+:root.home-light .home-page .rounded-lg[style*="background: rgba(255, 255, 255"]   { background: #f9fafb !important; }
+:root.home-light .home-page .rounded-full[style*="background: rgba(255, 255, 255"] { background: #e5e7eb !important; }
+/* Dark rgba panels (e.g. rgba(0,0,0,...) hierarchy tree) */
+:root.home-light .home-page .rounded-xl[style*="background:rgba(0,0,0"],
+:root.home-light .home-page .rounded-xl[style*="background: rgba(0, 0, 0"] { background: #f1f5f9 !important; }
+
+/* ─── Borders (author form) ──────────────────────────────────── */
+:root.home-light .home-page [style*="border:1px solid rgba(255,255,255"]     { border: 1px solid #e5e7eb !important; }
+:root.home-light .home-page [style*="border-top:1px solid rgba(255,255,255"] { border-top: 1px solid #e5e7eb !important; }
+:root.home-light .home-page [style*="border-color:rgba(255,255,255"]         { border-color: #e5e7eb !important; }
+/* ─── Borders (browser form) ─────────────────────────────────── */
+:root.home-light .home-page [style*="border: 1px solid rgba(255, 255, 255"]  { border: 1px solid #e5e7eb !important; }
+:root.home-light .home-page [style*="border-color: rgba(255, 255, 255"]      { border-color: #e5e7eb !important; }
+/* ─── Tailwind border-white/* classes ────────────────────────── */
+:root.home-light .home-page [class*="border-white\/"] { border-color: #d1d5db !important; }
+
+/* ─── Bento cards (.bento-card) ─────────────────────────────── */
+:root.home-light .home-page .bento-card {
+  background: #ffffff !important;
+  border-color: #e5e7eb !important;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.05), 0 0 0 1px rgba(0,0,0,0.03) !important;
+}
+
+/* ─── Icon circles ───────────────────────────────────────────── */
+:root.home-light .home-page .icon-circle { background: #f1f5f9 !important; }
+
+/* ─── Footer ─────────────────────────────────────────────────── */
+:root.home-light .home-page footer { border-top-color: #e5e7eb !important; }
+
+/* ─── Hero badge (Arabic ayah) ───────────────────────────────── */
+:root.home-light .home-page [data-h-badge] {
+  background: rgba(37, 99, 235, 0.07) !important;
+  border-color: rgba(37, 99, 235, 0.18) !important;
+}
+
+/* ─── Stats bar — subtle periwinkle tint ─────────────────────── */
+:root.home-light .home-page [data-stats-section] {
+  background: #eef3ff !important;
+  border-color: #c4d4f5 !important;
+}
+:root.home-light .home-page [data-stats-section] [data-stat-item] {
+  border-color: #d1dcf0 !important;
+}
+
+/* ─── Hero section: hero CTA secondary button ────────────────── */
+:root.home-light .home-page [data-hero-section] [data-h-cta]:last-child {
+  border-color: rgba(30, 41, 59, 0.2) !important;
+  color: #374151 !important;
+}
+
+/* ─── Lesson reader mockup — convert to light mode ──────────── */
+/* Main dark container (#0a0a0f) */
+:root.home-light .home-page [data-reader-section] [style*="background:#0a0a0f"],
+:root.home-light .home-page [data-reader-section] [style*="background: rgb(10, 10, 15)"] {
+  background: #ffffff !important;
+}
+/* Progress bar track (rgba 0.04 — no rounded class, not caught by general rules) */
+:root.home-light .home-page [data-reader-section] [style*="background:rgba(255,255,255,0.04)"],
+:root.home-light .home-page [data-reader-section] [style*="background: rgba(255, 255, 255, 0.04)"] {
+  background: rgba(0,0,0,0.07) !important;
+}
+/* Quiz header bg (no rounded class) */
+:root.home-light .home-page [data-reader-quiz] > [style*="background:rgba(255,255,255,0.03)"],
+:root.home-light .home-page [data-reader-quiz] > [style*="background: rgba(255, 255, 255, 0.03)"] {
+  background: #f9fafb !important;
+}
+/* Quiz options grid bg */
+:root.home-light .home-page [data-reader-quiz] > [style*="background:rgba(0,0,0"],
+:root.home-light .home-page [data-reader-quiz] > [style*="background: rgba(0, 0, 0"] {
+  background: #f1f5f9 !important;
+}
+/* Shadow — lighten for white card */
+:root.home-light .home-page [data-reader-section] .shadow-black\/70 {
+  box-shadow: 0 20px 60px rgba(0,0,0,0.12) !important;
+}
+
+/* ─── Light mode footer text ─────────────────────────────────── */
+:root.home-light .home-page footer .text-white { color: #111827 !important; }
+:root.home-light .home-page footer [class*="text-white\/"] { color: #6b7280 !important; }
+
+/* ══════════════════════════════════════════════════════════════════
+   PRESERVE DARK REGIONS (more-specific rules override the above)
+   ══════════════════════════════════════════════════════════════════ */
+
+/* ─── Browser frame mockup (intentionally dark) ──────────────── */
+:root.home-light .home-page [data-h-mockup] .text-white             { color: #ffffff !important; }
+:root.home-light .home-page [data-h-mockup] [class*="text-white\/"] { color: rgba(255,255,255,0.4) !important; }
+:root.home-light .home-page [data-h-mockup] [style*="color:rgba(255,255,255,0.9"]     { color: rgba(255,255,255,0.9) !important; }
+:root.home-light .home-page [data-h-mockup] [style*="color:rgba(255,255,255,0.8"]     { color: rgba(255,255,255,0.8) !important; }
+:root.home-light .home-page [data-h-mockup] [style*="color:rgba(255,255,255"]         { color: rgba(255,255,255,0.4) !important; }
+:root.home-light .home-page [data-h-mockup] [style*="color: rgba(255, 255, 255, 0.9"] { color: rgba(255,255,255,0.9) !important; }
+:root.home-light .home-page [data-h-mockup] [style*="color: rgba(255, 255, 255, 0.8"] { color: rgba(255,255,255,0.8) !important; }
+:root.home-light .home-page [data-h-mockup] [style*="color: rgba(255, 255, 255"]      { color: rgba(255,255,255,0.4) !important; }
+:root.home-light .home-page [data-h-mockup] .rounded-xl[style*="background:rgba(255,255,255"]    { background: rgba(255,255,255,0.03) !important; }
+:root.home-light .home-page [data-h-mockup] .rounded-lg[style*="background:rgba(255,255,255"]    { background: rgba(255,255,255,0.03) !important; }
+:root.home-light .home-page [data-h-mockup] .rounded-xl[style*="background: rgba(255, 255, 255"] { background: rgba(255,255,255,0.03) !important; }
+:root.home-light .home-page [data-h-mockup] .rounded-lg[style*="background: rgba(255, 255, 255"] { background: rgba(255,255,255,0.03) !important; }
+:root.home-light .home-page [data-h-mockup] [style*="border:1px solid rgba(255,255,255"]    { border: 1px solid rgba(255,255,255,0.08) !important; }
+:root.home-light .home-page [data-h-mockup] [style*="border: 1px solid rgba(255, 255, 255"] { border: 1px solid rgba(255,255,255,0.08) !important; }
+:root.home-light .home-page [data-h-mockup] [class*="border-white\/"]                      { border-color: rgba(255,255,255,0.1) !important; }
+
+/* ─── Final CTA gradient section (text stays white) ──────────── */
+/* Browser normalizes hex inside gradients → rgb() too */
+:root.home-light .home-page section[style*="background: linear-gradient(135deg, rgb(10, 15, 46)"],
+:root.home-light .home-page section[style*="background: linear-gradient(135deg, rgb(10, 15, 46)"] .text-white,
+:root.home-light .home-page section[style*="background: linear-gradient(135deg, #0a0f2e"],
+:root.home-light .home-page section[style*="background: linear-gradient(135deg, #0a0f2e"] .text-white {
+  color: #ffffff !important;
+}
+:root.home-light .home-page section[style*="background: linear-gradient(135deg, rgb(10, 15, 46)"] [class*="text-white\/"],
+:root.home-light .home-page section[style*="background: linear-gradient(135deg, #0a0f2e"] [class*="text-white\/"] {
+  color: rgba(255,255,255,0.65) !important;
+}
+:root.home-light .home-page section[style*="background: linear-gradient(135deg, rgb(10, 15, 46)"] [style*="color: rgba(255, 255, 255"],
+:root.home-light .home-page section[style*="background: linear-gradient(135deg, #0a0f2e"] [style*="color:rgba(255,255,255"] {
+  color: rgba(255,255,255,0.65) !important;
+}
+:root.home-light .home-page section[style*="background: linear-gradient(135deg, rgb(10, 15, 46)"] [style*="border: 1px solid rgba(255, 255, 255"],
+:root.home-light .home-page section[style*="background: linear-gradient(135deg, #0a0f2e"] [style*="border:1px solid rgba(255,255,255"] {
+  border: 1px solid rgba(255,255,255,0.15) !important;
+}
