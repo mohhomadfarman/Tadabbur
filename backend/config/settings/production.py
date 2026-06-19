@@ -21,3 +21,6 @@ X_FRAME_OPTIONS = 'DENY'
 SECURE_SSL_REDIRECT = True
 SESSION_COOKIE_SECURE = True
 CSRF_COOKIE_SECURE = True
+# SSL terminates at the host nginx reverse proxy; trust its forwarded header
+# so Django doesn't see internal HTTP traffic as insecure and infinite-redirect.
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
