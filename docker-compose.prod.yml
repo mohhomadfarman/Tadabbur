@@ -65,13 +65,27 @@ services:
     image: ghcr.io/${GHCR_OWNER}/tadabbur-nginx:${IMAGE_TAG:-latest}
     container_name: tadabbur_nginx
     restart: unless-stopped
-    ports:
-      - "8080:80"
     volumes:
       - static_files:/app/staticfiles:ro
     depends_on:
       - backend
       - frontend
+    networks:
+      - tadabbur_net
+
+  caddy:
+    image: caddy:2-alpine
+    container_name: tadabbur_caddy
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    depends_on:
+      - nginx
     networks:
       - tadabbur_net
 
@@ -82,3 +96,5 @@ networks:
 volumes:
   mongo_data:
   static_files:
+  caddy_data:
+  caddy_config:
