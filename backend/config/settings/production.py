@@ -1,9 +1,16 @@
+from pathlib import Path
+
 from .base import *
 from .base import _DEFAULT_SECRET
 from decouple import config
 from django.core.exceptions import ImproperlyConfigured
 
 DEBUG = False
+
+# Store the admin SQLite DB on a mounted volume (see docker-compose.prod.yml)
+# so it survives image rebuilds/redeploys. The default BASE_DIR location lives
+# inside the image layer and is wiped on every rebuild.
+DATABASES['default']['NAME'] = Path('/app/data/db.sqlite3')
 ALLOWED_HOSTS = config('ALLOWED_HOSTS', default='').split(',')
 CORS_ALLOWED_ORIGINS = config('CORS_ALLOWED_ORIGINS', default='').split(',')
 
