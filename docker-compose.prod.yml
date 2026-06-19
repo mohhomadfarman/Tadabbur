@@ -1,10 +1,5 @@
-# Production compose — pulls pre-built images from GHCR.
-# Set these env vars before running manually:
-#   export IMAGE_TAG=<git-sha-or-latest>
-#   export GHCR_OWNER=mohhomadfarman
-#   docker compose -f docker-compose.prod.yml up -d
-#
-# In CI/CD these are set automatically by the deploy workflow.
+# Production compose — builds images directly on the server.
+# Triggered by CI which SSHes in, runs git pull, then docker compose up --build.
 
 services:
 
@@ -29,7 +24,8 @@ services:
       - tadabbur_net
 
   backend:
-    image: ghcr.io/${GHCR_OWNER}/tadabbur-backend:${IMAGE_TAG:-latest}
+    build:
+      context: ./backend
     container_name: tadabbur_backend
     restart: unless-stopped
     command: gunicorn config.wsgi:application --bind 0.0.0.0:8000 --workers 4 --timeout 120
@@ -43,7 +39,8 @@ services:
       - tadabbur_net
 
   celery:
-    image: ghcr.io/${GHCR_OWNER}/tadabbur-backend:${IMAGE_TAG:-latest}
+    build:
+      context: ./backend
     container_name: tadabbur_celery
     restart: unless-stopped
     command: celery -A celery_app worker --loglevel=info
@@ -55,14 +52,18 @@ services:
       - tadabbur_net
 
   frontend:
-    image: ghcr.io/${GHCR_OWNER}/tadabbur-frontend:${IMAGE_TAG:-latest}
+    build:
+      context: ./frontend
+      args:
+        VITE_API_BASE_URL: /api/v1
     container_name: tadabbur_frontend
     restart: unless-stopped
     networks:
       - tadabbur_net
 
   nginx:
-    image: ghcr.io/${GHCR_OWNER}/tadabbur-nginx:${IMAGE_TAG:-latest}
+    build:
+      context: ./nginx
     container_name: tadabbur_nginx
     restart: unless-stopped
     volumes:
