@@ -55,7 +55,7 @@ class TestAuthEndpoints:
 
     def test_profile_requires_auth(self, client):
         response = client.get('/api/v1/auth/profile/')
-        assert response.status_code == 403
+        assert response.status_code == 401
 
     def test_profile_with_token(self, client):
         reg = client.post('/api/v1/auth/register/', {
