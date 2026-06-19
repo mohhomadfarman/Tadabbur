@@ -37,7 +37,7 @@ We are building Tadabbur in **6 progressive phases**, publishing each part as it
 
 ---
 
-### ✅ Phase 1 — Structured Learning Paths *(Building Now)*
+### ✅ Phase 1 — Structured Learning Paths *(Complete)*
 > *Not random content. A real curriculum.*
 
 Most Islamic content online is scattered — YouTube videos, PDFs, random articles. There is no structured path from beginner to deep knowledge.
@@ -45,14 +45,17 @@ Most Islamic content online is scattered — YouTube videos, PDFs, random articl
 Phase 1 delivers a full **curriculum framework**:
 - Beginner → Intermediate → Advanced learning tracks
 - Subjects: Aqeedah, Fiqh, Tafsir, Hadith Sciences, Arabic, Islamic History, Ethics & Spirituality
-- Each topic broken into clear lessons with learning objectives
-- Progress tracking so learners know exactly where they are
+- Rich lesson content with text, images, videos, callouts, and quizzes
+- Progress tracking, enrollment, and learning streaks
+- RTL Arabic UI with full English/Arabic i18n support
+- Resource library and video archive
+- Admin panel with curriculum editor, WYSIWYG lesson builder, and analytics
 
-**What we publish:** Web app with browsable curriculum, lesson content, and progress tracking.
+**Status: Shipped.** The web app is live with browsable curriculum, lesson content, progress tracking, and a full admin authoring system.
 
 ---
 
-### 🔄 Phase 2 — Active Learning, Not Passive Reading
+### 🔄 Phase 2 — Active Learning, Not Passive Reading *(Next)*
 > *Study. Test. Retain. Repeat.*
 
 Reading is not learning. Phase 2 transforms Tadabbur into an active study tool:
@@ -146,10 +149,10 @@ We welcome contributions from Muslim developers, designers, translators, Islamic
 ### Ways to Contribute
 
 **💻 Developers**
-- Frontend (React / Next.js)
-- Backend (Node.js / Python)
+- Frontend (Vue.js 3 / Vite / Tailwind CSS)
+- Backend (Django 5 / Django REST Framework)
 - AI/ML (LLM fine-tuning, RAG pipelines for Islamic texts)
-- Mobile (React Native)
+- Mobile (React Native — planned Phase 2)
 
 **🌍 Translators**
 - Arabic, Urdu, Indonesian, Malay, Turkish, French, Bengali, Swahili, and more
@@ -167,7 +170,7 @@ We welcome contributions from Muslim developers, designers, translators, Islamic
 
 ```bash
 # Clone the repo
-git clone https://github.com/your-username/tadabbur.git
+git clone https://github.com/mohhomadfarman/tadabbur.git
 cd tadabbur
 
 # Copy environment template and fill in your values
@@ -208,26 +211,27 @@ Your donation funds:
 
 | Layer | Technology |
 |-------|-----------|
-| Frontend | Next.js, Tailwind CSS |
-| Backend | Node.js / FastAPI |
-| Database | PostgreSQL, Redis |
-| AI | OpenAI / Open-source LLMs, RAG pipeline |
-| Islamic Data | Quran API, Hadith databases, custom corpus |
-| Auth | NextAuth.js |
-| Hosting | Self-hostable / Vercel + Railway |
+| Frontend | Vue.js 3 (Composition API), Vite, Tailwind CSS, PrimeVue, Pinia |
+| Backend | Django 5, Django REST Framework |
+| Auth | Custom JWT via PyJWT (MongoEngine-compatible) |
+| Database | MongoDB via MongoEngine ODM |
+| File Storage | MinIO (S3-compatible, self-hosted) |
+| Task Queue | Celery + Redis |
+| Reverse Proxy | Nginx |
+| Containers | Docker + Docker Compose |
 
 ---
 
 ## 📊 Progress
 
-| Phase | Status | Target |
-|-------|--------|--------|
-| Phase 1 — Structured Learning Paths | 🟡 In Development | 2026 |
-| Phase 2 — Active Learning | ⬜ Planned | 2026 |
-| Phase 3 — AI Research Assistant | ⬜ Planned | 2026 |
-| Phase 4 — Primary Source Library | ⬜ Planned | 2027 |
-| Phase 5 — Interdisciplinary Connections | ⬜ Planned | 2027 |
-| Phase 6 — Community & Verification | ⬜ Planned | 2028 |
+| Phase | Status | Completed |
+|-------|--------|-----------|
+| Phase 1 — Structured Learning Paths | ✅ Complete | 2026 |
+| Phase 2 — Active Learning | 🟡 In Development | — |
+| Phase 3 — AI Research Assistant | ⬜ Planned | — |
+| Phase 4 — Primary Source Library | ⬜ Planned | — |
+| Phase 5 — Interdisciplinary Connections | ⬜ Planned | — |
+| Phase 6 — Community & Verification | ⬜ Planned | — |
 
 ---
 
