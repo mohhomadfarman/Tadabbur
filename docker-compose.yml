@@ -20,19 +20,6 @@ services:
     networks:
       - tadabbur_net
 
-  minio:
-    image: minio/minio:latest
-    container_name: tadabbur_minio
-    restart: unless-stopped
-    command: server /data --console-address ":9001"
-    environment:
-      MINIO_ROOT_USER: ${MINIO_ACCESS_KEY}
-      MINIO_ROOT_PASSWORD: ${MINIO_SECRET_KEY}
-    volumes:
-      - minio_data:/data
-    networks:
-      - tadabbur_net
-
   backend:
     build:
       context: ./backend
@@ -46,7 +33,6 @@ services:
     depends_on:
       - mongo
       - redis
-      - minio
     networks:
       - tadabbur_net
 
@@ -94,5 +80,4 @@ networks:
 
 volumes:
   mongo_data:
-  minio_data:
   static_files:

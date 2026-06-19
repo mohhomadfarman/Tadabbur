@@ -142,6 +142,104 @@ This is how we scale: not through venture capital, but through the **global Musl
 
 ---
 
+## 🪣 MinIO Setup (File Storage)
+
+Tadabbur uses **MinIO** (S3-compatible object storage) to store lesson images, PDFs, and other uploaded media. MinIO is **not bundled in Docker Compose** — you bring your own. Choose the option that fits you:
+
+---
+
+### Option A — You already have MinIO (or any S3-compatible service)
+
+Just fill in your credentials in `.env`:
+
+```env
+MINIO_ENDPOINT=https://s3.yourdomain.com
+MINIO_PUBLIC_URL=https://s3.yourdomain.com
+MINIO_ACCESS_KEY=your-access-key
+MINIO_SECRET_KEY=your-secret-key
+MINIO_BUCKET_NAME=tadabbur-media
+MINIO_ASSETS_BUCKET=tadabbur-assets
+```
+
+> Works with any S3-compatible service: MinIO, AWS S3, Backblaze B2, Cloudflare R2, Wasabi, etc.
+
+---
+
+### Option B — Run MinIO locally with a single Docker command
+
+If you don't have MinIO installed, spin up a standalone instance in seconds:
+
+```bash
+docker run -d \
+  --name minio-local \
+  -p 9000:9000 \
+  -p 9001:9001 \
+  -e MINIO_ROOT_USER=minioadmin \
+  -e MINIO_ROOT_PASSWORD=minioadmin \
+  -v minio_data:/data \
+  minio/minio server /data --console-address ":9001"
+```
+
+Then open the console at **http://localhost:9001** and log in with `minioadmin / minioadmin`.
+
+Your `.env` for this setup:
+
+```env
+MINIO_ENDPOINT=http://localhost:9000
+MINIO_PUBLIC_URL=http://localhost:9000
+MINIO_ACCESS_KEY=minioadmin
+MINIO_SECRET_KEY=minioadmin
+MINIO_BUCKET_NAME=tadabbur-media
+MINIO_ASSETS_BUCKET=tadabbur-assets
+```
+
+---
+
+### Option C — Install MinIO binary (no Docker)
+
+**Linux / macOS:**
+```bash
+# Download
+curl -O https://dl.min.io/server/minio/release/linux-amd64/minio
+chmod +x minio
+
+# Run
+MINIO_ROOT_USER=minioadmin MINIO_ROOT_PASSWORD=minioadmin \
+  ./minio server ~/minio-data --console-address ":9001"
+```
+
+**Windows:**
+```powershell
+# Download from https://dl.min.io/server/minio/release/windows-amd64/minio.exe
+# Then run:
+$env:MINIO_ROOT_USER="minioadmin"
+$env:MINIO_ROOT_PASSWORD="minioadmin"
+.\minio.exe server C:\minio-data --console-address ":9001"
+```
+
+---
+
+### After Setup — Create the Buckets
+
+Once MinIO is running, create the two required buckets and set them to **public read**:
+
+1. Open the MinIO Console (usually **http://localhost:9001**)
+2. Go to **Buckets → Create Bucket**
+3. Create `tadabbur-media` and `tadabbur-assets`
+4. For each bucket: **Manage → Access Policy → Public**
+
+Or use the MinIO CLI (`mc`):
+
+```bash
+mc alias set local http://localhost:9000 minioadmin minioadmin
+mc mb local/tadabbur-media
+mc mb local/tadabbur-assets
+mc anonymous set public local/tadabbur-media
+mc anonymous set public local/tadabbur-assets
+```
+
+---
+
 ## 🤝 Contributing
 
 We welcome contributions from Muslim developers, designers, translators, Islamic scholars, and educators worldwide.
