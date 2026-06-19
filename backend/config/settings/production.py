@@ -1,4 +1,5 @@
 from .base import *
+from .base import _DEFAULT_SECRET
 from decouple import config
 from django.core.exceptions import ImproperlyConfigured
 
