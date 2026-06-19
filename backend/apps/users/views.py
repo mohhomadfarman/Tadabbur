@@ -84,6 +84,11 @@ class TokenRefreshView(APIView):
         try:
             payload = decode_refresh_token(serializer.validated_data['refresh'])
             user = User.objects.get(id=payload['user_id'])
+            if not user.is_active:
+                return Response(
+                    {'error': 'This account has been deactivated.'},
+                    status=status.HTTP_401_UNAUTHORIZED,
+                )
             tokens = generate_tokens(user)
             return Response({'access': tokens['access']})
         except jwt.ExpiredSignatureError:

@@ -4,7 +4,8 @@ import mongoengine
 
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
 
-SECRET_KEY = config('SECRET_KEY', default='dev-secret-key-change-in-production')
+_DEFAULT_SECRET = 'dev-secret-key-change-in-production'
+SECRET_KEY = config('SECRET_KEY', default=_DEFAULT_SECRET)
 DEBUG = config('DEBUG', default=False, cast=bool)
 ALLOWED_HOSTS = config('ALLOWED_HOSTS', default='localhost,127.0.0.1').split(',')
 
@@ -106,7 +107,7 @@ AWS_STORAGE_BUCKET_NAME = config('MINIO_BUCKET_NAME', default='tadabbur-media')
 AWS_S3_ENDPOINT_URL = config('MINIO_ENDPOINT', default='http://localhost:9000')
 AWS_S3_FILE_OVERWRITE = False
 AWS_DEFAULT_ACL = None
-AWS_S3_VERIFY = False
+AWS_S3_VERIFY = True
 # Public URL the browser uses to reach MinIO — differs from AWS_S3_ENDPOINT_URL
 # inside Docker (where the backend uses the container hostname 'minio').
 MINIO_PUBLIC_URL = config('MINIO_PUBLIC_URL', default='http://localhost:9000')

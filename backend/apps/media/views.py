@@ -60,7 +60,7 @@ class GenerateUploadURLView(APIView):
             aws_access_key_id=settings.AWS_ACCESS_KEY_ID,
             aws_secret_access_key=settings.AWS_SECRET_ACCESS_KEY,
             config=Config(signature_version='s3v4'),
-            verify=False,
+            verify=settings.AWS_S3_VERIFY,
         )
 
         presigned_url = s3.generate_presigned_url(
