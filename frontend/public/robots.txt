@@ -1,0 +1,8 @@
+User-agent: *
+Allow: /
+
+# Block admin and API from being indexed
+Disallow: /admin/
+Disallow: /api/
+
+Sitemap: https://thetadabbur.org/sitemap.xml
