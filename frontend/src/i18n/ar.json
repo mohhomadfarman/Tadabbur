@@ -206,7 +206,7 @@
       "noAccount": "ليس لديك حساب؟",
       "createFree": "أنشئ حسابًا مجانيًا",
       "error": "فشل تسجيل الدخول. حاول مرة أخرى.",
-      "emailPlaceholder": "example@mail.com",
+      "emailPlaceholder": "example{'@'}mail.com",
       "passwordPlaceholder": "••••••••"
     },
     "register": {
@@ -225,7 +225,7 @@
       "error": "فشل إنشاء الحساب. حاول مرة أخرى.",
       "namePlaceholder": "اسمك",
       "usernamePlaceholder": "learner123",
-      "emailPlaceholder": "example@mail.com"
+      "emailPlaceholder": "example{'@'}mail.com"
     }
   }
 }

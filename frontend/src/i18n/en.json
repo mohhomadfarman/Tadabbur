@@ -206,7 +206,7 @@
       "noAccount": "Don't have an account?",
       "createFree": "Create one free",
       "error": "Login failed. Please try again.",
-      "emailPlaceholder": "you@example.com",
+      "emailPlaceholder": "you{'@'}example.com",
       "passwordPlaceholder": "••••••••"
     },
     "register": {
@@ -225,7 +225,7 @@
       "error": "Registration failed. Please try again.",
       "namePlaceholder": "Your name",
       "usernamePlaceholder": "learner123",
-      "emailPlaceholder": "you@example.com"
+      "emailPlaceholder": "you{'@'}example.com"
     }
   }
 }
