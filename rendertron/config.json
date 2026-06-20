@@ -1,0 +1,16 @@
+{
+  "port": "3000",
+  "host": "0.0.0.0",
+  "width": 1000,
+  "height": 1000,
+  "cache": "memory",
+  "cacheConfig": {
+    "cacheDurationMinutes": 60,
+    "cacheMaxEntries": 500
+  },
+  "puppeteerArgs": [
+    "--no-sandbox",
+    "--disable-setuid-sandbox",
+    "--disable-dev-shm-usage"
+  ]
+}

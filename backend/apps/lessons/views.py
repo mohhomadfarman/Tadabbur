@@ -102,6 +102,9 @@ class AdminLessonListView(APIView):
             estimated_minutes=int(request.data.get('estimated_minutes', 0)),
             status=lesson_status,
             content_blocks=blocks,
+            meta_title=request.data.get('meta_title', ''),
+            meta_description=request.data.get('meta_description', ''),
+            og_image=request.data.get('og_image', ''),
             created_at=datetime.now(timezone.utc),
             updated_at=datetime.now(timezone.utc),
         )
@@ -123,7 +126,7 @@ class AdminLessonDetailView(APIView):
         if not lesson:
             return Response({'detail': 'Not found.'}, status=status.HTTP_404_NOT_FOUND)
 
-        for field in ('title', 'summary'):
+        for field in ('title', 'summary', 'meta_title', 'meta_description', 'og_image'):
             if field in request.data:
                 setattr(lesson, field, request.data[field])
         if 'estimated_minutes' in request.data:
@@ -189,6 +192,9 @@ class AdminLessonSerializer(AdminLessonListSerializer):
     subject_slug = serializers.SerializerMethodField()
     subject_title = serializers.SerializerMethodField()
     content_blocks = serializers.SerializerMethodField()
+    meta_title = serializers.CharField(default='')
+    meta_description = serializers.CharField(default='')
+    og_image = serializers.CharField(default='')
 
     def get_subject_slug(self, obj):
         return obj.subject.slug

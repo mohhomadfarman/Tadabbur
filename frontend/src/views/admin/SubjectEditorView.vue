@@ -122,6 +122,53 @@
               />
             </div>
           </div>
+
+          <!-- SEO -->
+          <div class="bg-white border border-gray-200 rounded-2xl p-5 shadow-sm space-y-4">
+            <h3 class="text-sm font-semibold text-gray-700 flex items-center gap-1.5">
+              <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path stroke-linecap="round" d="m21 21-4.35-4.35"/></svg>
+              Search & Social (SEO)
+            </h3>
+            <p class="text-xs text-gray-400 -mt-1">Optional. Left blank, Google uses the title &amp; description.</p>
+
+            <div>
+              <label class="block text-xs font-medium text-gray-600 mb-1.5">Meta Title</label>
+              <input
+                v-model="form.meta_title"
+                type="text"
+                maxlength="70"
+                :placeholder="form.title || 'Defaults to subject title'"
+                class="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#234ecc]/40"
+              />
+              <p class="text-[11px] mt-1" :class="(form.meta_title?.length || 0) > 60 ? 'text-amber-500' : 'text-gray-400'">
+                {{ form.meta_title?.length || 0 }}/70 — aim for ≤ 60
+              </p>
+            </div>
+
+            <div>
+              <label class="block text-xs font-medium text-gray-600 mb-1.5">Meta Description</label>
+              <textarea
+                v-model="form.meta_description"
+                rows="3"
+                maxlength="200"
+                :placeholder="form.description || 'Defaults to subject description'"
+                class="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#234ecc]/40 resize-none"
+              />
+              <p class="text-[11px] mt-1" :class="(form.meta_description?.length || 0) > 160 ? 'text-amber-500' : 'text-gray-400'">
+                {{ form.meta_description?.length || 0 }}/200 — aim for ≤ 160
+              </p>
+            </div>
+
+            <div>
+              <label class="block text-xs font-medium text-gray-600 mb-1.5">Social Image URL</label>
+              <input
+                v-model="form.og_image"
+                type="url"
+                placeholder="https://… (1200×630 recommended)"
+                class="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#234ecc]/40"
+              />
+            </div>
+          </div>
         </div>
 
       </div>
@@ -147,6 +194,9 @@ const form = ref({
   description: '',
   order: 0,
   is_published: false,
+  meta_title: '',
+  meta_description: '',
+  og_image: '',
 })
 const tracks = ref([])
 const loadingSubject = ref(false)
@@ -178,6 +228,9 @@ async function save() {
         description: form.value.description,
         order: form.value.order,
         is_published: form.value.is_published,
+        meta_title: form.value.meta_title,
+        meta_description: form.value.meta_description,
+        og_image: form.value.og_image,
       })
     } else {
       await adminApi.createSubject({ ...form.value })
@@ -206,6 +259,9 @@ onMounted(async () => {
       description: data.description || '',
       order: data.order ?? 0,
       is_published: data.is_published,
+      meta_title: data.meta_title || '',
+      meta_description: data.meta_description || '',
+      og_image: data.og_image || '',
     }
     slugWasEdited = true
   } finally {

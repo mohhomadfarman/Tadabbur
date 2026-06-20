@@ -32,6 +32,9 @@ class LessonDetailSerializer(LessonListSerializer):
     content_blocks = serializers.SerializerMethodField()
     prev_lesson = serializers.SerializerMethodField()
     next_lesson = serializers.SerializerMethodField()
+    meta_title = serializers.CharField(default='')
+    meta_description = serializers.CharField(default='')
+    og_image = serializers.CharField(default='')
 
     def get_subject_id(self, obj):
         return str(obj.subject.id)

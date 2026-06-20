@@ -9,6 +9,9 @@ SECRET_KEY = config('SECRET_KEY', default=_DEFAULT_SECRET)
 DEBUG = config('DEBUG', default=False, cast=bool)
 ALLOWED_HOSTS = config('ALLOWED_HOSTS', default='localhost,127.0.0.1').split(',')
 
+# Public-facing site origin (no trailing slash) — used for sitemap/canonical URLs.
+SITE_URL = config('SITE_URL', default='https://thetadabbur.org').rstrip('/')
+
 INSTALLED_APPS = [
     'django.contrib.admin',
     'django.contrib.auth',

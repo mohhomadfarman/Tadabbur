@@ -72,6 +72,9 @@ class AdminTrackListView(APIView):
             thumbnail_url=request.data.get('thumbnail_url', ''),
             order=int(request.data.get('order', 0)),
             is_published=False,
+            meta_title=request.data.get('meta_title', ''),
+            meta_description=request.data.get('meta_description', ''),
+            og_image=request.data.get('og_image', ''),
             created_at=datetime.now(timezone.utc),
             updated_at=datetime.now(timezone.utc),
         )
@@ -93,7 +96,7 @@ class AdminTrackDetailView(APIView):
         if not track:
             return Response({'detail': 'Not found.'}, status=status.HTTP_404_NOT_FOUND)
 
-        for field in ('title', 'description', 'thumbnail_url'):
+        for field in ('title', 'description', 'thumbnail_url', 'meta_title', 'meta_description', 'og_image'):
             if field in request.data:
                 setattr(track, field, request.data[field])
         if 'order' in request.data:
@@ -152,6 +155,9 @@ class AdminSubjectListView(APIView):
             thumbnail_url=request.data.get('thumbnail_url', ''),
             order=int(request.data.get('order', 0)),
             is_published=False,
+            meta_title=request.data.get('meta_title', ''),
+            meta_description=request.data.get('meta_description', ''),
+            og_image=request.data.get('og_image', ''),
             created_at=datetime.now(timezone.utc),
             updated_at=datetime.now(timezone.utc),
         )
@@ -173,7 +179,7 @@ class AdminSubjectDetailView(APIView):
         if not subject:
             return Response({'detail': 'Not found.'}, status=status.HTTP_404_NOT_FOUND)
 
-        for field in ('title', 'description', 'thumbnail_url'):
+        for field in ('title', 'description', 'thumbnail_url', 'meta_title', 'meta_description', 'og_image'):
             if field in request.data:
                 setattr(subject, field, request.data[field])
         if 'order' in request.data:
