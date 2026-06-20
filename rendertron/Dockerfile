@@ -16,7 +16,7 @@ ENV PUPPETEER_SKIP_DOWNLOAD=true \
     PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium
 
 WORKDIR /app
-RUN git clone --depth 1 --branch v3.1.0 https://github.com/GoogleChrome/rendertron.git . \
+RUN git clone --depth 1 https://github.com/GoogleChrome/rendertron.git . \
     && npm install \
     && npm run build
 
