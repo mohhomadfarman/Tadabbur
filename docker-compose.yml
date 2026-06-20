@@ -75,8 +75,11 @@ services:
       dockerfile: Dockerfile
     container_name: tadabbur_nginx
     restart: unless-stopped
+    # Host system nginx terminates TLS on :80/:443 and proxies to this
+    # container on :8080. Do NOT use "80:80" here — it collides with the
+    # host nginx and the container fails to bind ("address already in use").
     ports:
-      - "80:80"
+      - "8080:80"
     volumes:
       - static_files:/app/staticfiles:ro
     depends_on:
