@@ -24,6 +24,10 @@ class Lesson(Document):
     status = StringField(choices=['draft', 'published'], default='draft')
     estimated_minutes = IntField(default=0)
     content_blocks = EmbeddedDocumentListField(ContentBlock)
+    # SEO — optional overrides; fall back to title/summary when empty
+    meta_title = StringField(max_length=70, default='')
+    meta_description = StringField(max_length=200, default='')
+    og_image = StringField(default='')
     created_at = DateTimeField(default=lambda: datetime.now(timezone.utc))
     updated_at = DateTimeField(default=lambda: datetime.now(timezone.utc))
 

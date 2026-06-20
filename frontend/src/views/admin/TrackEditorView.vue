@@ -128,6 +128,56 @@
               />
             </div>
           </div>
+
+          <!-- SEO -->
+          <div class="bg-white border border-gray-200 rounded-2xl p-5 shadow-sm space-y-4">
+            <div class="flex items-center justify-between">
+              <h3 class="text-sm font-semibold text-gray-700 flex items-center gap-1.5">
+                <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path stroke-linecap="round" d="m21 21-4.35-4.35"/></svg>
+                Search & Social (SEO)
+              </h3>
+            </div>
+            <p class="text-xs text-gray-400 -mt-1">Optional. Left blank, Google uses the title &amp; description above.</p>
+
+            <div>
+              <label class="block text-xs font-medium text-gray-600 mb-1.5">Meta Title</label>
+              <input
+                v-model="form.meta_title"
+                type="text"
+                maxlength="70"
+                :placeholder="form.title || 'Defaults to track title'"
+                class="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#234ecc]/40"
+              />
+              <p class="text-[11px] mt-1" :class="(form.meta_title?.length || 0) > 60 ? 'text-amber-500' : 'text-gray-400'">
+                {{ form.meta_title?.length || 0 }}/70 — aim for ≤ 60
+              </p>
+            </div>
+
+            <div>
+              <label class="block text-xs font-medium text-gray-600 mb-1.5">Meta Description</label>
+              <textarea
+                v-model="form.meta_description"
+                rows="3"
+                maxlength="200"
+                :placeholder="form.description || 'Defaults to track description'"
+                class="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#234ecc]/40 resize-none"
+              />
+              <p class="text-[11px] mt-1" :class="(form.meta_description?.length || 0) > 160 ? 'text-amber-500' : 'text-gray-400'">
+                {{ form.meta_description?.length || 0 }}/200 — aim for ≤ 160
+              </p>
+            </div>
+
+            <div>
+              <label class="block text-xs font-medium text-gray-600 mb-1.5">Social Image URL</label>
+              <input
+                v-model="form.og_image"
+                type="url"
+                :placeholder="form.thumbnail_url || 'https://… (defaults to thumbnail)'"
+                class="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#234ecc]/40"
+              />
+              <p class="text-[11px] text-gray-400 mt-1">Shown when shared on social. 1200×630 recommended.</p>
+            </div>
+          </div>
         </div>
 
       </div>
@@ -146,7 +196,7 @@ const router = useRouter()
 
 const isEdit = computed(() => !!route.params.slug)
 
-const form = ref({ title: '', slug: '', description: '', thumbnail_url: '', order: 0, is_published: false })
+const form = ref({ title: '', slug: '', description: '', thumbnail_url: '', order: 0, is_published: false, meta_title: '', meta_description: '', og_image: '' })
 const loadingTrack = ref(false)
 const saving = ref(false)
 const apiError = ref('')
@@ -201,6 +251,9 @@ onMounted(async () => {
       thumbnail_url: data.thumbnail_url || '',
       order: data.order ?? 0,
       is_published: data.is_published,
+      meta_title: data.meta_title || '',
+      meta_description: data.meta_description || '',
+      og_image: data.og_image || '',
     }
     slugWasEdited = true
   } finally {

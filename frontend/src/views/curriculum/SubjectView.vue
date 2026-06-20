@@ -142,6 +142,7 @@ import { useI18n } from 'vue-i18n'
 import { curriculumApi } from '@/api/curriculum'
 import { useAuthStore } from '@/stores/auth'
 import { useProgressStore } from '@/stores/progress'
+import { useSeo, SEO_ORIGIN } from '@/composables/useSeo'
 
 const route = useRoute()
 const { t } = useI18n()
@@ -151,6 +152,29 @@ const progress = useProgressStore()
 const subject = ref(null)
 const loading = ref(true)
 const error = ref('')
+
+useSeo(() => {
+  const s = subject.value
+  if (!s) return {}
+  const url = `${SEO_ORIGIN}/learn/${s.track_slug}/${s.slug}`
+  return {
+    title: s.meta_title || s.title,
+    description: s.meta_description || s.description,
+    url,
+    image: s.og_image || s.thumbnail_url || undefined,
+    jsonLd: {
+      '@context': 'https://schema.org',
+      '@type': 'Course',
+      name: s.title,
+      description: s.description,
+      url,
+      provider: { '@type': 'Organization', name: 'Tadabbur', url: SEO_ORIGIN },
+      isPartOf: s.track_title
+        ? { '@type': 'Course', name: s.track_title, url: `${SEO_ORIGIN}/learn/${s.track_slug}` }
+        : undefined,
+    },
+  }
+})
 
 const totalLessons = computed(() => subject.value?.lessons?.length ?? 0)
 

@@ -286,6 +286,7 @@ import { curriculumApi } from '@/api/curriculum'
 import { progressApi } from '@/api/progress'
 import { useAuthStore } from '@/stores/auth'
 import { useProgressStore } from '@/stores/progress'
+import { useSeo, SEO_ORIGIN } from '@/composables/useSeo'
 
 const route = useRoute()
 const auth = useAuthStore()
@@ -297,6 +298,38 @@ const loading = ref(true)
 const error = ref('')
 const readingProgress = ref(0)
 const enrolling = ref(false)
+
+useSeo(() => {
+  const l = lesson.value
+  if (!l) return {}
+  const url = `${SEO_ORIGIN}/lesson/${l.slug}`
+  const desc = l.meta_description || l.summary
+  return {
+    title: l.meta_title || l.title,
+    description: desc,
+    url,
+    image: l.og_image || undefined,
+    jsonLd: {
+      '@context': 'https://schema.org',
+      '@type': 'LearningResource',
+      name: l.title,
+      description: desc,
+      url,
+      learningResourceType: 'Lesson',
+      timeRequired: l.estimated_minutes ? `PT${l.estimated_minutes}M` : undefined,
+      isPartOf: l.subject_title
+        ? {
+            '@type': 'Course',
+            name: l.subject_title,
+            url: l.track_slug && l.subject_slug
+              ? `${SEO_ORIGIN}/learn/${l.track_slug}/${l.subject_slug}`
+              : undefined,
+          }
+        : undefined,
+      provider: { '@type': 'Organization', name: 'Tadabbur', url: SEO_ORIGIN },
+    },
+  }
+})
 
 const quizSelected = reactive({})
 const quizSubmitted = reactive({})

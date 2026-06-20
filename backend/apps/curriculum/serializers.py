@@ -40,6 +40,9 @@ class SubjectListSerializer(serializers.Serializer):
 
 class TrackDetailSerializer(TrackSerializer):
     subjects = serializers.SerializerMethodField()
+    meta_title = serializers.CharField(default='')
+    meta_description = serializers.CharField(default='')
+    og_image = serializers.CharField(default='')
 
     def get_subjects(self, obj):
         subjects = Subject.objects(track=obj, is_published=True).order_by('order')
@@ -51,6 +54,9 @@ class SubjectDetailSerializer(SubjectListSerializer):
     track_title = serializers.SerializerMethodField()
     track_slug = serializers.SerializerMethodField()
     lessons = serializers.SerializerMethodField()
+    meta_title = serializers.CharField(default='')
+    meta_description = serializers.CharField(default='')
+    og_image = serializers.CharField(default='')
 
     def get_track_id(self, obj):
         return str(obj.track.id)

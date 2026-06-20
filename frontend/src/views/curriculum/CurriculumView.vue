@@ -240,6 +240,7 @@ import { useI18n } from 'vue-i18n'
 import { curriculumApi } from '@/api/curriculum'
 import { useAuthStore } from '@/stores/auth'
 import { useProgressStore } from '@/stores/progress'
+import { useSeo, SEO_ORIGIN } from '@/composables/useSeo'
 
 const { t } = useI18n()
 const auth = useAuthStore()
@@ -248,6 +249,25 @@ const progress = useProgressStore()
 const tracks = ref([])
 const loading = ref(true)
 const error = ref('')
+
+useSeo(() => ({
+  title: 'Learning Tracks',
+  description: 'Browse Tadabbur’s structured Islamic learning tracks — scholar-verified curriculum from beginner to advanced, free forever.',
+  url: `${SEO_ORIGIN}/learn`,
+  jsonLd: tracks.value.length
+    ? {
+        '@context': 'https://schema.org',
+        '@type': 'ItemList',
+        name: 'Tadabbur Learning Tracks',
+        itemListElement: tracks.value.map((tr, i) => ({
+          '@type': 'ListItem',
+          position: i + 1,
+          name: tr.title,
+          url: `${SEO_ORIGIN}/learn/${tr.slug}`,
+        })),
+      }
+    : undefined,
+}))
 
 const viewMode = ref('icon')      // 'icon' | 'card'
 const searchQuery = ref('')

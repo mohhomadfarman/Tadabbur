@@ -58,6 +58,17 @@ services:
     networks:
       - tadabbur_net
 
+  # Headless-Chrome renderer: serves crawlers fully-rendered HTML of the SPA.
+  # Internal only (no published port) — reached by nginx for bot user-agents.
+  rendertron:
+    build:
+      context: ./rendertron
+      dockerfile: Dockerfile
+    container_name: tadabbur_rendertron
+    restart: unless-stopped
+    networks:
+      - tadabbur_net
+
   nginx:
     build:
       context: ./nginx
@@ -71,6 +82,7 @@ services:
     depends_on:
       - backend
       - frontend
+      - rendertron
     networks:
       - tadabbur_net
 

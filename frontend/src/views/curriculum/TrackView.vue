@@ -156,6 +156,7 @@ import { useI18n } from 'vue-i18n'
 import { curriculumApi } from '@/api/curriculum'
 import { useAuthStore } from '@/stores/auth'
 import { useProgressStore } from '@/stores/progress'
+import { useSeo, SEO_ORIGIN } from '@/composables/useSeo'
 
 const route = useRoute()
 const auth = useAuthStore()
@@ -166,6 +167,26 @@ const track = ref(null)
 const loading = ref(true)
 const error = ref('')
 const trackProgressData = ref(null)
+
+useSeo(() => {
+  const tr = track.value
+  if (!tr) return {}
+  const url = `${SEO_ORIGIN}/learn/${tr.slug}`
+  return {
+    title: tr.meta_title || tr.title,
+    description: tr.meta_description || tr.description,
+    url,
+    image: tr.og_image || tr.thumbnail_url || undefined,
+    jsonLd: {
+      '@context': 'https://schema.org',
+      '@type': 'Course',
+      name: tr.title,
+      description: tr.description,
+      url,
+      provider: { '@type': 'Organization', name: 'Tadabbur', url: SEO_ORIGIN },
+    },
+  }
+})
 
 function subjectData(slug) {
   return trackProgressData.value?.subjects?.find(s => s.subject_slug === slug) ?? null

@@ -1,8 +1,11 @@
 from django.contrib import admin
 from django.urls import path, include
 
+from .sitemap import sitemap_xml
+
 urlpatterns = [
     path('admin/', admin.site.urls),
+    path('sitemap.xml', sitemap_xml, name='sitemap'),
     path('api/v1/auth/', include('apps.users.urls')),
     path('api/v1/curriculum/', include('apps.curriculum.urls')),
     path('api/v1/lessons/', include('apps.lessons.urls')),
