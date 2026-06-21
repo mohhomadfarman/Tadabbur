@@ -240,15 +240,18 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, onServerPrefetch } from 'vue'
 import { useRoute } from 'vue-router'
 import { libraryApi } from '@/api/library'
-import { useSeo } from '@/composables/useSeo'
+import { useSsrDataStore } from '@/stores/ssrData'
+import { useSeo, SEO_ORIGIN } from '@/composables/useSeo'
 
 const route = useRoute()
+const ssr = useSsrDataStore()
 
-const book        = ref(null)
-const loading     = ref(true)
+const ssrKey = `book:${route.params.slug}`
+const book        = ref(ssr.get(ssrKey))
+const loading     = ref(book.value == null)
 const error       = ref('')
 const descExpanded = ref(false)
 
@@ -257,13 +260,42 @@ const descExpanded = ref(false)
 useSeo(() => {
   const b = book.value
   if (!b) return {}
+  const url = `${SEO_ORIGIN}/library/${b.slug}`
+  const desc = b.description?.slice(0, 160) || 'Read this Islamic book on Tadabbur.'
   return {
     title: `${b.title} — Tadabbur Library`,
-    description: b.description?.slice(0, 160) || 'Read this Islamic book on Tadabbur.',
+    description: desc,
+    url,
+    image: b.cover_url || undefined,
+    jsonLd: {
+      '@context': 'https://schema.org',
+      '@type': 'Book',
+      name: b.title,
+      author: b.author ? { '@type': 'Person', name: b.author } : undefined,
+      description: desc,
+      url,
+      inLanguage: b.language || undefined,
+      numberOfPages: b.page_count || undefined,
+      publisher: { '@type': 'Organization', name: 'Tadabbur', url: SEO_ORIGIN },
+    },
+  }
+})
+
+// Prerender the book so its content + SEO meta land in the static HTML.
+onServerPrefetch(async () => {
+  try {
+    book.value = await libraryApi.getBook(route.params.slug)
+    ssr.set(ssrKey, book.value)
+  } catch {
+    /* leave empty; client surfaces the error */
+  } finally {
+    loading.value = false
   }
 })
 
 onMounted(async () => {
+  // Books aren't personalized — if it's already prerendered/hydrated, don't refetch.
+  if (book.value) return
   try {
     book.value = await libraryApi.getBook(route.params.slug)
   } catch (e) {
