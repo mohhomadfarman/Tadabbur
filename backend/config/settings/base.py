@@ -125,6 +125,12 @@ CELERY_TASK_SERIALIZER = 'json'
 YOUTUBE_API_KEY    = config('YOUTUBE_API_KEY',    default='')
 YOUTUBE_CHANNEL_ID = config('YOUTUBE_CHANNEL_ID', default='')
 
+# GitHub deploy trigger — auto-rebuild the prerendered (SSG) frontend when
+# content is published. Fine-grained PAT scoped to this repo with
+# "Actions: Read and write". Empty token => auto-rebuild is simply disabled.
+GITHUB_DEPLOY_TOKEN = config('GITHUB_DEPLOY_TOKEN', default='')
+GITHUB_REPO         = config('GITHUB_REPO', default='mohhomadfarman/Tadabbur')
+
 STATIC_URL = '/static/'
 STATIC_ROOT = BASE_DIR / 'staticfiles'
 

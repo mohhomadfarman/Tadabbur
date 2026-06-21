@@ -4,8 +4,10 @@ from mongoengine import (
     FloatField, ListField, DateTimeField,
 )
 
+from config.rebuild import RebuildOnChange
 
-class Book(Document):
+
+class Book(RebuildOnChange, Document):
     title        = StringField(required=True, max_length=300)
     slug         = StringField(required=True, unique=True, max_length=300)
     author       = StringField(max_length=200, default='')
