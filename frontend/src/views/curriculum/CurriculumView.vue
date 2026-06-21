@@ -235,20 +235,35 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, onServerPrefetch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { curriculumApi } from '@/api/curriculum'
 import { useAuthStore } from '@/stores/auth'
 import { useProgressStore } from '@/stores/progress'
+import { useSsrDataStore } from '@/stores/ssrData'
 import { useSeo, SEO_ORIGIN } from '@/composables/useSeo'
 
 const { t } = useI18n()
 const auth = useAuthStore()
 const progress = useProgressStore()
+const ssr = useSsrDataStore()
 
-const tracks = ref([])
-const loading = ref(true)
+const ssrKey = 'tracks'
+const tracks = ref(ssr.get(ssrKey) ?? [])
+const loading = ref(ssr.get(ssrKey) == null)
 const error = ref('')
+
+// Prerender the track list so /learn ships the full grid + ItemList JSON-LD.
+onServerPrefetch(async () => {
+  try {
+    tracks.value = await curriculumApi.getTracks()
+    ssr.set(ssrKey, tracks.value)
+  } catch {
+    /* leave empty; client surfaces the error */
+  } finally {
+    loading.value = false
+  }
+})
 
 useSeo(() => ({
   title: 'Learning Tracks',
@@ -357,7 +372,9 @@ function trackGradient(slug) {
 
 onMounted(async () => {
   try {
-    tracks.value = await curriculumApi.getTracks()
+    if (!tracks.value.length) {
+      tracks.value = await curriculumApi.getTracks()
+    }
     if (auth.isLoggedIn) await progress.fetchProgress()
   } catch {
     error.value = t('curriculum.loadError')

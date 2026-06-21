@@ -1,7 +1,8 @@
-import { createRouter, createWebHistory } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 
-const routes = [
+// vite-ssg creates the router (and chooses history mode) itself, so this module
+// only exports the route table + a guard installer. See main.js.
+export const routes = [
   {
     path: '/',
     name: 'home',
@@ -11,13 +12,13 @@ const routes = [
     path: '/login',
     name: 'login',
     component: () => import('@/views/auth/LoginView.vue'),
-    meta: { guestOnly: true },
+    meta: { guestOnly: true, noindex: true },
   },
   {
     path: '/register',
     name: 'register',
     component: () => import('@/views/auth/RegisterView.vue'),
-    meta: { guestOnly: true },
+    meta: { guestOnly: true, noindex: true },
   },
   {
     path: '/learn',
@@ -43,7 +44,7 @@ const routes = [
     path: '/dashboard',
     name: 'dashboard',
     component: () => import('@/views/dashboard/DashboardView.vue'),
-    meta: { requiresAuth: true },
+    meta: { requiresAuth: true, noindex: true },
   },
 
   // Library
@@ -74,7 +75,7 @@ const routes = [
   {
     path: '/admin',
     component: () => import('@/views/admin/AdminLayout.vue'),
-    meta: { requiresAuthor: true, fullScreen: true },
+    meta: { requiresAuthor: true, fullScreen: true, noindex: true },
     children: [
       { path: '',                     name: 'admin',              component: () => import('@/views/admin/AdminDashboardView.vue') },
       { path: 'tracks/new',          name: 'admin-track-new',    component: () => import('@/views/admin/TrackEditorView.vue') },
@@ -92,23 +93,23 @@ const routes = [
   },
 ]
 
-const router = createRouter({
-  history: createWebHistory(),
-  routes,
-  scrollBehavior: () => ({ top: 0 }),
-})
+export const scrollBehavior = () => ({ top: 0 })
 
-router.beforeEach((to, _from, next) => {
-  const auth = useAuthStore()
-  if (to.meta.requiresAuthor) {
-    if (!auth.isLoggedIn) return next({ name: 'login', query: { redirect: to.fullPath } })
-    if (!auth.isAuthor) return next({ name: 'home' })
-  } else if (to.meta.requiresAuth && !auth.isLoggedIn) {
-    return next({ name: 'login', query: { redirect: to.fullPath } })
-  } else if (to.meta.guestOnly && auth.isLoggedIn) {
-    return next({ name: 'dashboard' })
-  }
-  next()
-})
-
-export default router
+// Auth guards. Installed by main.js after Pinia is registered. During SSG
+// prerender there is no auth state and we never want build-time redirects, so
+// the guard is a no-op on the server.
+export function setupRouterGuards(router) {
+  router.beforeEach((to, _from, next) => {
+    if (import.meta.env.SSR) return next()
+    const auth = useAuthStore()
+    if (to.meta.requiresAuthor) {
+      if (!auth.isLoggedIn) return next({ name: 'login', query: { redirect: to.fullPath } })
+      if (!auth.isAuthor) return next({ name: 'home' })
+    } else if (to.meta.requiresAuth && !auth.isLoggedIn) {
+      return next({ name: 'login', query: { redirect: to.fullPath } })
+    } else if (to.meta.guestOnly && auth.isLoggedIn) {
+      return next({ name: 'dashboard' })
+    }
+    next()
+  })
+}

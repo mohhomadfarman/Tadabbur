@@ -3,10 +3,14 @@ import { ref, computed } from 'vue'
 import { authApi } from '@/api/auth'
 import { useProgressStore } from '@/stores/progress'
 
+// No localStorage during SSG prerender — the store starts logged-out on the
+// server and rehydrates from localStorage on the client.
+const isClient = typeof window !== 'undefined'
+
 export const useAuthStore = defineStore('auth', () => {
   const user = ref(null)
-  const token = ref(localStorage.getItem('access_token'))
-  const refreshToken = ref(localStorage.getItem('refresh_token'))
+  const token = ref(isClient ? localStorage.getItem('access_token') : null)
+  const refreshToken = ref(isClient ? localStorage.getItem('refresh_token') : null)
 
   const isLoggedIn = computed(() => !!token.value)
   const isAdmin = computed(() => user.value?.role === 'admin')

@@ -150,23 +150,38 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, onServerPrefetch } from 'vue'
 import { useRoute } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import { curriculumApi } from '@/api/curriculum'
 import { useAuthStore } from '@/stores/auth'
 import { useProgressStore } from '@/stores/progress'
+import { useSsrDataStore } from '@/stores/ssrData'
 import { useSeo, SEO_ORIGIN } from '@/composables/useSeo'
 
 const route = useRoute()
 const auth = useAuthStore()
 const progress = useProgressStore()
+const ssr = useSsrDataStore()
 const { t } = useI18n()
 
-const track = ref(null)
-const loading = ref(true)
+const ssrKey = `track:${route.params.trackSlug}`
+const track = ref(ssr.get(ssrKey))
+const loading = ref(track.value == null)
 const error = ref('')
 const trackProgressData = ref(null)
+
+// Prerender the public track so its subjects + SEO meta land in the static HTML.
+onServerPrefetch(async () => {
+  try {
+    track.value = await curriculumApi.getTrack(route.params.trackSlug)
+    ssr.set(ssrKey, track.value)
+  } catch {
+    /* leave empty; client surfaces the error */
+  } finally {
+    loading.value = false
+  }
+})
 
 useSeo(() => {
   const tr = track.value
@@ -206,7 +221,10 @@ async function handleEnroll() {
 
 onMounted(async () => {
   try {
-    track.value = await curriculumApi.getTrack(route.params.trackSlug)
+    // Keep the prerendered/hydrated track; only fetch if we have nothing yet.
+    if (!track.value) {
+      track.value = await curriculumApi.getTrack(route.params.trackSlug)
+    }
     if (auth.isLoggedIn) {
       await progress.fetchProgress()
       // Always fetch fresh — don't serve a stale cached 0% result

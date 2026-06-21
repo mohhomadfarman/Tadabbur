@@ -136,22 +136,37 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, onServerPrefetch } from 'vue'
 import { useRoute } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import { curriculumApi } from '@/api/curriculum'
 import { useAuthStore } from '@/stores/auth'
 import { useProgressStore } from '@/stores/progress'
+import { useSsrDataStore } from '@/stores/ssrData'
 import { useSeo, SEO_ORIGIN } from '@/composables/useSeo'
 
 const route = useRoute()
 const { t } = useI18n()
 const auth = useAuthStore()
 const progress = useProgressStore()
+const ssr = useSsrDataStore()
 
-const subject = ref(null)
-const loading = ref(true)
+const ssrKey = `subject:${route.params.subjectSlug}`
+const subject = ref(ssr.get(ssrKey))
+const loading = ref(subject.value == null)
 const error = ref('')
+
+// Prerender the public subject so its lesson list + SEO meta render statically.
+onServerPrefetch(async () => {
+  try {
+    subject.value = await curriculumApi.getSubject(route.params.subjectSlug)
+    ssr.set(ssrKey, subject.value)
+  } catch {
+    /* leave empty; client surfaces the error */
+  } finally {
+    loading.value = false
+  }
+})
 
 useSeo(() => {
   const s = subject.value
@@ -199,7 +214,9 @@ function isInProgress(slug) {
 
 onMounted(async () => {
   try {
-    subject.value = await curriculumApi.getSubject(route.params.subjectSlug)
+    if (!subject.value) {
+      subject.value = await curriculumApi.getSubject(route.params.subjectSlug)
+    }
     if (auth.isLoggedIn) await progress.fetchProgress()
   } catch (e) {
     error.value = e.response?.status === 404 ? t('subject.notFound') : t('subject.loadError')
