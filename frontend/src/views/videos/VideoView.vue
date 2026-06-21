@@ -131,6 +131,17 @@ const loading     = ref(true)
 const error       = ref('')
 const descExpanded = ref(false)
 
+// useSeo wraps useHead, which must run synchronously in setup (not inside
+// loadVideo/after await). Reactive getter: tags fill in once the video loads.
+useSeo(() => {
+  const v = video.value
+  if (!v) return {}
+  return {
+    title: `${v.title} — Tadabbur Videos`,
+    description: v.description?.slice(0, 160) || 'Watch this Islamic video on Tadabbur.',
+  }
+})
+
 function formatDate(iso) {
   if (!iso) return ''
   return new Date(iso).toLocaleDateString('en-GB', { year: 'numeric', month: 'long', day: 'numeric' })
@@ -143,12 +154,6 @@ async function loadVideo(id) {
   descExpanded.value = false
   try {
     video.value = await videosApi.getVideo(id)
-    if (video.value) {
-      useSeo({
-        title: `${video.value.title} — Tadabbur Videos`,
-        description: video.value.description?.slice(0, 160) || 'Watch this Islamic video on Tadabbur.',
-      })
-    }
   } catch (e) {
     error.value = e.response?.status === 404 ? 'Video not found.' : 'Failed to load video.'
   } finally {

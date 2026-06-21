@@ -252,15 +252,20 @@ const loading     = ref(true)
 const error       = ref('')
 const descExpanded = ref(false)
 
+// useSeo wraps useHead, which must run synchronously in setup (not inside
+// onMounted/after await). Reactive getter: tags fill in once the book loads.
+useSeo(() => {
+  const b = book.value
+  if (!b) return {}
+  return {
+    title: `${b.title} — Tadabbur Library`,
+    description: b.description?.slice(0, 160) || 'Read this Islamic book on Tadabbur.',
+  }
+})
+
 onMounted(async () => {
   try {
     book.value = await libraryApi.getBook(route.params.slug)
-    if (book.value) {
-      useSeo({
-        title: `${book.value.title} — Tadabbur Library`,
-        description: book.value.description?.slice(0, 160) || 'Read this Islamic book on Tadabbur.',
-      })
-    }
   } catch (e) {
     error.value = e.response?.status === 404 ? 'Book not found.' : 'Failed to load book.'
   } finally {
