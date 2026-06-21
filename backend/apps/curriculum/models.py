@@ -1,8 +1,10 @@
 from mongoengine import Document, ReferenceField, StringField, IntField, BooleanField, DateTimeField
 from datetime import datetime, timezone
 
+from config.rebuild import RebuildOnChange
 
-class Track(Document):
+
+class Track(RebuildOnChange, Document):
     title = StringField(required=True, max_length=200)
     slug = StringField(required=True, unique=True, max_length=200)
     description = StringField(max_length=1000, default='')
@@ -25,7 +27,7 @@ class Track(Document):
         return self.title
 
 
-class Subject(Document):
+class Subject(RebuildOnChange, Document):
     track = ReferenceField(Track, required=True)
     title = StringField(required=True, max_length=200)
     slug = StringField(required=True, unique=True, max_length=200)
