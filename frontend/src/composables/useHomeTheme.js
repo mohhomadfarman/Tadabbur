@@ -1,9 +1,12 @@
 import { ref, watch } from 'vue'
 
 const KEY = 'homeTheme'
-const theme = ref(localStorage.getItem(KEY) || 'dark')
+const isClient = typeof window !== 'undefined'
+
+const theme = ref((isClient && localStorage.getItem(KEY)) || 'dark')
 
 function sync(val) {
+  if (typeof document === 'undefined') return
   if (val === 'light') {
     document.documentElement.classList.add('home-light')
   } else {
@@ -11,13 +14,16 @@ function sync(val) {
   }
 }
 
-// Apply immediately on module load (prevents flash)
-sync(theme.value)
-
-watch(theme, val => {
-  localStorage.setItem(KEY, val)
-  sync(val)
-})
+// Apply immediately on the client on module load (prevents flash). On the
+// server there's no document, so this is a no-op and the persisted theme is
+// re-applied after hydration.
+if (isClient) {
+  sync(theme.value)
+  watch(theme, val => {
+    localStorage.setItem(KEY, val)
+    sync(val)
+  })
+}
 
 export function useHomeTheme() {
   return {

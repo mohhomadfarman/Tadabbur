@@ -16,6 +16,7 @@
 <script setup>
 import { computed, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
+import { useHead } from '@unhead/vue'
 import { useAuthStore } from '@/stores/auth'
 import AppHeader from '@/components/common/AppHeader.vue'
 
@@ -23,6 +24,10 @@ const auth  = useAuthStore()
 const route = useRoute()
 
 const isHomePage = computed(() => route.name === 'home')
+
+// Keep auth/personalized routes out of search indexes (they're also excluded
+// from prerender + sitemap). Overrides the index.html default robots tag.
+useHead(() => (route.meta.noindex ? { meta: [{ name: 'robots', content: 'noindex, nofollow' }] } : {}))
 
 onMounted(() => {
   // Restore session from localStorage on app load

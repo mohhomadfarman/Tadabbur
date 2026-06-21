@@ -1,13 +1,24 @@
 import axios from 'axios'
 
+// During SSG prerender (Node), relative URLs have no host, so point axios at an
+// absolute origin (__SSG_API_BASE__, injected at build). In the browser, keep
+// the relative base so requests stay same-origin behind nginx.
+const baseURL = import.meta.env.SSR
+  ? __SSG_API_BASE__
+  : import.meta.env.VITE_API_BASE_URL || '/api/v1'
+
 const client = axios.create({
-  baseURL: import.meta.env.VITE_API_BASE_URL || '/api/v1',
+  baseURL,
   headers: { 'Content-Type': 'application/json' },
 })
 
+// SSG prerender runs these interceptors in Node (no localStorage/window), so
+// guard browser access. Prerender only fetches public data — no token needed.
+const isClient = typeof window !== 'undefined'
+
 // Attach JWT to every request
 client.interceptors.request.use((config) => {
-  const token = localStorage.getItem('access_token')
+  const token = isClient ? localStorage.getItem('access_token') : null
   if (token) config.headers.Authorization = `Bearer ${token}`
   return config
 })
@@ -17,7 +28,7 @@ client.interceptors.response.use(
   (response) => response,
   async (error) => {
     const original = error.config
-    if (error.response?.status === 401 && !original._retry) {
+    if (isClient && error.response?.status === 401 && !original._retry) {
       original._retry = true
       const refresh = localStorage.getItem('refresh_token')
       if (refresh) {

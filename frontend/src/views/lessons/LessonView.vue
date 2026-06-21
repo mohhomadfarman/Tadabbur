@@ -279,23 +279,40 @@
 </template>
 
 <script setup>
-import { ref, reactive, onMounted, onUnmounted, watch } from 'vue'
+import { ref, reactive, onMounted, onServerPrefetch, onUnmounted, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import { curriculumApi } from '@/api/curriculum'
 import { progressApi } from '@/api/progress'
 import { useAuthStore } from '@/stores/auth'
 import { useProgressStore } from '@/stores/progress'
+import { useSsrDataStore } from '@/stores/ssrData'
 import { useSeo, SEO_ORIGIN } from '@/composables/useSeo'
 
 const route = useRoute()
 const auth = useAuthStore()
 const progress = useProgressStore()
+const ssr = useSsrDataStore()
 const { t } = useI18n()
 
-const lesson = ref(null)
-const loading = ref(true)
+const ssrKey = `lesson:${route.params.lessonSlug}`
+// Hydrate from the prerendered snapshot when present (matches the static HTML).
+const lesson = ref(ssr.get(ssrKey))
+const loading = ref(lesson.value == null)
 const error = ref('')
+
+// Prerender (build time): fetch the public lesson so its content + SEO meta land
+// in the static HTML, and stash it for the client to hydrate from.
+onServerPrefetch(async () => {
+  try {
+    lesson.value = await curriculumApi.getLesson(route.params.lessonSlug)
+    ssr.set(ssrKey, lesson.value)
+  } catch {
+    /* leave empty; client will surface the error */
+  } finally {
+    loading.value = false
+  }
+})
 const readingProgress = ref(0)
 const enrolling = ref(false)
 
@@ -368,9 +385,10 @@ function updateReadingProgress() {
 }
 
 async function loadLesson(slug) {
-  loading.value = true
+  // Only show the skeleton when there's nothing on screen yet — keeps the
+  // prerendered content visible while a logged-in refetch upgrades it in place.
+  if (!lesson.value) loading.value = true
   error.value = ''
-  lesson.value = null
   try {
     lesson.value = await curriculumApi.getLesson(slug)
     if (auth.isLoggedIn) await progress.fetchProgress()
@@ -400,7 +418,12 @@ async function handleEnroll() {
 watch(() => route.params.lessonSlug, (slug) => { if (slug) loadLesson(slug) })
 
 onMounted(() => {
-  loadLesson(route.params.lessonSlug)
+  // Public content is already prerendered/hydrated; refetch only when there's
+  // nothing yet, or to personalize for a logged-in user (enrollment, progress,
+  // full content beyond the public preview).
+  if (!lesson.value || auth.isLoggedIn) {
+    loadLesson(route.params.lessonSlug)
+  }
   window.addEventListener('scroll', updateReadingProgress)
 })
 
