@@ -10,7 +10,15 @@ DEBUG = False
 # Store the admin SQLite DB on a mounted volume (see docker-compose.prod.yml)
 # so it survives image rebuilds/redeploys. The default BASE_DIR location lives
 # inside the image layer and is wiped on every rebuild.
-DATABASES['default']['NAME'] = Path('/app/data/db.sqlite3')
+#
+# Ensure the directory exists before Django opens the DB. If the container is
+# started without the sqlite_data volume mounted, /app/data won't exist and
+# SQLite raises "unable to open database file" (CANTOPEN) on every request.
+# Creating it here makes the admin panel resilient to a misconfigured mount
+# (the DB just won't persist across rebuilds without the volume).
+_SQLITE_DIR = Path('/app/data')
+_SQLITE_DIR.mkdir(parents=True, exist_ok=True)
+DATABASES['default']['NAME'] = _SQLITE_DIR / 'db.sqlite3'
 ALLOWED_HOSTS = config('ALLOWED_HOSTS', default='').split(',')
 CORS_ALLOWED_ORIGINS = config('CORS_ALLOWED_ORIGINS', default='').split(',')
 
