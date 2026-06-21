@@ -20,6 +20,7 @@ class Book(RebuildOnChange, Document):
     cover_key    = StringField(default='')   # MinIO object key for cover image
     pdf_key      = StringField(default='')   # MinIO object key for PDF file
     audio_key    = StringField(default='')   # MinIO object key for audiobook (optional)
+    gdrive_pdf_id = StringField(default='') # Google Drive file ID (used when pdf_key is absent)
     file_size_mb = FloatField(default=0.0)
     page_count   = IntField(default=0)
     is_published = BooleanField(default=False)
