@@ -225,8 +225,9 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, onServerPrefetch } from 'vue'
 import { libraryApi } from '@/api/library'
+import { useSsrDataStore } from '@/stores/ssrData'
 import { useSeo, SEO_ORIGIN } from '@/composables/useSeo'
 
 useSeo({
@@ -235,10 +236,23 @@ useSeo({
   url: `${SEO_ORIGIN}/library`,
 })
 
-const books          = ref([])
+const ssr            = useSsrDataStore()
+const books          = ref(ssr.get('library:books') ?? [])
 const categories     = ref([])
-const loading        = ref(true)
+const loading        = ref(ssr.get('library:books') == null)
 const error          = ref('')
+
+// Prerender the default (unfiltered) book grid into the static HTML.
+onServerPrefetch(async () => {
+  try {
+    books.value = await libraryApi.getBooks()
+    ssr.set('library:books', books.value)
+  } catch {
+    /* leave empty; client surfaces the error */
+  } finally {
+    loading.value = false
+  }
+})
 const searchQuery    = ref('')
 const categoryFilter = ref('')
 const langFilter     = ref('')
@@ -292,10 +306,13 @@ function resetFilters() {
 }
 
 onMounted(async () => {
-  const [, cats] = await Promise.allSettled([
-    fetchBooks(),
-    libraryApi.getCategories(),
-  ])
-  if (cats.status === 'fulfilled') categories.value = cats.value
+  // Books are prerendered/hydrated; only fetch if we have none (avoids the
+  // skeleton flash). Categories (filter chips) aren't prerendered — load them.
+  if (!books.value.length) fetchBooks()
+  try {
+    categories.value = await libraryApi.getCategories()
+  } catch {
+    /* filter chips are non-critical */
+  }
 })
 </script>

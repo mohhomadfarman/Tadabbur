@@ -8,6 +8,7 @@ Mirrors the Vue SPA route shape so every indexable page is discoverable:
   /learn/<trackSlug>                      (track)
   /learn/<trackSlug>/<subjectSlug>        (subject)
   /lesson/<lessonSlug>                    (lesson)
+  /library/<bookSlug>                     (library book)
 """
 from xml.sax.saxutils import escape
 
@@ -17,6 +18,7 @@ from django.views.decorators.http import require_GET
 
 from apps.curriculum.models import Track, Subject
 from apps.lessons.models import Lesson
+from apps.library.models import Book
 
 
 def _w3c(dt):
@@ -47,8 +49,6 @@ def sitemap_xml(request):
         _url(f'{base}/learn',   changefreq='weekly',  priority='0.9'),
         _url(f'{base}/library', changefreq='weekly',  priority='0.8'),
         _url(f'{base}/videos',  changefreq='weekly',  priority='0.7'),
-        _url(f'{base}/login',   changefreq='monthly', priority='0.3'),
-        _url(f'{base}/register', changefreq='monthly', priority='0.3'),
     ]
 
     # Tracks
@@ -82,6 +82,13 @@ def sitemap_xml(request):
         urls.append(_url(
             f'{base}/lesson/{l.slug}',
             lastmod=_w3c(l.updated_at), changefreq='monthly', priority='0.6',
+        ))
+
+    # Library books (published)
+    for b in Book.objects(is_published=True).order_by('order'):
+        urls.append(_url(
+            f'{base}/library/{b.slug}',
+            lastmod=_w3c(b.updated_at), changefreq='monthly', priority='0.6',
         ))
 
     xml = (
