@@ -102,6 +102,9 @@ jobs:
             set -e
             cd "${{ secrets.DEPLOY_PATH }}"
             git pull
+            # Unique per deploy so the frontend SSG build re-runs against the
+            # current sitemap/content instead of reusing a stale cached layer.
+            export CACHEBUST=$(date +%s)
             docker compose -f docker-compose.prod.yml build --pull
             docker compose -f docker-compose.prod.yml up -d --remove-orphans
             docker image prune -f

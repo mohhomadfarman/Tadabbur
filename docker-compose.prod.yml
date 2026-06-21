@@ -58,6 +58,7 @@ services:
       args:
         VITE_API_BASE_URL: /api/v1
         SSG_ORIGIN: ${SSG_ORIGIN:-https://thetadabbur.org}
+        CACHEBUST: ${CACHEBUST:-0}
     container_name: tadabbur_frontend
     restart: unless-stopped
     networks:

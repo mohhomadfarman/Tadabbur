@@ -10,7 +10,12 @@ ENV VITE_API_BASE_URL=$VITE_API_BASE_URL
 # (the build stage can't reach the internal backend, but has outbound network).
 ARG SSG_ORIGIN=https://thetadabbur.org
 ENV SSG_ORIGIN=$SSG_ORIGIN
-RUN npm run build
+# The SSG build fetches the live sitemap/content at build time, but Docker can't
+# see that changed and would reuse a cached `npm run build`. Passing a unique
+# CACHEBUST each deploy invalidates this layer so the prerender always reflects
+# currently-published content. (npm install above stays cached.)
+ARG CACHEBUST=0
+RUN echo "cachebust=$CACHEBUST" && npm run build
 
 FROM nginx:alpine
 COPY --from=builder /app/dist /usr/share/nginx/html
