@@ -26,10 +26,11 @@ services:
       dockerfile: Dockerfile
     container_name: tadabbur_backend
     restart: unless-stopped
-    command: gunicorn config.wsgi:application --bind 0.0.0.0:8000 --workers 4 --timeout 120
+    command: sh -c "python manage.py migrate --noinput && gunicorn config.wsgi:application --bind 0.0.0.0:8000 --workers 4 --timeout 120"
     env_file: .env
     volumes:
       - static_files:/app/staticfiles
+      - sqlite_data:/app/data
     depends_on:
       - mongo
       - redis
@@ -96,3 +97,4 @@ networks:
 volumes:
   mongo_data:
   static_files:
+  sqlite_data:
