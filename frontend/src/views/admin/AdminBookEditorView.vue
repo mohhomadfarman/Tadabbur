@@ -200,10 +200,28 @@
             </div>
           </div>
 
-          <!-- PDF upload -->
+          <!-- PDF upload / GDrive -->
           <div>
             <label class="block text-sm font-medium text-gray-700 mb-2">PDF File</label>
-            <div class="border border-dashed border-gray-200 rounded-xl p-4 space-y-2">
+
+            <!-- Source toggle -->
+            <div class="flex rounded-lg border border-gray-200 overflow-hidden mb-3 text-xs font-medium">
+              <button type="button"
+                @click="pdfSource = 'upload'"
+                class="flex-1 py-1.5 transition-colors"
+                :class="pdfSource === 'upload' ? 'bg-[#234ecc] text-white' : 'text-gray-500 hover:bg-gray-50'">
+                Upload file
+              </button>
+              <button type="button"
+                @click="pdfSource = 'gdrive'"
+                class="flex-1 py-1.5 transition-colors"
+                :class="pdfSource === 'gdrive' ? 'bg-[#234ecc] text-white' : 'text-gray-500 hover:bg-gray-50'">
+                Google Drive
+              </button>
+            </div>
+
+            <!-- Upload panel -->
+            <div v-if="pdfSource === 'upload'" class="border border-dashed border-gray-200 rounded-xl p-4 space-y-2">
               <p v-if="form.pdf_key" class="text-xs text-gray-500 truncate">{{ fileBasename(form.pdf_key) }}</p>
               <p v-if="uploading.pdf" class="text-xs text-[#234ecc] animate-pulse">Uploading…</p>
               <p v-if="uploaded.pdf" class="text-xs text-emerald-600 flex items-center gap-1">
@@ -217,6 +235,30 @@
                 class="text-xs text-gray-500 border border-gray-200 px-3 py-1.5 rounded-lg hover:border-[#234ecc]/40 hover:text-[#234ecc] disabled:opacity-50 transition-colors">
                 Choose File
               </button>
+            </div>
+
+            <!-- GDrive panel -->
+            <div v-else class="space-y-2">
+              <input
+                v-model="form.gdrive_pdf_id"
+                type="text"
+                placeholder="Paste Google Drive file ID…"
+                class="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-[#234ecc]/40"
+              />
+              <p class="text-xs text-gray-400">
+                From your Drive share link:
+                <code class="bg-gray-100 px-1 rounded">drive.google.com/file/d/<strong>FILE_ID</strong>/view</code>.
+                The file must be shared as "Anyone with the link can view".
+              </p>
+              <a v-if="form.gdrive_pdf_id"
+                :href="`https://drive.google.com/file/d/${form.gdrive_pdf_id}/preview`"
+                target="_blank" rel="noopener noreferrer"
+                class="inline-flex items-center gap-1 text-xs text-[#234ecc] hover:underline">
+                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/>
+                </svg>
+                Preview in Drive
+              </a>
             </div>
           </div>
 
@@ -251,7 +293,7 @@
 </template>
 
 <script setup>
-import { ref, reactive, computed, onMounted } from 'vue'
+import { ref, reactive, computed, watch, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { adminApi } from '@/api/admin'
 
@@ -276,6 +318,7 @@ const form = ref({
   cover_key: '',
   pdf_key: '',
   audio_key: '',
+  gdrive_pdf_id: '',
 })
 const tagsInput = ref('')
 
@@ -283,6 +326,13 @@ const loadingBook = ref(false)
 const saving = ref(false)
 const apiError = ref('')
 let slugWasEdited = false
+
+const pdfSource = ref('upload')
+
+watch(pdfSource, (src) => {
+  if (src === 'upload') form.value.gdrive_pdf_id = ''
+  else form.value.pdf_key = ''
+})
 
 const uploading = reactive({ cover: false, pdf: false, audio: false })
 const uploaded = reactive({ cover: false, pdf: false, audio: false })
@@ -370,9 +420,11 @@ onMounted(async () => {
       cover_key: data.cover_key || '',
       pdf_key: data.pdf_key || '',
       audio_key: data.audio_key || '',
+      gdrive_pdf_id: data.gdrive_pdf_id || '',
     }
     tagsInput.value = (data.tags || []).join(', ')
     slugWasEdited = true
+    if (!data.pdf_key && data.gdrive_pdf_id) pdfSource.value = 'gdrive'
   } finally {
     loadingBook.value = false
   }
