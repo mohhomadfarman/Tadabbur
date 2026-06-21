@@ -37,5 +37,9 @@ export default defineConfig({
     dirStyle: 'nested',
     formatting: 'minify',
     includedRoutes,
+    // Each page's onServerPrefetch hits the live API at build time. Cap how many
+    // render in parallel so we don't fire a burst of concurrent requests that
+    // the API (or build network) drops — which would silently ship empty pages.
+    concurrency: 4,
   },
 })
