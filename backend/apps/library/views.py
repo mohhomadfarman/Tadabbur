@@ -11,7 +11,9 @@ from rest_framework.views import APIView
 from apps.common.permissions import IsAuthorOrAdmin
 
 from .models import Book, Volume
-from .serializers import BookDetailSerializer, BookListSerializer
+from .serializers import (
+    AdminBookListSerializer, BookDetailSerializer, BookListSerializer,
+)
 
 
 def _slugify(text):
@@ -82,7 +84,7 @@ class AdminBookListView(APIView):
 
     def get(self, request):
         books = Book.objects.order_by('order', 'title')
-        return Response(BookListSerializer(books, many=True).data)
+        return Response(AdminBookListSerializer(books, many=True).data)
 
     def post(self, request):
         d = request.data

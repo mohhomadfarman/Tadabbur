@@ -47,6 +47,12 @@ class BookListSerializer(serializers.Serializer):
         return len(obj.volumes)
 
 
+class AdminBookListSerializer(BookListSerializer):
+    """Admin grid list — adds editorial fields the public list omits."""
+    is_published = serializers.BooleanField()
+    order        = serializers.IntegerField()
+
+
 class BookDetailSerializer(BookListSerializer):
     pdf_url   = serializers.SerializerMethodField()
     audio_url = serializers.SerializerMethodField()
