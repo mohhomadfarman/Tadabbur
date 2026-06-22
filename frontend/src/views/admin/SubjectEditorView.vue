@@ -31,6 +31,12 @@
         >
           {{ saving ? 'Saving…' : (isEdit ? 'Save Changes' : 'Create Subject') }}
         </button>
+        <span v-if="saved" class="text-sm text-emerald-600 font-medium flex items-center gap-1.5">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+          </svg>
+          Saved
+        </span>
         <RouterLink to="/admin" class="text-sm text-gray-500 hover:text-gray-700 transition-colors">
           Cancel
         </RouterLink>
@@ -201,6 +207,7 @@ const form = ref({
 const tracks = ref([])
 const loadingSubject = ref(false)
 const saving = ref(false)
+const saved = ref(false)
 const apiError = ref('')
 let slugWasEdited = false
 
@@ -219,6 +226,7 @@ function regenerateSlug() {
 
 async function save() {
   apiError.value = ''
+  saved.value = false
   saving.value = true
   try {
     if (isEdit.value) {
@@ -232,10 +240,15 @@ async function save() {
         meta_description: form.value.meta_description,
         og_image: form.value.og_image,
       })
+      saved.value = true
+      setTimeout(() => { saved.value = false }, 2500)
     } else {
-      await adminApi.createSubject({ ...form.value })
+      const created = await adminApi.createSubject({ ...form.value })
+      slugWasEdited = true
+      saved.value = true
+      setTimeout(() => { saved.value = false }, 2500)
+      if (created?.slug) router.replace({ name: 'admin-subject-edit', params: { slug: created.slug } })
     }
-    router.push({ name: 'admin' })
   } catch (e) {
     const data = e.response?.data
     apiError.value = typeof data === 'object'

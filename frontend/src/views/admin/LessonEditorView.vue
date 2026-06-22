@@ -23,6 +23,12 @@
         >
           {{ saving ? 'Saving…' : (isEdit ? 'Save Changes' : 'Create Lesson') }}
         </button>
+        <span v-if="saved" class="text-sm text-emerald-600 font-medium flex items-center gap-1.5">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+          </svg>
+          Saved
+        </span>
         <RouterLink to="/admin" class="text-sm text-gray-500 hover:text-gray-700 transition-colors">
           Cancel
         </RouterLink>
@@ -584,6 +590,7 @@ const subjectsByTrack = ref({})
 const loadingLesson = ref(isEdit.value)
 const loadError = ref('')
 const saving = ref(false)
+const saved = ref(false)
 const apiError = ref('')
 let slugWasEdited = false
 
@@ -658,6 +665,7 @@ async function handleImageUpload(idx, event) {
 
 async function save() {
   apiError.value = ''
+  saved.value = false
   saving.value = true
   try {
     const payload = {
@@ -679,11 +687,15 @@ async function save() {
     }
     if (isEdit.value) {
       await adminApi.updateLesson(route.params.slug, payload)
-      router.push({ name: 'admin' })
+      saved.value = true
+      setTimeout(() => { saved.value = false }, 2500)
     } else {
       const created = await adminApi.createLesson(payload)
-      // Go to the edit page so the user sees the saved lesson (with blocks)
-      router.push({ name: 'admin-lesson-edit', params: { slug: created.slug } })
+      slugWasEdited = true
+      saved.value = true
+      setTimeout(() => { saved.value = false }, 2500)
+      // Go to the edit page so the user stays on the editor (now editable)
+      if (created?.slug) router.replace({ name: 'admin-lesson-edit', params: { slug: created.slug } })
     }
   } catch (e) {
     const data = e.response?.data

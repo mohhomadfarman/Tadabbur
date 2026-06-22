@@ -44,7 +44,7 @@
           v-model="sortBy"
           class="border border-gray-200 rounded-xl px-3 py-2.5 text-sm bg-white cursor-pointer focus:outline-none focus:ring-2 focus:ring-[#234ecc]/40"
         >
-          <option value="order">Display order</option>
+          <option value="order">Published first</option>
           <option value="newest">Newest first</option>
           <option value="oldest">Oldest first</option>
           <option value="title-asc">Title A–Z</option>
@@ -367,7 +367,10 @@ const sorted = computed(() => {
     case 'title-desc': return arr.sort((a, b) => (b.title || '').localeCompare(a.title || ''))
     case 'newest':     return arr.sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
     case 'oldest':     return arr.sort((a, b) => new Date(a.created_at) - new Date(b.created_at))
-    default:           return arr.sort((a, b) => ((a.order ?? 0) - (b.order ?? 0)) || (a.title || '').localeCompare(b.title || ''))
+    default:           return arr.sort((a, b) =>
+      (Number(b.is_published) - Number(a.is_published)) ||
+      ((a.order ?? 0) - (b.order ?? 0)) ||
+      (a.title || '').localeCompare(b.title || ''))
   }
 })
 

@@ -47,7 +47,7 @@
         <!-- Subject accordion cards -->
         <div class="space-y-3">
           <div
-            v-for="subj in subjects"
+            v-for="subj in sortedSubjects"
             :key="subj.slug"
             class="bg-white border border-gray-200 rounded-2xl overflow-hidden shadow-sm transition-shadow hover:shadow-md"
           >
@@ -133,7 +133,7 @@
               </div>
 
               <div
-                v-for="lesson in lessons[subj.slug]"
+                v-for="lesson in sortedLessons(subj.slug)"
                 :key="lesson.slug"
                 class="flex items-center gap-3 px-8 py-3 border-b border-gray-50 last:border-0 hover:bg-gray-50/50 transition-colors"
               >
@@ -383,6 +383,19 @@ const form = ref({
 const totalLessons = computed(() =>
   Object.values(lessons).reduce((sum, arr) => sum + arr.length, 0)
 )
+
+// Published items on top, then by manual order.
+const sortedSubjects = computed(() =>
+  [...subjects.value].sort((a, b) =>
+    (Number(b.is_published) - Number(a.is_published)) || ((a.order ?? 0) - (b.order ?? 0))
+  )
+)
+
+function sortedLessons(slug) {
+  return [...(lessons[slug] || [])].sort((a, b) =>
+    (Number(b.status === 'published') - Number(a.status === 'published')) || ((a.order ?? 0) - (b.order ?? 0))
+  )
+}
 
 function slugify(text) {
   return text.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '')
