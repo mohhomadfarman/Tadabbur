@@ -31,6 +31,12 @@
         >
           {{ saving ? 'Saving…' : (isEdit ? 'Save Changes' : 'Add Book') }}
         </button>
+        <span v-if="saved" class="text-sm text-emerald-600 font-medium flex items-center gap-1.5">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+          </svg>
+          Saved
+        </span>
         <RouterLink :to="{ name: 'admin-library' }" class="text-sm text-gray-500 hover:text-gray-700 transition-colors">
           Cancel
         </RouterLink>
@@ -394,6 +400,7 @@ const tagsInput = ref('')
 
 const loadingBook = ref(false)
 const saving = ref(false)
+const saved = ref(false)
 const apiError = ref('')
 let slugWasEdited = false
 
@@ -489,6 +496,7 @@ async function handleUpload(field, folder, event) {
 
 async function save() {
   apiError.value = ''
+  saved.value = false
   saving.value = true
   try {
     const payload = {
@@ -510,10 +518,15 @@ async function save() {
     }
     if (isEdit.value) {
       await adminApi.updateBook(route.params.slug, payload)
+      saved.value = true
+      setTimeout(() => { saved.value = false }, 2500)
     } else {
-      await adminApi.createBook(payload)
+      const created = await adminApi.createBook(payload)
+      slugWasEdited = true
+      saved.value = true
+      setTimeout(() => { saved.value = false }, 2500)
+      if (created?.slug) router.replace({ name: 'admin-book-edit', params: { slug: created.slug } })
     }
-    router.push({ name: 'admin-library' })
   } catch (e) {
     const data = e.response?.data
     apiError.value = typeof data === 'object'

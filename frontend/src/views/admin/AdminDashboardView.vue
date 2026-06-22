@@ -38,10 +38,10 @@
         v-model="sortBy"
         class="border border-gray-200 rounded-xl px-3 py-2 text-sm bg-white text-gray-700 focus:outline-none focus:ring-2 focus:ring-[#234ecc]/40"
       >
-        <option value="order">Order (default)</option>
+        <option value="published_first">Published first (default)</option>
+        <option value="order">Manual order</option>
         <option value="title_asc">Title A–Z</option>
         <option value="title_desc">Title Z–A</option>
-        <option value="published_first">Published first</option>
         <option value="draft_first">Drafts first</option>
       </select>
 
@@ -201,7 +201,7 @@ const subjectCounts = reactive({})
 const loading = ref(true)
 const error = ref('')
 const search = ref('')
-const sortBy = ref('order')
+const sortBy = ref('published_first')
 const filterStatus = ref('all')
 const deleteTarget = ref(null)
 const deleting = ref(false)
@@ -235,9 +235,9 @@ const filteredTracks = computed(() => {
 
   if (sortBy.value === 'title_asc') list.sort((a, b) => a.title.localeCompare(b.title))
   else if (sortBy.value === 'title_desc') list.sort((a, b) => b.title.localeCompare(a.title))
-  else if (sortBy.value === 'published_first') list.sort((a, b) => Number(b.is_published) - Number(a.is_published))
+  else if (sortBy.value === 'order') list.sort((a, b) => (a.order ?? 0) - (b.order ?? 0))
   else if (sortBy.value === 'draft_first') list.sort((a, b) => Number(a.is_published) - Number(b.is_published))
-  else list.sort((a, b) => (a.order ?? 0) - (b.order ?? 0))
+  else list.sort((a, b) => (Number(b.is_published) - Number(a.is_published)) || ((a.order ?? 0) - (b.order ?? 0)))
 
   return list
 })
