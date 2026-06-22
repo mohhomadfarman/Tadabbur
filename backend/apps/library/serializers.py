@@ -25,6 +25,7 @@ class BookListSerializer(serializers.Serializer):
     cover_url    = serializers.SerializerMethodField()
     has_pdf      = serializers.SerializerMethodField()
     has_audio    = serializers.SerializerMethodField()
+    volume_count = serializers.SerializerMethodField()
     file_size_mb = serializers.FloatField()
     page_count   = serializers.IntegerField()
     tags         = serializers.ListField(child=serializers.CharField())
@@ -37,18 +38,52 @@ class BookListSerializer(serializers.Serializer):
         return _public_url(obj.cover_key)
 
     def get_has_pdf(self, obj):
-        return bool(obj.pdf_key)
+        return bool(obj.pdf_key) or any(v.pdf_key for v in obj.volumes)
 
     def get_has_audio(self, obj):
         return bool(obj.audio_key)
+
+    def get_volume_count(self, obj):
+        return len(obj.volumes)
 
 
 class BookDetailSerializer(BookListSerializer):
     pdf_url   = serializers.SerializerMethodField()
     audio_url = serializers.SerializerMethodField()
+    volumes   = serializers.SerializerMethodField()
 
     def get_pdf_url(self, obj):
         return _public_url(obj.pdf_key)
 
     def get_audio_url(self, obj):
         return _public_url(obj.audio_key)
+
+    def get_volumes(self, obj):
+        """Normalized volume list the frontend always reads.
+
+        For multi-volume books, return each embedded volume with a public PDF
+        URL. For legacy single-PDF books (no volumes), synthesize a single
+        volume from the top-level pdf_key so the reader logic stays uniform.
+        """
+        if obj.volumes:
+            return [
+                {
+                    'number': v.number,
+                    'title': v.title,
+                    'pdf_url': _public_url(v.pdf_key),
+                    'page_count': v.page_count,
+                    'file_size_mb': v.file_size_mb,
+                }
+                for v in obj.volumes
+            ]
+        if obj.pdf_key:
+            return [
+                {
+                    'number': 1,
+                    'title': '',
+                    'pdf_url': _public_url(obj.pdf_key),
+                    'page_count': obj.page_count,
+                    'file_size_mb': obj.file_size_mb,
+                }
+            ]
+        return []

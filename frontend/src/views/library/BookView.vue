@@ -67,13 +67,13 @@
 
                 <!-- Meta chips -->
                 <div class="flex flex-wrap gap-2 mb-5">
-                  <span v-if="book.page_count"
+                  <span v-if="displayPageCount"
                         class="text-[11px] text-white/40 border border-white/10 rounded-lg px-2.5 py-1">
-                    {{ book.page_count }} pages
+                    {{ displayPageCount }} pages
                   </span>
-                  <span v-if="book.file_size_mb"
+                  <span v-if="displaySizeMb"
                         class="text-[11px] text-white/40 border border-white/10 rounded-lg px-2.5 py-1">
-                    {{ book.file_size_mb.toFixed(1) }} MB
+                    {{ displaySizeMb.toFixed(1) }} MB
                   </span>
                   <span v-if="book.language"
                         class="text-[11px] text-white/40 border border-white/10 rounded-lg px-2.5 py-1 uppercase">
@@ -81,9 +81,40 @@
                   </span>
                 </div>
 
+                <!-- Volume selector (multi-volume books) -->
+                <div v-if="isMultiVolume" class="mb-5">
+                  <p class="text-[10px] font-bold uppercase tracking-widest text-white/25 mb-2">
+                    {{ volumes.length }} Volumes
+                  </p>
+                  <div class="space-y-1.5 max-h-72 overflow-y-auto pr-1">
+                    <button
+                      v-for="(vol, i) in volumes"
+                      :key="i"
+                      type="button"
+                      @click="selectVolume(i)"
+                      class="w-full text-left flex items-center gap-3 rounded-xl px-3 py-2.5 transition-colors"
+                      :class="i === selectedIndex
+                        ? 'bg-brand/15 border border-brand/40'
+                        : 'border border-white/[0.08] hover:border-white/20'"
+                    >
+                      <span class="shrink-0 w-7 h-7 rounded-lg flex items-center justify-center text-xs font-bold"
+                            :class="i === selectedIndex ? 'bg-brand text-white' : 'bg-white/[0.06] text-white/50'">
+                        {{ vol.number }}
+                      </span>
+                      <span class="min-w-0 flex-1">
+                        <span class="block text-sm font-semibold truncate"
+                              :class="i === selectedIndex ? 'text-white' : 'text-white/60'">
+                          {{ vol.title || `Volume ${vol.number}` }}
+                        </span>
+                        <span v-if="vol.page_count" class="block text-[11px] text-white/30">{{ vol.page_count }} pages</span>
+                      </span>
+                    </button>
+                  </div>
+                </div>
+
                 <!-- Download button -->
-                <a v-if="book.pdf_url"
-                   :href="book.pdf_url"
+                <a v-if="currentPdfUrl"
+                   :href="currentPdfUrl"
                    download
                    target="_blank"
                    rel="noopener noreferrer"
@@ -95,12 +126,12 @@
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                           d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5.586a1 1 0 0 1 .707.293l5.414 5.414a1 1 0 0 1 .293.707V19a2 2 0 0 1-2 2z"/>
                   </svg>
-                  Download PDF
+                  {{ isMultiVolume ? `Download Vol ${currentVolume?.number}` : 'Download PDF' }}
                 </a>
 
                 <!-- Open in new tab (mobile friendly) -->
-                <a v-if="book.pdf_url"
-                   :href="book.pdf_url"
+                <a v-if="currentPdfUrl"
+                   :href="currentPdfUrl"
                    target="_blank"
                    rel="noopener noreferrer"
                    class="w-full flex items-center justify-center gap-2 text-white/50 hover:text-white
@@ -175,15 +206,17 @@
             </div>
 
             <!-- PDF Viewer -->
-            <div v-if="book.pdf_url"
+            <div v-if="currentPdfUrl"
                  class="rounded-2xl overflow-hidden"
                  style="border:1px solid rgba(255,255,255,0.07);">
               <!-- Label bar -->
               <div class="flex items-center justify-between px-4 py-2.5"
                    style="background:#0d0d12; border-bottom:1px solid rgba(255,255,255,0.06);">
-                <span class="text-white/40 text-xs font-semibold">PDF Preview</span>
-                <a :href="book.pdf_url" target="_blank" rel="noopener noreferrer"
-                   class="text-brand-light text-xs font-semibold hover:underline flex items-center gap-1">
+                <span class="text-white/40 text-xs font-semibold truncate pr-3">
+                  {{ isMultiVolume ? (currentVolume?.title || `Volume ${currentVolume?.number}`) : 'PDF Preview' }}
+                </span>
+                <a :href="currentPdfUrl" target="_blank" rel="noopener noreferrer"
+                   class="text-brand-light text-xs font-semibold hover:underline flex items-center gap-1 shrink-0">
                   <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                           d="M10 6H6a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-4M14 4h6m0 0v6m0-6L10 14"/>
@@ -192,9 +225,11 @@
                 </a>
               </div>
 
-              <!-- iframe — hidden on mobile (too small), button shown instead -->
+              <!-- iframe — hidden on mobile (too small), button shown instead.
+                   :key forces a reload when switching volumes. -->
               <iframe
-                :src="book.pdf_url + '#toolbar=1&navpanes=0'"
+                :key="currentPdfUrl"
+                :src="currentPdfUrl + '#toolbar=1&navpanes=0'"
                 class="hidden sm:block w-full"
                 style="height:80vh; background:#09090f;"
                 frameborder="0"
@@ -209,7 +244,7 @@
                         d="M9 12h6m-6 4h6m2 5H7a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5.586a1 1 0 0 1 .707.293l5.414 5.414a1 1 0 0 1 .293.707V19a2 2 0 0 1-2 2z"/>
                 </svg>
                 <p class="text-white/35 text-sm mb-4">PDF preview works best on desktop.<br>Tap below to open on your phone.</p>
-                <a :href="book.pdf_url" target="_blank" rel="noopener noreferrer"
+                <a :href="currentPdfUrl" target="_blank" rel="noopener noreferrer"
                    class="inline-flex items-center gap-2 bg-brand text-white font-semibold text-sm px-6 py-3 rounded-xl">
                   <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -240,13 +275,14 @@
 </template>
 
 <script setup>
-import { ref, onMounted, onServerPrefetch } from 'vue'
-import { useRoute } from 'vue-router'
+import { ref, computed, watch, onMounted, onServerPrefetch } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
 import { libraryApi } from '@/api/library'
 import { useSsrDataStore } from '@/stores/ssrData'
 import { useSeo, SEO_ORIGIN } from '@/composables/useSeo'
 
 const route = useRoute()
+const router = useRouter()
 const ssr = useSsrDataStore()
 
 const ssrKey = `book:${route.params.slug}`
@@ -254,6 +290,30 @@ const book        = ref(ssr.get(ssrKey))
 const loading     = ref(book.value == null)
 const error       = ref('')
 const descExpanded = ref(false)
+
+// ── Volumes ──────────────────────────────────────────────────────────────
+// The detail API always returns a `volumes` array (≥1 item when a PDF exists;
+// legacy single-PDF books get one synthesized volume). The reader picks one.
+const volumes        = computed(() => book.value?.volumes || [])
+const isMultiVolume  = computed(() => volumes.value.length > 1)
+const selectedIndex  = ref(0)
+const currentVolume  = computed(() => volumes.value[selectedIndex.value] || null)
+const currentPdfUrl  = computed(() => currentVolume.value?.pdf_url || '')
+const displayPageCount = computed(() => currentVolume.value?.page_count || book.value?.page_count || 0)
+const displaySizeMb    = computed(() => currentVolume.value?.file_size_mb || book.value?.file_size_mb || 0)
+
+function syncVolumeFromQuery() {
+  const n = parseInt(route.query.vol, 10)
+  selectedIndex.value = n >= 1 && n <= volumes.value.length ? n - 1 : 0
+}
+
+function selectVolume(i) {
+  selectedIndex.value = i
+  router.replace({ query: { ...route.query, vol: i + 1 } })
+}
+
+// Resync the selected volume whenever the book (re)loads.
+watch(book, () => { if (book.value) syncVolumeFromQuery() }, { immediate: true })
 
 // useSeo wraps useHead, which must run synchronously in setup (not inside
 // onMounted/after await). Reactive getter: tags fill in once the book loads.
