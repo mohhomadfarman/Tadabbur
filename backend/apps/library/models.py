@@ -4,10 +4,8 @@ from mongoengine import (
     FloatField, ListField, DateTimeField,
 )
 
-from config.rebuild import RebuildOnChange
 
-
-class Book(RebuildOnChange, Document):
+class Book(Document):
     title        = StringField(required=True, max_length=300)
     slug         = StringField(required=True, unique=True, max_length=300)
     author       = StringField(max_length=200, default='')
@@ -20,7 +18,6 @@ class Book(RebuildOnChange, Document):
     cover_key    = StringField(default='')   # MinIO object key for cover image
     pdf_key      = StringField(default='')   # MinIO object key for PDF file
     audio_key    = StringField(default='')   # MinIO object key for audiobook (optional)
-    gdrive_pdf_id = StringField(default='') # Google Drive file ID (used when pdf_key is absent)
     file_size_mb = FloatField(default=0.0)
     page_count   = IntField(default=0)
     is_published = BooleanField(default=False)

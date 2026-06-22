@@ -89,7 +89,6 @@ class AdminBookListView(APIView):
             cover_key=d.get('cover_key', ''),
             pdf_key=d.get('pdf_key', ''),
             audio_key=d.get('audio_key', ''),
-            gdrive_pdf_id=d.get('gdrive_pdf_id', ''),
             file_size_mb=float(d.get('file_size_mb') or 0),
             page_count=int(d.get('page_count') or 0),
             tags=d.get('tags', []),
@@ -124,7 +123,6 @@ class AdminBookDetailView(APIView):
             'cover_key': book.cover_key,
             'pdf_key': book.pdf_key,
             'audio_key': book.audio_key,
-            'gdrive_pdf_id': book.gdrive_pdf_id,
             'file_size_mb': book.file_size_mb,
             'page_count': book.page_count,
             'tags': list(book.tags),
@@ -140,8 +138,8 @@ class AdminBookDetailView(APIView):
 
         updatable = (
             'title', 'author', 'description', 'category', 'language',
-            'cover_key', 'pdf_key', 'audio_key', 'gdrive_pdf_id',
-            'file_size_mb', 'page_count', 'tags', 'order', 'is_published',
+            'cover_key', 'pdf_key', 'audio_key', 'file_size_mb',
+            'page_count', 'tags', 'order', 'is_published',
         )
         for field in updatable:
             if field in request.data:

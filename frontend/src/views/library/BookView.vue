@@ -84,7 +84,7 @@
                 <!-- Download button -->
                 <a v-if="book.pdf_url"
                    :href="book.pdf_url"
-                   :download="!book.is_gdrive_pdf || undefined"
+                   download
                    target="_blank"
                    rel="noopener noreferrer"
                    class="w-full flex items-center justify-center gap-2 bg-brand hover:bg-brand-dark text-white
@@ -95,7 +95,7 @@
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                           d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5.586a1 1 0 0 1 .707.293l5.414 5.414a1 1 0 0 1 .293.707V19a2 2 0 0 1-2 2z"/>
                   </svg>
-                  {{ book.is_gdrive_pdf ? 'Open in Google Drive' : 'Download PDF' }}
+                  Download PDF
                 </a>
 
                 <!-- Open in new tab (mobile friendly) -->
@@ -175,21 +175,14 @@
             </div>
 
             <!-- PDF Viewer -->
-            <div v-if="book.pdf_embed_url || book.pdf_url"
+            <div v-if="book.pdf_url"
                  class="rounded-2xl overflow-hidden"
                  style="border:1px solid rgba(255,255,255,0.07);">
               <!-- Label bar -->
               <div class="flex items-center justify-between px-4 py-2.5"
                    style="background:#0d0d12; border-bottom:1px solid rgba(255,255,255,0.06);">
-                <div class="flex items-center gap-2">
-                  <span class="text-white/40 text-xs font-semibold">PDF Preview</span>
-                  <span v-if="book.is_gdrive_pdf"
-                        class="text-[10px] font-bold uppercase tracking-widest px-2 py-0.5 rounded-full"
-                        style="background:rgba(66,133,244,0.15); color:#4285f4; border:1px solid rgba(66,133,244,0.25);">
-                    Google Drive
-                  </span>
-                </div>
-                <a :href="book.pdf_url || book.pdf_embed_url" target="_blank" rel="noopener noreferrer"
+                <span class="text-white/40 text-xs font-semibold">PDF Preview</span>
+                <a :href="book.pdf_url" target="_blank" rel="noopener noreferrer"
                    class="text-brand-light text-xs font-semibold hover:underline flex items-center gap-1">
                   <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -200,14 +193,12 @@
               </div>
 
               <!-- iframe — hidden on mobile (too small), button shown instead -->
-              <!-- GDrive preview URLs work as-is; MinIO PDF URLs get toolbar params appended -->
               <iframe
-                :src="book.is_gdrive_pdf ? book.pdf_embed_url : (book.pdf_embed_url + '#toolbar=1&navpanes=0')"
+                :src="book.pdf_url + '#toolbar=1&navpanes=0'"
                 class="hidden sm:block w-full"
                 style="height:80vh; background:#09090f;"
                 frameborder="0"
                 title="PDF Preview"
-                :allow="book.is_gdrive_pdf ? 'autoplay' : undefined"
               ></iframe>
 
               <!-- Mobile: open-in-browser button instead of iframe -->
@@ -218,7 +209,7 @@
                         d="M9 12h6m-6 4h6m2 5H7a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5.586a1 1 0 0 1 .707.293l5.414 5.414a1 1 0 0 1 .293.707V19a2 2 0 0 1-2 2z"/>
                 </svg>
                 <p class="text-white/35 text-sm mb-4">PDF preview works best on desktop.<br>Tap below to open on your phone.</p>
-                <a :href="book.pdf_url || book.pdf_embed_url" target="_blank" rel="noopener noreferrer"
+                <a :href="book.pdf_url" target="_blank" rel="noopener noreferrer"
                    class="inline-flex items-center gap-2 bg-brand text-white font-semibold text-sm px-6 py-3 rounded-xl">
                   <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"

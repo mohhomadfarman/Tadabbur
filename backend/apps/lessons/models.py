@@ -5,7 +5,6 @@ from mongoengine import (
 )
 from datetime import datetime, timezone
 from apps.curriculum.models import Subject
-from config.rebuild import RebuildOnChange
 
 
 class ContentBlock(EmbeddedDocument):
@@ -16,7 +15,7 @@ class ContentBlock(EmbeddedDocument):
     meta = {'allow_inheritance': False}
 
 
-class Lesson(RebuildOnChange, Document):
+class Lesson(Document):
     subject = ReferenceField(Subject, required=True)
     title = StringField(required=True, max_length=300)
     slug = StringField(required=True, unique=True, max_length=300)
