@@ -23,6 +23,76 @@
       {{ error }}
     </div>
 
+    <!-- Toolbar: search + sort + filters -->
+    <div v-if="!loading && books.length > 0" class="mb-6 space-y-3">
+      <div class="flex flex-col lg:flex-row gap-3">
+        <!-- Search -->
+        <div class="relative flex-1">
+          <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none"
+               fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <circle cx="11" cy="11" r="8"/><path stroke-linecap="round" stroke-width="2" d="m21 21-4.35-4.35"/>
+          </svg>
+          <input
+            v-model="searchQuery"
+            type="search"
+            placeholder="Search by title or author…"
+            class="w-full border border-gray-200 rounded-xl pl-9 pr-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#234ecc]/40"
+          />
+        </div>
+        <!-- Sort -->
+        <select
+          v-model="sortBy"
+          class="border border-gray-200 rounded-xl px-3 py-2.5 text-sm bg-white cursor-pointer focus:outline-none focus:ring-2 focus:ring-[#234ecc]/40"
+        >
+          <option value="order">Display order</option>
+          <option value="newest">Newest first</option>
+          <option value="oldest">Oldest first</option>
+          <option value="title-asc">Title A–Z</option>
+          <option value="title-desc">Title Z–A</option>
+        </select>
+      </div>
+
+      <div class="flex flex-wrap items-center gap-3">
+        <!-- Status -->
+        <select
+          v-model="statusFilter"
+          class="border border-gray-200 rounded-xl px-3 py-2 text-sm bg-white cursor-pointer focus:outline-none focus:ring-2 focus:ring-[#234ecc]/40"
+        >
+          <option value="all">All status</option>
+          <option value="published">Published</option>
+          <option value="draft">Draft</option>
+        </select>
+        <!-- Category -->
+        <select
+          v-model="categoryFilter"
+          class="border border-gray-200 rounded-xl px-3 py-2 text-sm bg-white cursor-pointer focus:outline-none focus:ring-2 focus:ring-[#234ecc]/40"
+        >
+          <option value="">All categories</option>
+          <option v-for="c in categories" :key="c" :value="c">{{ c }}</option>
+        </select>
+        <!-- Language -->
+        <select
+          v-model="languageFilter"
+          class="border border-gray-200 rounded-xl px-3 py-2 text-sm bg-white cursor-pointer focus:outline-none focus:ring-2 focus:ring-[#234ecc]/40"
+        >
+          <option value="">All languages</option>
+          <option v-for="l in LANGUAGES" :key="l.value" :value="l.value">{{ l.label }}</option>
+        </select>
+
+        <button
+          v-if="hasActiveFilters"
+          @click="resetFilters"
+          class="text-sm text-gray-500 hover:text-[#234ecc] transition-colors"
+        >
+          Clear filters
+        </button>
+
+        <span class="ml-auto text-xs text-gray-400">
+          {{ sorted.length }} book{{ sorted.length === 1 ? '' : 's' }}
+        </span>
+      </div>
+    </div>
+
     <!-- Loading skeleton -->
     <div v-if="loading" class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-5">
       <div v-for="i in 10" :key="i" class="animate-pulse">
@@ -54,10 +124,28 @@
       </RouterLink>
     </div>
 
+    <!-- No results for current filters -->
+    <div v-else-if="sorted.length === 0"
+         class="flex flex-col items-center justify-center py-24 text-center border-2 border-dashed border-gray-200 rounded-2xl">
+      <div class="w-14 h-14 bg-gray-100 rounded-2xl flex items-center justify-center mb-4">
+        <svg class="w-7 h-7 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <circle cx="11" cy="11" r="8" stroke-width="1.5"/><path stroke-linecap="round" stroke-width="1.5" d="m21 21-4.35-4.35"/>
+        </svg>
+      </div>
+      <p class="text-gray-600 font-semibold mb-1">No books match your filters</p>
+      <p class="text-gray-400 text-sm mb-5">Try a different search or clear the filters.</p>
+      <button
+        @click="resetFilters"
+        class="inline-flex items-center gap-2 bg-[#234ecc] hover:bg-[#1a3ba8] text-white text-sm font-semibold px-4 py-2.5 rounded-xl transition-colors"
+      >
+        Clear filters
+      </button>
+    </div>
+
     <!-- Book grid -->
     <div v-else class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-5">
       <div
-        v-for="book in books"
+        v-for="book in paged"
         :key="book.slug"
         class="group"
       >
@@ -155,6 +243,37 @@
       </div>
     </div>
 
+    <!-- Pagination -->
+    <div v-if="!loading && totalPages > 1" class="flex items-center justify-center gap-1.5 mt-8">
+      <button
+        @click="goToPage(currentPage - 1)"
+        :disabled="currentPage === 1"
+        class="px-3 py-2 text-sm rounded-lg border border-gray-200 text-gray-600 hover:border-[#234ecc]/40 hover:text-[#234ecc] disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+      >
+        Prev
+      </button>
+      <template v-for="(p, i) in pageNumbers" :key="i">
+        <span v-if="p === '…'" class="px-2 text-gray-400 select-none">…</span>
+        <button
+          v-else
+          @click="goToPage(p)"
+          class="min-w-[2.25rem] px-3 py-2 text-sm rounded-lg border transition-colors"
+          :class="p === currentPage
+            ? 'bg-[#234ecc] border-[#234ecc] text-white font-semibold'
+            : 'border-gray-200 text-gray-600 hover:border-[#234ecc]/40 hover:text-[#234ecc]'"
+        >
+          {{ p }}
+        </button>
+      </template>
+      <button
+        @click="goToPage(currentPage + 1)"
+        :disabled="currentPage === totalPages"
+        class="px-3 py-2 text-sm rounded-lg border border-gray-200 text-gray-600 hover:border-[#234ecc]/40 hover:text-[#234ecc] disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+      >
+        Next
+      </button>
+    </div>
+
     <!-- Delete modal -->
     <div
       v-if="deleteTarget"
@@ -194,7 +313,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, computed, watch, onMounted } from 'vue'
 import { adminApi } from '@/api/admin'
 
 const books = ref([])
@@ -202,6 +321,93 @@ const loading = ref(true)
 const error = ref('')
 const deleteTarget = ref(null)
 const deleting = ref(false)
+
+// ── Search / filters / sort / pagination (all client-side) ──────────────────
+const searchQuery    = ref('')
+const statusFilter   = ref('all')     // all | published | draft
+const categoryFilter = ref('')
+const languageFilter = ref('')
+const sortBy         = ref('order')   // order | newest | oldest | title-asc | title-desc
+const currentPage    = ref(1)
+const pageSize       = 12
+
+const LANGUAGES = [
+  { value: 'en', label: 'English' },
+  { value: 'ar', label: 'Arabic' },
+  { value: 'ur', label: 'Urdu' },
+  { value: 'fr', label: 'French' },
+  { value: 'id', label: 'Indonesian' },
+  { value: 'other', label: 'Other' },
+]
+
+const categories = computed(() =>
+  [...new Set(books.value.map(b => b.category).filter(Boolean))].sort((a, b) => a.localeCompare(b))
+)
+
+const hasActiveFilters = computed(() =>
+  !!searchQuery.value || statusFilter.value !== 'all' || !!categoryFilter.value || !!languageFilter.value
+)
+
+const filtered = computed(() => {
+  const q = searchQuery.value.trim().toLowerCase()
+  return books.value.filter(b => {
+    if (q && !`${b.title} ${b.author || ''}`.toLowerCase().includes(q)) return false
+    if (statusFilter.value === 'published' && !b.is_published) return false
+    if (statusFilter.value === 'draft' && b.is_published) return false
+    if (categoryFilter.value && b.category !== categoryFilter.value) return false
+    if (languageFilter.value && b.language !== languageFilter.value) return false
+    return true
+  })
+})
+
+const sorted = computed(() => {
+  const arr = [...filtered.value]
+  switch (sortBy.value) {
+    case 'title-asc':  return arr.sort((a, b) => (a.title || '').localeCompare(b.title || ''))
+    case 'title-desc': return arr.sort((a, b) => (b.title || '').localeCompare(a.title || ''))
+    case 'newest':     return arr.sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
+    case 'oldest':     return arr.sort((a, b) => new Date(a.created_at) - new Date(b.created_at))
+    default:           return arr.sort((a, b) => ((a.order ?? 0) - (b.order ?? 0)) || (a.title || '').localeCompare(b.title || ''))
+  }
+})
+
+const totalPages = computed(() => Math.max(1, Math.ceil(sorted.value.length / pageSize)))
+
+const paged = computed(() => {
+  const start = (currentPage.value - 1) * pageSize
+  return sorted.value.slice(start, start + pageSize)
+})
+
+const pageNumbers = computed(() => {
+  const tp = totalPages.value
+  const cur = currentPage.value
+  const out = []
+  for (let i = 1; i <= tp; i++) {
+    if (i === 1 || i === tp || (i >= cur - 1 && i <= cur + 1)) out.push(i)
+    else if (out[out.length - 1] !== '…') out.push('…')
+  }
+  return out
+})
+
+// Reset to first page when the result set changes.
+watch([searchQuery, statusFilter, categoryFilter, languageFilter, sortBy], () => {
+  currentPage.value = 1
+})
+// Clamp the page if results shrink (e.g. after a delete).
+watch(totalPages, (tp) => {
+  if (currentPage.value > tp) currentPage.value = tp
+})
+
+function resetFilters() {
+  searchQuery.value = ''
+  statusFilter.value = 'all'
+  categoryFilter.value = ''
+  languageFilter.value = ''
+}
+
+function goToPage(p) {
+  currentPage.value = Math.min(Math.max(1, p), totalPages.value)
+}
 
 const COVER_GRADIENTS = [
   'linear-gradient(135deg, #1e3a5f, #234ecc)',
