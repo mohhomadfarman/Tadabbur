@@ -192,6 +192,20 @@
                 <path d="M21 19a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2h3zM3 19a2 2 0 0 0 2 2h1a2 2 0 0 0 2-2v-3a2 2 0 0 0-2-2H3z"/>
               </svg>
             </div>
+
+            <!-- Multi-volume indicator (bottom-start) -->
+            <span
+              v-if="book.volume_count > 1"
+              class="absolute bottom-2.5 start-2.5 text-[10px] font-bold tracking-wider
+                     px-2 py-0.5 rounded-full bg-black/55 text-white backdrop-blur-sm shadow-sm
+                     flex items-center gap-1"
+              :title="`${book.volume_count} volumes`"
+            >
+              <svg class="w-3 h-3" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M12 6.5 4 10l8 3.5L20 10l-8-3.5zM4 14l8 3.5L20 14"/>
+              </svg>
+              {{ book.volume_count }} vols
+            </span>
           </div>
 
           <!-- Info -->

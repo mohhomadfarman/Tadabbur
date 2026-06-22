@@ -10,7 +10,7 @@ from rest_framework.views import APIView
 
 from apps.common.permissions import IsAuthorOrAdmin
 
-from .models import Book
+from .models import Book, Volume
 from .serializers import BookDetailSerializer, BookListSerializer
 
 
@@ -18,6 +18,23 @@ def _slugify(text):
     text = unicodedata.normalize('NFKD', text).encode('ascii', 'ignore').decode('ascii')
     text = re.sub(r'[^\w\s-]', '', text.lower())
     return re.sub(r'[-\s]+', '-', text).strip('-')
+
+
+def _build_volumes(raw):
+    """Convert a list of volume dicts (from the API payload) into embedded
+    Volume documents. Numbers default to their 1-based position when missing."""
+    vols = []
+    for i, v in enumerate(raw or [], start=1):
+        if not isinstance(v, dict):
+            continue
+        vols.append(Volume(
+            number=int(v.get('number') or i),
+            title=(v.get('title') or '').strip(),
+            pdf_key=v.get('pdf_key', ''),
+            page_count=int(v.get('page_count') or 0),
+            file_size_mb=float(v.get('file_size_mb') or 0),
+        ))
+    return vols
 
 
 # ── Public ─────────────────────────────────────────────────────────────────
@@ -92,6 +109,7 @@ class AdminBookListView(APIView):
             file_size_mb=float(d.get('file_size_mb') or 0),
             page_count=int(d.get('page_count') or 0),
             tags=d.get('tags', []),
+            volumes=_build_volumes(d.get('volumes')),
             order=int(d.get('order', 0)),
             is_published=bool(d.get('is_published', False)),
         )
@@ -126,6 +144,16 @@ class AdminBookDetailView(APIView):
             'file_size_mb': book.file_size_mb,
             'page_count': book.page_count,
             'tags': list(book.tags),
+            'volumes': [
+                {
+                    'number': v.number,
+                    'title': v.title,
+                    'pdf_key': v.pdf_key,
+                    'page_count': v.page_count,
+                    'file_size_mb': v.file_size_mb,
+                }
+                for v in book.volumes
+            ],
             'order': book.order,
             'is_published': book.is_published,
         }
@@ -149,6 +177,10 @@ class AdminBookDetailView(APIView):
                 elif field in ('page_count', 'order'):
                     val = int(val or 0)
                 setattr(book, field, val)
+
+        # volumes are embedded docs — rebuild them rather than set raw dicts
+        if 'volumes' in request.data:
+            book.volumes = _build_volumes(request.data['volumes'])
 
         book.updated_at = datetime.now(timezone.utc)
         book.save()

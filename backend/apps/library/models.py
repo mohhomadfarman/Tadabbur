@@ -1,8 +1,16 @@
 from datetime import datetime, timezone
 from mongoengine import (
-    Document, StringField, BooleanField, IntField,
-    FloatField, ListField, DateTimeField,
+    Document, EmbeddedDocument, StringField, BooleanField, IntField,
+    FloatField, ListField, DateTimeField, EmbeddedDocumentListField,
 )
+
+
+class Volume(EmbeddedDocument):
+    number       = IntField(default=1)
+    title        = StringField(max_length=300, default='')   # e.g. "Vol 1: Al-Fatiha–Al-Baqarah"
+    pdf_key      = StringField(default='')                    # MinIO object key for this volume's PDF
+    page_count   = IntField(default=0)
+    file_size_mb = FloatField(default=0.0)
 
 
 class Book(Document):
@@ -23,6 +31,7 @@ class Book(Document):
     is_published = BooleanField(default=False)
     order        = IntField(default=0)
     tags         = ListField(StringField())
+    volumes      = EmbeddedDocumentListField(Volume, default=list)
     created_at   = DateTimeField(default=lambda: datetime.now(timezone.utc))
     updated_at   = DateTimeField(default=lambda: datetime.now(timezone.utc))
 
