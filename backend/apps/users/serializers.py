@@ -32,11 +32,16 @@ class UserProfileSerializer(serializers.Serializer):
     username = serializers.CharField(read_only=True)
     full_name = serializers.CharField()
     role = serializers.CharField(read_only=True)
+    sections = serializers.SerializerMethodField()
+    is_active = serializers.BooleanField(read_only=True)
     is_verified = serializers.BooleanField(read_only=True)
     created_at = serializers.DateTimeField(read_only=True)
 
     def get_id(self, obj):
         return str(obj.id)
+
+    def get_sections(self, obj):
+        return obj.get_sections()
 
 
 class TokenRefreshSerializer(serializers.Serializer):

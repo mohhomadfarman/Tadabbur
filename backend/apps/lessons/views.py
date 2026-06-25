@@ -5,7 +5,7 @@ from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.permissions import AllowAny
 
-from apps.common.permissions import IsAuthorOrAdmin
+from apps.common.permissions import section_required
 from apps.curriculum.models import Subject
 from .models import Lesson, ContentBlock
 from .serializers import LessonDetailSerializer, LessonListSerializer
@@ -54,7 +54,7 @@ class LessonDetailView(APIView):
 # ── Admin CRUD ───────────────────────────────────────────────────────────────
 
 class AdminLessonListView(APIView):
-    permission_classes = [IsAuthorOrAdmin]
+    permission_classes = [section_required('curriculum')]
 
     def get(self, request):
         subject_slug = request.query_params.get('subject')
@@ -113,7 +113,7 @@ class AdminLessonListView(APIView):
 
 
 class AdminLessonDetailView(APIView):
-    permission_classes = [IsAuthorOrAdmin]
+    permission_classes = [section_required('curriculum')]
 
     def get(self, request, slug):
         lesson = Lesson.objects(slug=slug).first()

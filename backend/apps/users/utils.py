@@ -11,6 +11,7 @@ def generate_tokens(user):
         'user_id': str(user.id),
         'email': user.email,
         'role': user.role,
+        'sections': user.get_sections(),
         'exp': now + timedelta(hours=1),
         'iat': now,
         'type': 'access',

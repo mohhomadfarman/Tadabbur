@@ -7,7 +7,7 @@ from rest_framework.response import Response
 from rest_framework import status
 from django.conf import settings
 
-from apps.common.permissions import IsAuthorOrAdmin
+from apps.common.permissions import any_section_required
 
 ALLOWED_TYPES = {
     'image/jpeg', 'image/png', 'image/webp', 'image/gif',
@@ -30,7 +30,7 @@ FOLDER_MAP = {
 
 class GenerateUploadURLView(APIView):
     """Return a presigned PUT URL so the browser can upload directly to MinIO."""
-    permission_classes = [IsAuthorOrAdmin]
+    permission_classes = [any_section_required(['curriculum', 'library', 'videos'])]
 
     def post(self, request):
         filename = (request.data.get('filename') or '').strip()

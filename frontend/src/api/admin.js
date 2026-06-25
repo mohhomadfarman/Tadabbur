@@ -32,4 +32,19 @@ export const adminApi = {
   createBook: (data)        => client.post('/library/admin/books/', data).then(r => r.data),
   updateBook: (slug, data)  => client.patch(`/library/admin/books/${slug}/`, data).then(r => r.data),
   deleteBook: (slug)        => client.delete(`/library/admin/books/${slug}/`),
+
+  // Users (section: users)
+  listUsers:       (params)       => client.get('/auth/admin/users/', { params }).then(r => r.data),
+  getUser:         (id)           => client.get(`/auth/admin/users/${id}/`).then(r => r.data),
+  updateUser:      (id, data)     => client.patch(`/auth/admin/users/${id}/`, data).then(r => r.data),
+  setUserPassword: (id, password) => client.post(`/auth/admin/users/${id}/password/`, { password }).then(r => r.data),
+  deleteUser:      (id)           => client.delete(`/auth/admin/users/${id}/`),
+  getUserActivity: (id)           => client.get(`/auth/admin/users/${id}/activity/`).then(r => r.data),
+
+  // Roles & permissions (section: roles)
+  listRoles:    ()         => client.get('/auth/admin/roles/').then(r => r.data),
+  createRole:   (data)     => client.post('/auth/admin/roles/', data).then(r => r.data),
+  updateRole:   (id, data) => client.patch(`/auth/admin/roles/${id}/`, data).then(r => r.data),
+  deleteRole:   (id)       => client.delete(`/auth/admin/roles/${id}/`),
+  listSections: ()         => client.get('/auth/admin/sections/').then(r => r.data),
 }

@@ -81,7 +81,7 @@
           </RouterLink>
 
           <RouterLink
-            v-if="auth.isAuthor"
+            v-if="auth.hasAdminAccess"
             to="/admin"
             :class="navLinkClass"
             active-class="!text-brand bg-brand-muted"

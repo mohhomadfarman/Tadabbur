@@ -8,7 +8,7 @@ from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from apps.common.permissions import IsAuthorOrAdmin
+from apps.common.permissions import section_required
 
 from .models import Book, Volume
 from .serializers import (
@@ -80,7 +80,7 @@ class CategoryListView(APIView):
 # ── Admin ──────────────────────────────────────────────────────────────────
 
 class AdminBookListView(APIView):
-    permission_classes = [IsAuthorOrAdmin]
+    permission_classes = [section_required('library')]
 
     def get(self, request):
         books = Book.objects.order_by('order', 'title')
@@ -120,7 +120,7 @@ class AdminBookListView(APIView):
 
 
 class AdminBookDetailView(APIView):
-    permission_classes = [IsAuthorOrAdmin]
+    permission_classes = [section_required('library')]
 
     def _get_book(self, slug):
         try:
