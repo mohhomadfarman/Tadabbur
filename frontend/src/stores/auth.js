@@ -16,6 +16,12 @@ export const useAuthStore = defineStore('auth', () => {
   const isAdmin = computed(() => user.value?.role === 'admin')
   const isAuthor = computed(() => ['author', 'scholar', 'admin'].includes(user.value?.role))
 
+  // Per-section access, resolved server-side from the user's role. `can()` gates
+  // admin nav items and route access; `hasAdminAccess` = holds at least one section.
+  const sections = computed(() => user.value?.sections || [])
+  const can = (section) => sections.value.includes(section)
+  const hasAdminAccess = computed(() => sections.value.length > 0)
+
   async function login(email, password) {
     const response = await authApi.login(email, password)
     token.value = response.access
@@ -50,6 +56,7 @@ export const useAuthStore = defineStore('auth', () => {
 
   return {
     user, token, isLoggedIn, isAdmin, isAuthor,
+    sections, can, hasAdminAccess,
     login, register, logout, fetchUser,
   }
 })

@@ -6,7 +6,7 @@ from rest_framework.permissions import IsAuthenticated
 
 from apps.lessons.models import Lesson
 from apps.curriculum.models import Track, Subject
-from apps.common.permissions import IsAuthorOrAdmin
+from apps.common.permissions import section_required
 from .models import LessonProgress, UserProgress, QuizAttempt
 
 
@@ -256,7 +256,7 @@ class SaveQuizAnswerView(APIView):
 
 class AdminLessonStatsView(APIView):
     """Admin: completion counts + quiz answer breakdown per lesson."""
-    permission_classes = [IsAuthorOrAdmin]
+    permission_classes = [section_required('analytics')]
 
     def get(self, request):
         lesson_slug = request.query_params.get('lesson')

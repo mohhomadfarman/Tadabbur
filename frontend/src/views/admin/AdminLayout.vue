@@ -48,6 +48,7 @@
 
           <!-- Curriculum -->
           <RouterLink
+            v-if="auth.can('curriculum')"
             to="/admin"
             class="flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-sm transition-colors"
             :class="isActive('curriculum') ? 'bg-[#234ecc] text-white font-medium' : 'text-white/50 hover:text-white hover:bg-white/5'"
@@ -61,6 +62,7 @@
 
           <!-- Library -->
           <RouterLink
+            v-if="auth.can('library')"
             :to="{ name: 'admin-library' }"
             class="flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-sm transition-colors"
             :class="isActive('library') ? 'bg-[#234ecc] text-white font-medium' : 'text-white/50 hover:text-white hover:bg-white/5'"
@@ -72,8 +74,23 @@
             Library
           </RouterLink>
 
+          <!-- Users -->
+          <RouterLink
+            v-if="auth.can('users')"
+            :to="{ name: 'admin-users' }"
+            class="flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-sm transition-colors"
+            :class="isActive('users') ? 'bg-[#234ecc] text-white font-medium' : 'text-white/50 hover:text-white hover:bg-white/5'"
+            @click="sidebarOpen = false"
+          >
+            <svg class="w-4 h-4 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+            </svg>
+            Users
+          </RouterLink>
+
           <!-- Analytics -->
           <RouterLink
+            v-if="auth.can('analytics')"
             :to="{ name: 'admin-analytics' }"
             class="flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-sm transition-colors"
             :class="isActive('analytics') ? 'bg-[#234ecc] text-white font-medium' : 'text-white/50 hover:text-white hover:bg-white/5'"
@@ -83,6 +100,20 @@
               <path d="M18 20V10M12 20V4M6 20v-6"/>
             </svg>
             Analytics
+          </RouterLink>
+
+          <!-- Roles & Permissions -->
+          <RouterLink
+            v-if="auth.can('roles')"
+            :to="{ name: 'admin-roles' }"
+            class="flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-sm transition-colors"
+            :class="isActive('roles') ? 'bg-[#234ecc] text-white font-medium' : 'text-white/50 hover:text-white hover:bg-white/5'"
+            @click="sidebarOpen = false"
+          >
+            <svg class="w-4 h-4 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="m9 12 2 2 4-4"/>
+            </svg>
+            Roles
           </RouterLink>
         </nav>
 
@@ -151,7 +182,9 @@ function isActive(section) {
   if (section === 'overview')   return p === '/admin'
   if (section === 'curriculum') return p.startsWith('/admin/tracks') || p.startsWith('/admin/subjects') || p.startsWith('/admin/lessons')
   if (section === 'library')    return p.startsWith('/admin/library')
+  if (section === 'users')      return p.startsWith('/admin/users')
   if (section === 'analytics')  return p.startsWith('/admin/analytics')
+  if (section === 'roles')      return p.startsWith('/admin/roles')
   return false
 }
 

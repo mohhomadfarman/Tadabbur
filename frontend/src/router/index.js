@@ -71,24 +71,29 @@ export const routes = [
     component: () => import('@/views/videos/VideoView.vue'),
   },
 
-  // Admin panel — authors/scholars/admins only (all wrapped in AdminLayout)
+  // Admin panel (all wrapped in AdminLayout). Parent requires *some* admin
+  // access; each child names the section it needs (meta.section) so the guard
+  // can gate per-role. Overview has no section — any admin user can see it.
   {
     path: '/admin',
     component: () => import('@/views/admin/AdminLayout.vue'),
-    meta: { requiresAuthor: true, fullScreen: true, noindex: true },
+    meta: { requiresAdminAccess: true, fullScreen: true, noindex: true },
     children: [
       { path: '',                     name: 'admin',              component: () => import('@/views/admin/AdminDashboardView.vue') },
-      { path: 'tracks/new',          name: 'admin-track-new',    component: () => import('@/views/admin/TrackEditorView.vue') },
-      { path: 'tracks/:slug/edit',   name: 'admin-track-edit',   component: () => import('@/views/admin/TrackEditorView.vue') },
-      { path: 'tracks/:slug',        name: 'admin-track-detail', component: () => import('@/views/admin/AdminTrackDetailView.vue') },
-      { path: 'subjects/new',    name: 'admin-subject-new',  component: () => import('@/views/admin/SubjectEditorView.vue') },
-      { path: 'subjects/:slug',  name: 'admin-subject-edit', component: () => import('@/views/admin/SubjectEditorView.vue') },
-      { path: 'lessons/new',   name: 'admin-lesson-new',  component: () => import('@/views/admin/LessonEditorView.vue') },
-      { path: 'lessons/:slug', name: 'admin-lesson-edit', component: () => import('@/views/admin/LessonEditorView.vue') },
-      { path: 'library',       name: 'admin-library',     component: () => import('@/views/admin/AdminLibraryView.vue') },
-      { path: 'library/new',   name: 'admin-book-new',    component: () => import('@/views/admin/AdminBookEditorView.vue') },
-      { path: 'library/:slug', name: 'admin-book-edit',   component: () => import('@/views/admin/AdminBookEditorView.vue') },
-      { path: 'analytics',     name: 'admin-analytics',   component: () => import('@/views/admin/AdminAnalyticsView.vue') },
+      { path: 'tracks/new',          name: 'admin-track-new',    meta: { section: 'curriculum' }, component: () => import('@/views/admin/TrackEditorView.vue') },
+      { path: 'tracks/:slug/edit',   name: 'admin-track-edit',   meta: { section: 'curriculum' }, component: () => import('@/views/admin/TrackEditorView.vue') },
+      { path: 'tracks/:slug',        name: 'admin-track-detail', meta: { section: 'curriculum' }, component: () => import('@/views/admin/AdminTrackDetailView.vue') },
+      { path: 'subjects/new',    name: 'admin-subject-new',  meta: { section: 'curriculum' }, component: () => import('@/views/admin/SubjectEditorView.vue') },
+      { path: 'subjects/:slug',  name: 'admin-subject-edit', meta: { section: 'curriculum' }, component: () => import('@/views/admin/SubjectEditorView.vue') },
+      { path: 'lessons/new',   name: 'admin-lesson-new',  meta: { section: 'curriculum' }, component: () => import('@/views/admin/LessonEditorView.vue') },
+      { path: 'lessons/:slug', name: 'admin-lesson-edit', meta: { section: 'curriculum' }, component: () => import('@/views/admin/LessonEditorView.vue') },
+      { path: 'library',       name: 'admin-library',     meta: { section: 'library' },    component: () => import('@/views/admin/AdminLibraryView.vue') },
+      { path: 'library/new',   name: 'admin-book-new',    meta: { section: 'library' },    component: () => import('@/views/admin/AdminBookEditorView.vue') },
+      { path: 'library/:slug', name: 'admin-book-edit',   meta: { section: 'library' },    component: () => import('@/views/admin/AdminBookEditorView.vue') },
+      { path: 'analytics',     name: 'admin-analytics',   meta: { section: 'analytics' },  component: () => import('@/views/admin/AdminAnalyticsView.vue') },
+      { path: 'users',         name: 'admin-users',       meta: { section: 'users' },      component: () => import('@/views/admin/AdminUsersView.vue') },
+      { path: 'users/:id',     name: 'admin-user-detail', meta: { section: 'users' },      component: () => import('@/views/admin/AdminUserDetailView.vue') },
+      { path: 'roles',         name: 'admin-roles',       meta: { section: 'roles' },      component: () => import('@/views/admin/AdminRolesView.vue') },
     ],
   },
 ]
@@ -99,12 +104,23 @@ export const scrollBehavior = () => ({ top: 0 })
 // prerender there is no auth state and we never want build-time redirects, so
 // the guard is a no-op on the server.
 export function setupRouterGuards(router) {
-  router.beforeEach((to, _from, next) => {
+  router.beforeEach(async (to, _from, next) => {
     if (import.meta.env.SSR) return next()
     const auth = useAuthStore()
-    if (to.meta.requiresAuthor) {
+
+    // On a hard load/refresh of a gated route the token exists but the profile
+    // (and its sections) isn't fetched yet — load it before deciding, so admin
+    // refreshes resolve correctly instead of bouncing to home.
+    if (auth.isLoggedIn && !auth.user &&
+        (to.meta.requiresAdminAccess || to.meta.requiresAuth)) {
+      try { await auth.fetchUser() } catch { /* invalid token falls through to checks */ }
+    }
+
+    if (to.meta.requiresAdminAccess) {
       if (!auth.isLoggedIn) return next({ name: 'login', query: { redirect: to.fullPath } })
-      if (!auth.isAuthor) return next({ name: 'home' })
+      if (!auth.hasAdminAccess) return next({ name: 'home' })
+      // Lacks the specific section for this child → send to the admin overview.
+      if (to.meta.section && !auth.can(to.meta.section)) return next({ name: 'admin' })
     } else if (to.meta.requiresAuth && !auth.isLoggedIn) {
       return next({ name: 'login', query: { redirect: to.fullPath } })
     } else if (to.meta.guestOnly && auth.isLoggedIn) {

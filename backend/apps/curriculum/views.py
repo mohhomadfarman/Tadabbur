@@ -5,7 +5,7 @@ from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.permissions import AllowAny
 
-from apps.common.permissions import IsAuthorOrAdmin
+from apps.common.permissions import section_required
 from .models import Track, Subject
 from .serializers import (
     TrackSerializer, TrackDetailSerializer,
@@ -50,7 +50,7 @@ class SubjectDetailView(APIView):
 # ── Admin: list all content (incl. drafts) ───────────────────────────────────
 
 class AdminTrackListView(APIView):
-    permission_classes = [IsAuthorOrAdmin]
+    permission_classes = [section_required('curriculum')]
 
     def get(self, request):
         tracks = Track.objects.order_by('order')
@@ -83,7 +83,7 @@ class AdminTrackListView(APIView):
 
 
 class AdminTrackDetailView(APIView):
-    permission_classes = [IsAuthorOrAdmin]
+    permission_classes = [section_required('curriculum')]
 
     def get(self, request, slug):
         track = Track.objects(slug=slug).first()
@@ -122,7 +122,7 @@ class AdminTrackDetailView(APIView):
 
 
 class AdminSubjectListView(APIView):
-    permission_classes = [IsAuthorOrAdmin]
+    permission_classes = [section_required('curriculum')]
 
     def get(self, request):
         track_slug = request.query_params.get('track')
@@ -166,7 +166,7 @@ class AdminSubjectListView(APIView):
 
 
 class AdminSubjectDetailView(APIView):
-    permission_classes = [IsAuthorOrAdmin]
+    permission_classes = [section_required('curriculum')]
 
     def get(self, request, slug):
         subject = Subject.objects(slug=slug).first()
