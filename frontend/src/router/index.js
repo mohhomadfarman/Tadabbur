@@ -71,6 +71,18 @@ export const routes = [
     component: () => import('@/views/videos/VideoView.vue'),
   },
 
+  // Legal (public, indexable)
+  {
+    path: '/privacy',
+    name: 'privacy',
+    component: () => import('@/views/legal/PrivacyView.vue'),
+  },
+  {
+    path: '/terms',
+    name: 'terms',
+    component: () => import('@/views/legal/TermsView.vue'),
+  },
+
   // Admin panel (all wrapped in AdminLayout). Parent requires *some* admin
   // access; each child names the section it needs (meta.section) so the guard
   // can gate per-role. Overview has no section — any admin user can see it.

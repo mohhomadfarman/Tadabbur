@@ -21,7 +21,7 @@
         <img
           src="/logo-rounded.png"
           alt="Tadabbur logo"
-          class="h-8 w-auto rounded-lg object-cover transition-transform duration-200 group-hover:scale-105"
+          class="h-11 w-auto rounded-lg object-cover transition-transform duration-200 group-hover:scale-105"
         />
       </RouterLink>
 

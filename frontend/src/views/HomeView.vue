@@ -865,9 +865,8 @@
 
           <!-- Brand column -->
           <div class="sm:col-span-2 lg:col-span-1">
-            <div class="flex items-center gap-2.5 mb-4">
-              <img src="/logo-rounded.png" alt="Tadabbur" class="h-7 w-auto rounded-lg" />
-              <span class="text-white font-bold text-lg">Tadabbur</span>
+            <div class="flex items-center mb-4">
+              <img src="/logo-rounded.png" alt="Tadabbur" class="h-14 w-auto rounded-lg" />
             </div>
             <p class="text-sm leading-relaxed mb-5" style="color:rgba(255,255,255,0.3);">
               Structured Islamic learning for the global Ummah. Free forever.
@@ -910,7 +909,21 @@
             <p class="text-xs font-bold uppercase tracking-widest mb-5" style="color:rgba(255,255,255,0.25);">Legal</p>
             <ul class="space-y-3">
               <li v-for="link in footerLegal" :key="link.label">
-                <span class="text-sm cursor-default" style="color:rgba(255,255,255,0.25);">{{ link.label }}</span>
+                <RouterLink
+                  v-if="link.to"
+                  :to="link.to"
+                  class="text-sm transition-colors duration-200"
+                  style="color:rgba(255,255,255,0.4);"
+                  @mouseover="$event.target.style.color='rgba(255,255,255,0.8)'"
+                  @mouseleave="$event.target.style.color='rgba(255,255,255,0.4)'"
+                >{{ link.label }}</RouterLink>
+                <a
+                  v-else
+                  :href="link.href"
+                  target="_blank" rel="noopener noreferrer"
+                  class="text-sm transition-colors duration-200"
+                  style="color:rgba(255,255,255,0.4);"
+                >{{ link.label }}</a>
               </li>
             </ul>
           </div>
@@ -1016,9 +1029,9 @@ const footerCommunity = [
 ]
 
 const footerLegal = [
-  { label: 'Privacy Policy'  },
-  { label: 'Terms of Use'    },
-  { label: 'MIT License'     },
+  { label: 'Privacy Policy',      to: '/privacy' },
+  { label: 'Terms & Conditions',  to: '/terms' },
+  { label: 'MIT License',         href: 'https://github.com/mohhomadfarman/Tadabbur/blob/main/LICENSE' },
 ]
 
 // ── Lifecycle ──────────────────────────────────────────────────────
