@@ -74,6 +74,14 @@ export const routes = [
     meta: { requiresSection: 'videos', noindex: true },
   },
 
+  // Live launch registration — standalone full-bleed page (own chrome), indexable
+  {
+    path: '/launch',
+    name: 'launch',
+    component: () => import('@/views/launch/LaunchView.vue'),
+    meta: { fullScreen: true },
+  },
+
   // Legal (public, indexable)
   {
     path: '/privacy',
@@ -109,6 +117,7 @@ export const routes = [
       { path: 'users',         name: 'admin-users',       meta: { section: 'users' },      component: () => import('@/views/admin/AdminUsersView.vue') },
       { path: 'users/:id',     name: 'admin-user-detail', meta: { section: 'users' },      component: () => import('@/views/admin/AdminUserDetailView.vue') },
       { path: 'roles',         name: 'admin-roles',       meta: { section: 'roles' },      component: () => import('@/views/admin/AdminRolesView.vue') },
+      { path: 'registrations', name: 'admin-registrations', meta: { section: 'registrations' }, component: () => import('@/views/admin/AdminRegistrationsView.vue') },
     ],
   },
 ]

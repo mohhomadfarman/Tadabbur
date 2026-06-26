@@ -47,4 +47,8 @@ export const adminApi = {
   updateRole:   (id, data) => client.patch(`/auth/admin/roles/${id}/`, data).then(r => r.data),
   deleteRole:   (id)       => client.delete(`/auth/admin/roles/${id}/`),
   listSections: ()         => client.get('/auth/admin/sections/').then(r => r.data),
+
+  // Event registrations (section: registrations)
+  listRegistrations:  ()   => client.get('/events/admin/registrations/').then(r => r.data),
+  deleteRegistration: (id) => client.delete(`/events/admin/registrations/${id}/`),
 }

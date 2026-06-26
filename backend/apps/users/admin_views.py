@@ -22,6 +22,7 @@ SECTION_LABELS = {
     'users': 'Users',
     'analytics': 'Analytics',
     'roles': 'Roles & Permissions',
+    'registrations': 'Registrations',
 }
 
 ACTIVITY_LIMIT = 100
