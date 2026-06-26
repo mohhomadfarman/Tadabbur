@@ -51,4 +51,8 @@ export const adminApi = {
   // Event registrations (section: registrations)
   listRegistrations:  ()   => client.get('/events/admin/registrations/').then(r => r.data),
   deleteRegistration: (id) => client.delete(`/events/admin/registrations/${id}/`),
+
+  // Launch page settings (section: registrations)
+  getLaunchSettings:    ()     => client.get('/events/settings/').then(r => r.data),
+  updateLaunchSettings: (data) => client.patch('/events/settings/', data).then(r => r.data),
 }

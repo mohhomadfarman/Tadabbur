@@ -7,10 +7,14 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from apps.common.permissions import section_required
-from .models import EventRegistration
+from .models import EventRegistration, LaunchSettings
 from .serializers import RegistrationSerializer
 
 EVENT = 'launch'
+
+
+def _settings(s):
+    return {'event_at': s.event_at, 'headline': s.headline, 'intro': s.intro}
 
 
 def _iso(dt):
@@ -76,3 +80,23 @@ class AdminRegistrationDetailView(APIView):
             return Response({'detail': 'Registration not found.'}, status=status.HTTP_404_NOT_FOUND)
         reg.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+class LaunchSettingsView(APIView):
+    """GET is public (the /launch page reads it); PATCH requires the 'registrations' section."""
+    def get_permissions(self):
+        if self.request.method == 'GET':
+            return [AllowAny()]
+        return [section_required('registrations')()]
+
+    def get(self, request):
+        return Response(_settings(LaunchSettings.get_solo()))
+
+    def patch(self, request):
+        s = LaunchSettings.get_solo()
+        for field in ('event_at', 'headline', 'intro'):
+            if field in request.data and isinstance(request.data[field], str):
+                setattr(s, field, request.data[field].strip())
+        s.updated_at = datetime.now(timezone.utc)
+        s.save()
+        return Response(_settings(s))

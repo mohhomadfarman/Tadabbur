@@ -23,6 +23,49 @@
     </div>
     <div v-if="error" class="bg-red-50 border border-red-200 text-red-700 px-5 py-4 rounded-xl text-sm mb-6">{{ error }}</div>
 
+    <!-- Event settings (powers the public /launch page) -->
+    <details class="bg-white border border-gray-200 rounded-2xl shadow-sm mb-8" open>
+      <summary class="flex items-center justify-between gap-3 px-5 py-4 cursor-pointer select-none">
+        <div>
+          <h2 class="font-semibold text-gray-800">Event settings</h2>
+          <p class="text-xs text-gray-400 mt-0.5">Date, headline and intro shown on the <span class="font-mono">/launch</span> page.</p>
+        </div>
+        <span v-if="settingsSaved" class="text-xs text-emerald-600 font-semibold shrink-0">Saved ✓</span>
+      </summary>
+      <div class="px-5 pb-5 grid sm:grid-cols-2 gap-4 border-t border-gray-100 pt-5">
+        <div>
+          <label class="block text-xs font-medium text-gray-500 mb-1">Date &amp; time</label>
+          <input v-model="settingsForm.datetime" type="datetime-local"
+            class="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#234ecc]/40" />
+        </div>
+        <div>
+          <label class="block text-xs font-medium text-gray-500 mb-1">Timezone</label>
+          <select v-model="settingsForm.offset"
+            class="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm bg-white cursor-pointer focus:outline-none focus:ring-2 focus:ring-[#234ecc]/40">
+            <option v-for="o in offsetOptions" :key="o.value" :value="o.value">{{ o.label }}</option>
+          </select>
+        </div>
+        <div class="sm:col-span-2">
+          <label class="block text-xs font-medium text-gray-500 mb-1">Headline</label>
+          <input v-model="settingsForm.headline" type="text" maxlength="120"
+            class="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#234ecc]/40" />
+        </div>
+        <div class="sm:col-span-2">
+          <label class="block text-xs font-medium text-gray-500 mb-1">Intro paragraph</label>
+          <textarea v-model="settingsForm.intro" rows="3"
+            class="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#234ecc]/40 resize-none"></textarea>
+        </div>
+        <div class="sm:col-span-2 flex flex-wrap items-center gap-3">
+          <button @click="saveSettings" :disabled="savingSettings"
+            class="bg-[#234ecc] hover:bg-[#1a3ba8] disabled:opacity-60 text-white text-sm font-semibold px-4 py-2.5 rounded-xl transition-colors">
+            {{ savingSettings ? 'Saving…' : 'Save event settings' }}
+          </button>
+          <span class="text-xs text-gray-400">Preview: <span class="text-gray-600">{{ previewLabel }}</span></span>
+          <span v-if="settingsError" class="text-xs text-red-600">{{ settingsError }}</span>
+        </div>
+      </div>
+    </details>
+
     <!-- Toolbar -->
     <div v-if="!loading && registrations.length > 0" class="mb-6 flex flex-col sm:flex-row gap-3">
       <div class="relative flex-1">
@@ -111,7 +154,7 @@
 </template>
 
 <script setup>
-import { ref, computed, watch, onMounted } from 'vue'
+import { ref, reactive, computed, watch, onMounted } from 'vue'
 import { adminApi } from '@/api/admin'
 
 const registrations = ref([])
@@ -120,6 +163,77 @@ const error = ref('')
 const actionError = ref('')
 const deleteTarget = ref(null)
 const deleting = ref(false)
+
+// ── Event settings (powers the /launch page) ─────────────────────────
+const COMMON_OFFSETS = [
+  { value: '+05:30', label: 'GMT+5:30 — India / Sri Lanka' },
+  { value: '+05:00', label: 'GMT+5:00 — Pakistan' },
+  { value: '+04:00', label: 'GMT+4:00 — UAE / Gulf' },
+  { value: '+03:00', label: 'GMT+3:00 — Makkah / Türkiye' },
+  { value: '+01:00', label: 'GMT+1:00 — Central Europe' },
+  { value: '+00:00', label: 'GMT — UK / UTC' },
+  { value: '+07:00', label: 'GMT+7:00 — Indonesia (WIB)' },
+  { value: '+08:00', label: 'GMT+8:00 — Malaysia / Singapore' },
+  { value: '-05:00', label: 'GMT-5:00 — US Eastern' },
+  { value: '-08:00', label: 'GMT-8:00 — US Pacific' },
+]
+const settings = ref(null)
+const settingsForm = reactive({ datetime: '', offset: '+05:30', headline: '', intro: '' })
+const savingSettings = ref(false)
+const settingsSaved = ref(false)
+const settingsError = ref('')
+
+const offsetOptions = computed(() =>
+  settingsForm.offset && !COMMON_OFFSETS.some(o => o.value === settingsForm.offset)
+    ? [{ value: settingsForm.offset, label: `GMT ${settingsForm.offset}` }, ...COMMON_OFFSETS]
+    : COMMON_OFFSETS
+)
+
+function loadSettingsForm(s) {
+  const m = String(s.event_at || '').match(/^(\d{4}-\d{2}-\d{2}T\d{2}:\d{2})(?::\d{2})?(Z|[+-]\d{2}:\d{2})?$/)
+  settingsForm.datetime = m ? m[1] : ''
+  settingsForm.offset = m ? (m[2] === 'Z' ? '+00:00' : (m[2] || '+05:30')) : '+05:30'
+  settingsForm.headline = s.headline || ''
+  settingsForm.intro = s.intro || ''
+}
+
+function eventIso() {
+  return settingsForm.datetime ? `${settingsForm.datetime}:00${settingsForm.offset}` : ''
+}
+
+const previewLabel = computed(() => {
+  const iso = eventIso()
+  const d = iso ? new Date(iso) : null
+  if (!d || Number.isNaN(d.getTime())) return '—'
+  const sign = settingsForm.offset[0] === '-' ? -1 : 1
+  const oh = parseInt(settingsForm.offset.slice(1, 3), 10)
+  const om = parseInt(settingsForm.offset.slice(4, 6), 10)
+  const label = 'GMT' + (sign < 0 ? '-' : '+') + oh + (om ? ':' + String(om).padStart(2, '0') : '')
+  const wall = new Date(d.getTime() + sign * (oh * 60 + om) * 60000).toLocaleString('en-US', {
+    timeZone: 'UTC', weekday: 'long', year: 'numeric', month: 'long', day: 'numeric',
+    hour: 'numeric', minute: '2-digit',
+  })
+  return `${wall} ${label}`
+})
+
+async function saveSettings() {
+  settingsError.value = ''
+  if (!settingsForm.datetime) { settingsError.value = 'Pick a date and time.'; return }
+  savingSettings.value = true
+  try {
+    settings.value = await adminApi.updateLaunchSettings({
+      event_at: eventIso(),
+      headline: settingsForm.headline,
+      intro: settingsForm.intro,
+    })
+    settingsSaved.value = true
+    setTimeout(() => { settingsSaved.value = false }, 2500)
+  } catch {
+    settingsError.value = 'Could not save event settings.'
+  } finally {
+    savingSettings.value = false
+  }
+}
 
 const searchQuery = ref('')
 const currentPage = ref(1)
@@ -182,5 +296,10 @@ onMounted(async () => {
   } finally {
     loading.value = false
   }
+  try {
+    const s = await adminApi.getLaunchSettings()
+    settings.value = s
+    loadSettingsForm(s)
+  } catch { /* settings optional */ }
 })
 </script>
