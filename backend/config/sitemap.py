@@ -48,6 +48,7 @@ def sitemap_xml(request):
         _url(f'{base}/',        changefreq='weekly',  priority='1.0'),
         _url(f'{base}/learn',   changefreq='weekly',  priority='0.9'),
         _url(f'{base}/library', changefreq='weekly',  priority='0.8'),
+        _url(f'{base}/launch',  changefreq='daily',   priority='0.9'),
         _url(f'{base}/privacy', changefreq='yearly',  priority='0.3'),
         _url(f'{base}/terms',   changefreq='yearly',  priority='0.3'),
     ]

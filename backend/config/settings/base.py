@@ -29,6 +29,7 @@ INSTALLED_APPS = [
     'apps.media',
     'apps.library',
     'apps.videos',
+    'apps.events',
 ]
 
 MIDDLEWARE = [

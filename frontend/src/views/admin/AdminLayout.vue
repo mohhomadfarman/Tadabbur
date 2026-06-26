@@ -88,6 +88,20 @@
             Users
           </RouterLink>
 
+          <!-- Registrations -->
+          <RouterLink
+            v-if="auth.can('registrations')"
+            :to="{ name: 'admin-registrations' }"
+            class="flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-sm transition-colors"
+            :class="isActive('registrations') ? 'bg-[#234ecc] text-white font-medium' : 'text-white/50 hover:text-white hover:bg-white/5'"
+            @click="sidebarOpen = false"
+          >
+            <svg class="w-4 h-4 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M3 7v10a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V7M3 7l9 6 9-6M3 7l2-3h14l2 3"/>
+            </svg>
+            Registrations
+          </RouterLink>
+
           <!-- Analytics -->
           <RouterLink
             v-if="auth.can('analytics')"
@@ -183,6 +197,7 @@ function isActive(section) {
   if (section === 'curriculum') return p.startsWith('/admin/tracks') || p.startsWith('/admin/subjects') || p.startsWith('/admin/lessons')
   if (section === 'library')    return p.startsWith('/admin/library')
   if (section === 'users')      return p.startsWith('/admin/users')
+  if (section === 'registrations') return p.startsWith('/admin/registrations')
   if (section === 'analytics')  return p.startsWith('/admin/analytics')
   if (section === 'roles')      return p.startsWith('/admin/roles')
   return false
