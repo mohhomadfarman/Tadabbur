@@ -95,15 +95,37 @@
 </template>
 
 <script setup>
-import { ref, reactive, computed, onMounted, onUnmounted } from 'vue'
+import { ref, reactive, computed, onMounted, onUnmounted, onServerPrefetch } from 'vue'
 import { eventsApi } from '@/api/events'
+import { useSsrDataStore } from '@/stores/ssrData'
 import { useSeo, SEO_ORIGIN } from '@/composables/useSeo'
 
-// Page content — defaults shown until the admin-configured settings load.
-// Manage these in Admin → Registrations → Event settings.
-const eventAt = ref('2026-07-15T18:30:00+05:30')   // ISO 8601 with timezone offset
-const headline = ref('Be there when Tadabbur goes live.')
-const intro = ref('Join us for the official launch of Tadabbur — a free, structured, scholar-verified Islamic learning platform. Register below to get the live link and event reminders.')
+// Page content. The defaults below are only a fallback — the admin-configured
+// values are fetched from the settings API during SSG prerender (so the static
+// HTML / "View Source" shows the saved values) AND on the client (so the live
+// page stays fresh). Manage these in Admin → Registrations → Event settings.
+const ssr = useSsrDataStore()
+const SSR_KEY = 'launchSettings'
+const cached = ssr.get(SSR_KEY)
+
+const eventAt = ref(cached?.event_at || '2026-07-15T18:30:00+05:30')   // ISO 8601 with timezone offset
+const headline = ref(cached?.headline || 'Be there when Tadabbur goes live.')
+const intro = ref(cached?.intro || 'Join us for the official launch of Tadabbur — a free, structured, scholar-verified Islamic learning platform. Register below to get the live link and event reminders.')
+
+function applySettings(s) {
+  if (s?.event_at) eventAt.value = s.event_at
+  if (s?.headline) headline.value = s.headline
+  if (s?.intro) intro.value = s.intro
+}
+
+// Prerender: bake the saved settings into the static HTML so View Source matches.
+onServerPrefetch(async () => {
+  try {
+    const s = await eventsApi.getLaunchSettings()
+    applySettings(s)
+    ssr.set(SSR_KEY, s)
+  } catch { /* keep defaults */ }
+})
 
 const eventDate = computed(() => new Date(eventAt.value))
 const eventDateLabel = computed(() => formatEventLabel(eventAt.value))
@@ -141,11 +163,8 @@ onMounted(async () => {
   now.value = Date.now()
   timer = setInterval(() => { now.value = Date.now() }, 1000)
   try {
-    const s = await eventsApi.getLaunchSettings()
-    if (s.event_at) eventAt.value = s.event_at
-    if (s.headline) headline.value = s.headline
-    if (s.intro) intro.value = s.intro
-  } catch { /* keep defaults */ }
+    applySettings(await eventsApi.getLaunchSettings())   // refresh in case it changed since build
+  } catch { /* keep cached/default */ }
 })
 onUnmounted(() => { if (timer) clearInterval(timer) })
 
