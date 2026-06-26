@@ -18,11 +18,8 @@
       <!-- Left: pitch + countdown -->
       <section class="launch__pitch">
         <p class="launch__eyebrow">Live launch event</p>
-        <h1 class="launch__title">Be there when <span>Tadabbur</span> goes live.</h1>
-        <p class="launch__lead">
-          Join us for the official launch of Tadabbur — a free, structured, scholar-verified
-          Islamic learning platform. Register below to get the live link and event reminders.
-        </p>
+        <h1 class="launch__title">{{ headline }}</h1>
+        <p class="launch__lead">{{ intro }}</p>
 
         <div class="launch__when">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
@@ -67,12 +64,12 @@
 
             <div>
               <label>WhatsApp number <span>(optional)</span></label>
-              <input v-model="form.phone" type="tel" autocomplete="tel" placeholder="+92 300 1234567" />
+              <input v-model="form.phone" type="tel" autocomplete="tel" placeholder="+91 1234567890" />
             </div>
 
             <div>
               <label>Country / City <span>(optional)</span></label>
-              <input v-model="form.country" type="text" placeholder="e.g. Karachi, Pakistan" />
+              <input v-model="form.country" type="text" placeholder="e.g. Punbjab, India" />
             </div>
 
             <button type="submit" class="launch__submit" :disabled="loading">
@@ -102,18 +99,34 @@ import { ref, reactive, computed, onMounted, onUnmounted } from 'vue'
 import { eventsApi } from '@/api/events'
 import { useSeo, SEO_ORIGIN } from '@/composables/useSeo'
 
-/* ─────────────────────────────────────────────────────────────
-   EDIT THESE for your event: date/time (ISO 8601 with timezone).
-   ───────────────────────────────────────────────────────────── */
-const EVENT_DATE = '2026-07-15T18:00:00+05:00'   // ← live event date & time
-const eventDate = new Date(EVENT_DATE)
+// Page content — defaults shown until the admin-configured settings load.
+// Manage these in Admin → Registrations → Event settings.
+const eventAt = ref('2026-07-15T18:30:00+05:30')   // ISO 8601 with timezone offset
+const headline = ref('Be there when Tadabbur goes live.')
+const intro = ref('Join us for the official launch of Tadabbur — a free, structured, scholar-verified Islamic learning platform. Register below to get the live link and event reminders.')
 
-const eventDateLabel = computed(() =>
-  eventDate.toLocaleString('en-US', {
-    weekday: 'long', year: 'numeric', month: 'long', day: 'numeric',
-    hour: 'numeric', minute: '2-digit', timeZoneName: 'short',
+const eventDate = computed(() => new Date(eventAt.value))
+const eventDateLabel = computed(() => formatEventLabel(eventAt.value))
+
+// Format the date in the event's OWN timezone offset, so every visitor sees the
+// same wall-clock time + offset (e.g. "… 6:30 PM GMT+5:30") regardless of locale.
+function formatEventLabel(iso) {
+  const d = new Date(iso)
+  if (Number.isNaN(d.getTime())) return ''
+  const m = String(iso).match(/(Z)$|([+-])(\d{2}):(\d{2})$/)
+  let offsetMin = 0, label = 'GMT'
+  if (m && !m[1]) {
+    const sign = m[2] === '-' ? -1 : 1
+    const oh = parseInt(m[3], 10), om = parseInt(m[4], 10)
+    offsetMin = sign * (oh * 60 + om)
+    label = 'GMT' + (sign < 0 ? '-' : '+') + oh + (om ? ':' + String(om).padStart(2, '0') : '')
+  }
+  const wall = new Date(d.getTime() + offsetMin * 60000).toLocaleString('en-US', {
+    timeZone: 'UTC', weekday: 'long', year: 'numeric', month: 'long', day: 'numeric',
+    hour: 'numeric', minute: '2-digit',
   })
-)
+  return `${wall} ${label}`
+}
 
 useSeo({
   title: 'Live Launch — Register',
@@ -124,10 +137,19 @@ useSeo({
 // ── Countdown ──────────────────────────────────────────────────────
 const now = ref(Date.now())
 let timer = null
-onMounted(() => { now.value = Date.now(); timer = setInterval(() => { now.value = Date.now() }, 1000) })
+onMounted(async () => {
+  now.value = Date.now()
+  timer = setInterval(() => { now.value = Date.now() }, 1000)
+  try {
+    const s = await eventsApi.getLaunchSettings()
+    if (s.event_at) eventAt.value = s.event_at
+    if (s.headline) headline.value = s.headline
+    if (s.intro) intro.value = s.intro
+  } catch { /* keep defaults */ }
+})
 onUnmounted(() => { if (timer) clearInterval(timer) })
 
-const remaining = computed(() => Math.max(0, eventDate.getTime() - now.value))
+const remaining = computed(() => Math.max(0, eventDate.value.getTime() - now.value))
 const ended = computed(() => remaining.value <= 0)
 const countdownUnits = computed(() => {
   const s = Math.floor(remaining.value / 1000)
