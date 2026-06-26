@@ -8,5 +8,6 @@ Disallow: /api/
 Disallow: /login
 Disallow: /register
 Disallow: /dashboard
+Disallow: /videos
 
 Sitemap: https://thetadabbur.org/sitemap.xml

@@ -21,7 +21,7 @@
         <img
           src="/logo-rounded.png"
           alt="Tadabbur logo"
-          class="h-8 w-auto rounded-lg object-cover transition-transform duration-200 group-hover:scale-105"
+          class="h-11 w-auto rounded-lg object-cover transition-transform duration-200 group-hover:scale-105"
         />
       </RouterLink>
 
@@ -53,6 +53,7 @@
         </RouterLink>
 
         <RouterLink
+          v-if="auth.can('videos')"
           to="/videos"
           :class="navLinkClass"
           active-class="!text-brand bg-brand-muted"
@@ -257,6 +258,7 @@
             </RouterLink>
 
             <RouterLink
+              v-if="auth.can('videos')"
               to="/videos"
               active-class="bg-brand-muted text-brand"
               class="flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium text-gray-700 hover:bg-gray-50 hover:text-gray-900 transition-colors"

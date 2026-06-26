@@ -59,16 +59,31 @@ export const routes = [
     component: () => import('@/views/library/BookView.vue'),
   },
 
-  // Videos
+  // Videos — restricted to roles with the 'videos' section (admins/content
+  // roles). Students and the public are redirected away; kept out of indexes.
   {
     path: '/videos',
     name: 'videos',
     component: () => import('@/views/videos/VideosView.vue'),
+    meta: { requiresSection: 'videos', noindex: true },
   },
   {
     path: '/videos/:id',
     name: 'video',
     component: () => import('@/views/videos/VideoView.vue'),
+    meta: { requiresSection: 'videos', noindex: true },
+  },
+
+  // Legal (public, indexable)
+  {
+    path: '/privacy',
+    name: 'privacy',
+    component: () => import('@/views/legal/PrivacyView.vue'),
+  },
+  {
+    path: '/terms',
+    name: 'terms',
+    component: () => import('@/views/legal/TermsView.vue'),
   },
 
   // Admin panel (all wrapped in AdminLayout). Parent requires *some* admin
@@ -112,8 +127,14 @@ export function setupRouterGuards(router) {
     // (and its sections) isn't fetched yet — load it before deciding, so admin
     // refreshes resolve correctly instead of bouncing to home.
     if (auth.isLoggedIn && !auth.user &&
-        (to.meta.requiresAdminAccess || to.meta.requiresAuth)) {
+        (to.meta.requiresAdminAccess || to.meta.requiresAuth || to.meta.requiresSection)) {
       try { await auth.fetchUser() } catch { /* invalid token falls through to checks */ }
+    }
+
+    // Section-gated public routes (e.g. Videos is admin/content-roles only).
+    // Students and logged-out visitors are sent home.
+    if (to.meta.requiresSection && !auth.can(to.meta.requiresSection)) {
+      return next({ name: 'home' })
     }
 
     if (to.meta.requiresAdminAccess) {
