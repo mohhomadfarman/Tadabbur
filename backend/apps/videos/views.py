@@ -2,9 +2,10 @@ import time
 
 import requests as http_requests
 from django.conf import settings
-from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from rest_framework.views import APIView
+
+from apps.common.permissions import section_required
 
 YOUTUBE_API = 'https://www.googleapis.com/youtube/v3'
 CACHE_TTL   = 3600  # seconds
@@ -35,7 +36,7 @@ def _channel_id():
 
 
 class VideoListView(APIView):
-    permission_classes = [AllowAny]
+    permission_classes = [section_required('videos')]
 
     def get(self, request):
         api_key    = _api_key()
@@ -112,7 +113,7 @@ class VideoListView(APIView):
 
 
 class VideoDetailView(APIView):
-    permission_classes = [AllowAny]
+    permission_classes = [section_required('videos')]
 
     def get(self, request, video_id):
         api_key = _api_key()

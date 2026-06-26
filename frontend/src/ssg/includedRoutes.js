@@ -4,7 +4,7 @@
 // re-crawling the API. If the sitemap is unreachable we fall back to the static
 // routes so the build never fails on a transient network/prod issue.
 
-const STATIC_ROUTES = ['/', '/learn', '/library', '/videos', '/privacy', '/terms']
+const STATIC_ROUTES = ['/', '/learn', '/library', '/privacy', '/terms']
 
 // Never prerender auth/personalized routes (they're also absent from sitemap.xml).
 const EXCLUDE_PREFIXES = ['/login', '/register', '/dashboard', '/admin']

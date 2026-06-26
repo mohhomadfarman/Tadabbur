@@ -946,7 +946,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted, onUnmounted } from 'vue'
+import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useAuthStore } from '@/stores/auth'
 import { useSeo } from '@/composables/useSeo'
@@ -1013,14 +1013,16 @@ const stats = [
   { labelKey: 'statLanguages',    value: '2', iconPath: `<circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>` },
 ]
 
-const footerPlatform = [
+// Videos is gated to the 'videos' section (admins/content roles), so it only
+// appears in the footer for those users — not students or the public.
+const footerPlatform = computed(() => [
   { label: 'Start Learning', to: '/learn' },
   { label: 'Library',        to: '/library' },
-  { label: 'Videos',         to: '/videos' },
+  ...(auth.can('videos') ? [{ label: 'Videos', to: '/videos' }] : []),
   { label: 'Dashboard',      to: '/dashboard' },
   { label: 'Register',       to: '/register' },
   { label: 'Login',          to: '/login' },
-]
+])
 
 const footerCommunity = [
   { label: 'GitHub',      href: 'https://github.com/mohhomadfarman/Tadabbur' },
