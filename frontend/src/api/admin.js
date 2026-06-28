@@ -71,4 +71,46 @@ export const adminApi = {
   createAnnouncement:  (data)     => client.post('/announcements/admin/', data).then(r => r.data),
   updateAnnouncement:  (id, data) => client.patch(`/announcements/admin/${id}/`, data).then(r => r.data),
   deleteAnnouncement:  (id)       => client.delete(`/announcements/admin/${id}/`),
+
+  // Track feedback (section: feedback)
+  listFeedback:        ()           => client.get('/feedback/admin/').then(r => r.data),
+
+  // Badges & rewards (section: badges)
+  listBadges:   ()         => client.get('/badges/admin/').then(r => r.data),
+  getBadge:     (id)       => client.get(`/badges/admin/${id}/`).then(r => r.data),
+  createBadge:  (data)     => client.post('/badges/admin/', data).then(r => r.data),
+  updateBadge:  (id, data) => client.patch(`/badges/admin/${id}/`, data).then(r => r.data),
+  deleteBadge:  (id)       => client.delete(`/badges/admin/${id}/`),
+  grantBadge:   (id, userId) => client.post(`/badges/admin/${id}/grant/`, { user_id: userId }).then(r => r.data),
+
+  // Feature flags (section: features)
+  listFeatureFlags:    ()           => client.get('/features/admin/').then(r => r.data),
+  updateFeatureFlag:   (key, data)  => client.patch(`/features/admin/${key}/`, data).then(r => r.data),
+  searchFeatureUsers:  (q)          => client.get('/features/admin/users/', { params: { q } }).then(r => r.data),
+  resolveFeatureUsers: (ids)        => client.get('/features/admin/users/', { params: { ids: ids.join(',') } }).then(r => r.data),
+
+  // Email marketing — templates (section: email)
+  listEmailTemplates:  ()         => client.get('/emails/admin/templates/').then(r => r.data),
+  getEmailTemplate:    (id)       => client.get(`/emails/admin/templates/${id}/`).then(r => r.data),
+  createEmailTemplate: (data)     => client.post('/emails/admin/templates/', data).then(r => r.data),
+  updateEmailTemplate: (id, data) => client.patch(`/emails/admin/templates/${id}/`, data).then(r => r.data),
+  deleteEmailTemplate: (id)       => client.delete(`/emails/admin/templates/${id}/`),
+
+  // Email marketing — campaigns (section: email)
+  listEmailCampaigns:  ()         => client.get('/emails/admin/campaigns/').then(r => r.data),
+  getEmailCampaign:    (id)       => client.get(`/emails/admin/campaigns/${id}/`).then(r => r.data),
+  createEmailCampaign: (data)     => client.post('/emails/admin/campaigns/', data).then(r => r.data),
+  updateEmailCampaign: (id, data) => client.patch(`/emails/admin/campaigns/${id}/`, data).then(r => r.data),
+  deleteEmailCampaign: (id)       => client.delete(`/emails/admin/campaigns/${id}/`),
+  sendEmailCampaign:   (id, data) => client.post(`/emails/admin/campaigns/${id}/send/`, data || {}).then(r => r.data),
+  testEmailCampaign:   (id, email) => client.post(`/emails/admin/campaigns/${id}/test/`, { email }).then(r => r.data),
+  listEmailSegments:   ()         => client.get('/emails/admin/segments/').then(r => r.data),
+  previewEmailSegment: (segment)  => client.get('/emails/admin/segments/', { params: { segment } }).then(r => r.data),
+
+  // Email marketing — SMTP settings (section: email)
+  getEmailSettings:    ()         => client.get('/emails/admin/settings/').then(r => r.data),
+  updateEmailSettings: (data)     => client.patch('/emails/admin/settings/', data).then(r => r.data),
+
+  // Generic single test-send (synchronous — returns the real SMTP error on failure)
+  testSendEmail:       (data)     => client.post('/emails/admin/test-send/', data).then(r => r.data),
 }

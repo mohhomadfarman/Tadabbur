@@ -12,7 +12,10 @@
     </main>
 
     <!-- Global admin-authored pop-up modals (logged-in users, normal pages) -->
-    <AnnouncementModal />
+    <AnnouncementModal v-if="features.isEnabled('announcement_modals')" />
+
+    <!-- Badge celebration popups (logged-in users, normal pages) -->
+    <BadgeRewardModal v-if="features.isEnabled('badges')" />
   </div>
 </template>
 
@@ -21,11 +24,14 @@ import { computed, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
 import { useHead } from '@unhead/vue'
 import { useAuthStore } from '@/stores/auth'
+import { useFeaturesStore } from '@/stores/features'
 import AppHeader from '@/components/common/AppHeader.vue'
 import AnnouncementModal from '@/components/AnnouncementModal.vue'
+import BadgeRewardModal from '@/components/BadgeRewardModal.vue'
 
-const auth  = useAuthStore()
-const route = useRoute()
+const auth     = useAuthStore()
+const features = useFeaturesStore()
+const route    = useRoute()
 
 const isHomePage = computed(() => route.name === 'home')
 
@@ -38,5 +44,7 @@ onMounted(() => {
   if (auth.token) {
     auth.fetchUser().catch(() => auth.logout())
   }
+  // Load the effective feature-flag map (works for anonymous users too).
+  features.loadFlags()
 })
 </script>

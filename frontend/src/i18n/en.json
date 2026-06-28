@@ -148,6 +148,25 @@
     "close": "Close",
     "next": "Next"
   },
+  "feedback": {
+    "trackCompleted": "Track complete! 🎉",
+    "leaveReview": "How was it? Your feedback helps us improve.",
+    "rating": "Rate this track",
+    "commentPlaceholder": "Anything you'd like to share? (optional)",
+    "submit": "Send feedback",
+    "sending": "Sending…",
+    "skip": "Skip",
+    "error": "Could not send your feedback. Please try again."
+  },
+  "badges": {
+    "unlocked": "Achievement Unlocked!",
+    "congratulations": "Congratulations!",
+    "viewBadges": "View my badges",
+    "next": "Next",
+    "close": "Awesome!",
+    "earned": "Badges earned",
+    "noBadges": "No badges yet — keep learning to earn your first!"
+  },
   "subject": {
     "lessons": "Lessons",
     "noLessons": "No lessons published yet.",

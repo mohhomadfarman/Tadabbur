@@ -186,6 +186,21 @@
             </div>
           </div>
 
+          <!-- Badges earned -->
+          <div v-if="features.isEnabled('badges')" class="bg-white border border-gray-200 rounded-2xl p-5 shadow-sm">
+            <p class="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-4">{{ t('badges.earned') }}</p>
+            <div v-if="badges.earned.length" class="grid grid-cols-4 gap-3">
+              <div v-for="b in badges.earned" :key="b.id" :title="b.name" class="flex flex-col items-center gap-1">
+                <div class="w-12 h-12 rounded-full bg-gray-100 flex items-center justify-center overflow-hidden">
+                  <img v-if="b.icon_url" :src="b.icon_url" :alt="b.name" class="w-full h-full object-cover" />
+                  <svg v-else class="w-6 h-6 text-amber-400" fill="currentColor" viewBox="0 0 24 24"><path d="M12 15a5 5 0 1 0 0-10 5 5 0 0 0 0 10z"/><path d="m8.5 13.5-1.8 7.5L12 18l5.3 3-1.8-7.5"/></svg>
+                </div>
+                <span class="text-[10px] text-gray-500 text-center leading-tight line-clamp-2">{{ b.name }}</span>
+              </div>
+            </div>
+            <p v-else class="text-xs text-gray-400">{{ t('badges.noBadges') }}</p>
+          </div>
+
           <!-- Quick links -->
           <div class="bg-white border border-gray-200 rounded-2xl p-5 shadow-sm">
             <p class="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-4">Explore</p>
@@ -229,9 +244,13 @@ import { ref, computed, onMounted } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useAuthStore } from '@/stores/auth'
 import { useProgressStore } from '@/stores/progress'
+import { useFeaturesStore } from '@/stores/features'
+import { useBadgesStore } from '@/stores/badges'
 
 const auth = useAuthStore()
 const progress = useProgressStore()
+const features = useFeaturesStore()
+const badges = useBadgesStore()
 const { t, locale } = useI18n()
 
 const loading = ref(true)
@@ -305,6 +324,7 @@ onMounted(async () => {
   progress.loaded = false
   await progress.fetchProgress()
   await loadTrackStats()
+  if (features.isEnabled('badges')) badges.fetchEarned(true)
   loading.value = false
 })
 </script>

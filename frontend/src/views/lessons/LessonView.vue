@@ -35,7 +35,7 @@
         <!-- Lesson header -->
         <div class="mb-8">
           <!-- Language switcher -->
-          <div v-if="lesson.available_languages?.length" class="flex justify-end mb-3">
+          <div v-if="lesson.available_languages?.length && features.isEnabled('ai_translation')" class="flex justify-end mb-3">
             <label class="inline-flex items-center gap-2 text-xs text-gray-400">
               <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="1.75" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
               <select
@@ -206,6 +206,15 @@
 
       </template>
     </div>
+
+    <!-- Track-completion feedback prompt -->
+    <FeedbackForm
+      :show="showFeedback"
+      :track-slug="feedbackTrackSlug"
+      :track-title="feedbackTrackTitle"
+      @close="onFeedbackClose"
+      @submitted="onFeedbackSubmitted"
+    />
   </div>
 </template>
 
@@ -216,14 +225,20 @@ import { useI18n } from 'vue-i18n'
 import { curriculumApi } from '@/api/curriculum'
 import { progressApi } from '@/api/progress'
 import BlockRenderer from '@/components/blocks/BlockRenderer.vue'
+import FeedbackForm from '@/components/FeedbackForm.vue'
+import { feedbackApi } from '@/api/feedback'
+import { useBadgesStore } from '@/stores/badges'
 import { useAuthStore } from '@/stores/auth'
 import { useProgressStore } from '@/stores/progress'
+import { useFeaturesStore } from '@/stores/features'
 import { useSsrDataStore } from '@/stores/ssrData'
 import { useSeo, SEO_ORIGIN } from '@/composables/useSeo'
 
 const route = useRoute()
 const auth = useAuthStore()
 const progress = useProgressStore()
+const features = useFeaturesStore()
+const badges = useBadgesStore()
 const ssr = useSsrDataStore()
 const { t } = useI18n()
 
@@ -327,9 +342,42 @@ async function loadLesson(slug, lang) {
   }
 }
 
+const showFeedback = ref(false)
+const feedbackTrackSlug = ref('')
+const feedbackTrackTitle = ref('')
+
 async function handleMarkComplete() {
   await progress.markComplete(lesson.value.slug)
+  // Pull any freshly-earned badges (the global modal pops them with confetti).
+  if (features.isEnabled('badges')) await badges.fetchUnseen()
+  // Only prompt for feedback if no badge celebration is queued (avoid overlap).
+  if (!badges.queue.length) maybePromptFeedback()
 }
+
+// After a completion, if it finished the whole track, prompt for feedback once.
+async function maybePromptFeedback() {
+  const slug = lesson.value?.track_slug
+  if (!slug || !features.isEnabled('track_feedback')) return
+  if (localStorage.getItem(`feedback_seen_${slug}`)) return
+  // Invalidate any cached track progress so the percent is fresh.
+  delete progress.trackProgressCache[slug]
+  const tp = await progress.fetchTrackProgress(slug)
+  if (!tp || tp.percent !== 100) return
+  // Skip if the learner already submitted feedback for this track on the server.
+  try {
+    const mine = await feedbackApi.mySubmission(slug)
+    if (mine?.submitted) { localStorage.setItem(`feedback_seen_${slug}`, '1'); return }
+  } catch { /* non-blocking */ }
+  feedbackTrackSlug.value = slug
+  feedbackTrackTitle.value = lesson.value?.track_title || ''
+  showFeedback.value = true
+}
+
+function markFeedbackSeen() {
+  if (feedbackTrackSlug.value) localStorage.setItem(`feedback_seen_${feedbackTrackSlug.value}`, '1')
+}
+function onFeedbackClose() { markFeedbackSeen(); showFeedback.value = false }
+function onFeedbackSubmitted() { markFeedbackSeen(); showFeedback.value = false }
 
 async function handleEnroll() {
   if (enrolling.value) return

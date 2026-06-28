@@ -120,6 +120,12 @@ export const routes = [
       { path: 'registrations', name: 'admin-registrations', meta: { section: 'registrations' }, component: () => import('@/views/admin/AdminRegistrationsView.vue') },
       { path: 'languages',     name: 'admin-translations', meta: { section: 'translations' }, component: () => import('@/views/admin/AdminTranslationsView.vue') },
       { path: 'announcements', name: 'admin-announcements', meta: { section: 'announcements' }, component: () => import('@/views/admin/AdminAnnouncementsView.vue') },
+      { path: 'features',      name: 'admin-features',      meta: { section: 'features' },      component: () => import('@/views/admin/AdminFeatureFlagsView.vue') },
+      { path: 'feedback',      name: 'admin-feedback',      meta: { section: 'feedback' },      component: () => import('@/views/admin/AdminFeedbackView.vue') },
+      { path: 'badges',        name: 'admin-badges',        meta: { section: 'badges' },        component: () => import('@/views/admin/AdminBadgesView.vue') },
+      { path: 'email/campaigns', name: 'admin-email-campaigns', meta: { section: 'email' }, component: () => import('@/views/admin/AdminEmailCampaignsView.vue') },
+      { path: 'email/templates', name: 'admin-email-templates', meta: { section: 'email' }, component: () => import('@/views/admin/AdminEmailTemplatesView.vue') },
+      { path: 'email/settings',  name: 'admin-email-settings',  meta: { section: 'email' }, component: () => import('@/views/admin/AdminEmailSettingsView.vue') },
     ],
   },
 ]
