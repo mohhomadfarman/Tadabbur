@@ -48,14 +48,16 @@ Phase 1 delivers a full **curriculum framework**:
 - Rich lesson content with text, images, videos, callouts, and quizzes
 - Progress tracking, enrollment, and learning streaks
 - RTL Arabic UI with full English/Arabic i18n support
+- AI-powered lesson translation (Gemini) into each learner's language
 - Resource library and video archive
-- Admin panel with curriculum editor, WYSIWYG lesson builder, and analytics
+- Admin panel with curriculum editor, WYSIWYG lesson builder, role-based access, and analytics
+- Announcement system for reaching logged-in learners
 
 **Status: Shipped.** The web app is live with browsable curriculum, lesson content, progress tracking, and a full admin authoring system.
 
 ---
 
-### 🔄 Phase 2 — Active Learning, Not Passive Reading *(Next)*
+### 🔄 Phase 2 — Active Learning, Not Passive Reading *(In Progress)*
 > *Study. Test. Retain. Repeat.*
 
 Reading is not learning. Phase 2 transforms Tadabbur into an active study tool:
