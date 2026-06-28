@@ -27,6 +27,12 @@
         <div>
           <h1 class="text-2xl sm:text-3xl font-bold text-gray-900 mb-2">{{ track.title }}</h1>
           <p class="text-gray-500 max-w-2xl">{{ track.description }}</p>
+
+          <!-- Available translation languages -->
+          <div v-if="track.languages?.length" class="flex items-center gap-2 mt-3 flex-wrap">
+            <span class="text-xs text-gray-400">{{ t('track.availableIn') }}</span>
+            <TrackLanguages :languages="track.languages" :max="6" />
+          </div>
         </div>
 
         <!-- Enroll button (authenticated users only) -->
@@ -167,6 +173,7 @@ import { curriculumApi } from '@/api/curriculum'
 import { useAuthStore } from '@/stores/auth'
 import { useProgressStore } from '@/stores/progress'
 import EnrollLanguageModal from '@/components/EnrollLanguageModal.vue'
+import TrackLanguages from '@/components/TrackLanguages.vue'
 import { useSsrDataStore } from '@/stores/ssrData'
 import { useSeo, SEO_ORIGIN } from '@/composables/useSeo'
 

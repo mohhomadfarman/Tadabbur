@@ -163,7 +163,10 @@
         </h2>
 
         <!-- Description -->
-        <p class="text-sm text-gray-500 line-clamp-2 mb-4">{{ track.description }}</p>
+        <p class="text-sm text-gray-500 line-clamp-2 mb-3">{{ track.description }}</p>
+
+        <!-- Available translation languages -->
+        <TrackLanguages :languages="track.languages" :title="t('curriculum.availableIn')" class="mb-4" />
 
         <!-- CTA -->
         <span class="inline-flex items-center gap-1 text-xs text-emerald-700 font-medium">
@@ -220,7 +223,11 @@
           <h2 class="text-base font-semibold text-gray-900 group-hover:text-emerald-700 transition-colors mb-1.5">
             {{ track.title }}
           </h2>
-          <p class="text-sm text-gray-500 line-clamp-2 mb-4">{{ track.description }}</p>
+          <p class="text-sm text-gray-500 line-clamp-2 mb-3">{{ track.description }}</p>
+
+          <!-- Available translation languages -->
+          <TrackLanguages :languages="track.languages" :title="t('curriculum.availableIn')" class="mb-4" />
+
           <span class="inline-flex items-center gap-1 text-xs text-emerald-700 font-medium">
             {{ t('curriculum.startLearning') }}
             <svg class="w-3.5 h-3.5 icon-dir" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -242,6 +249,7 @@ import { useAuthStore } from '@/stores/auth'
 import { useProgressStore } from '@/stores/progress'
 import { useSsrDataStore } from '@/stores/ssrData'
 import { useSeo, SEO_ORIGIN } from '@/composables/useSeo'
+import TrackLanguages from '@/components/TrackLanguages.vue'
 
 const { t } = useI18n()
 const auth = useAuthStore()

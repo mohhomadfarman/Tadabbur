@@ -116,9 +116,11 @@
     "viewCard": "عرض البطاقات",
     "enrolled": "مسجّل",
     "noResults": "لا توجد مسارات تطابق بحثك.",
-    "clearFilters": "مسح الفلاتر"
+    "clearFilters": "مسح الفلاتر",
+    "availableIn": "اللغات المتاحة"
   },
   "track": {
+    "availableIn": "متاح بـ:",
     "enroll": "الالتحاق بالمسار",
     "enrolling": "جارٍ الالتحاق…",
     "enrolled": "ملتحق",

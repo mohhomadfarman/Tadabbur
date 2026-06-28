@@ -2,6 +2,40 @@ from rest_framework import serializers
 from .models import Track, Subject
 
 
+def _track_language_codes(track):
+    """Distinct translation language codes present in a track's published lessons.
+
+    Uses an aggregation that returns only the dict keys, so the (potentially
+    large) translation payloads are never pulled into memory.
+    """
+    from apps.lessons.models import Lesson
+    subject_ids = list(Subject.objects(track=track, is_published=True).scalar('id'))
+    if not subject_ids:
+        return set()
+    pipeline = [
+        {'$match': {'subject': {'$in': subject_ids}, 'status': 'published',
+                    'translations': {'$exists': True, '$ne': {}}}},
+        {'$project': {'langs': {'$map': {
+            'input': {'$objectToArray': '$translations'}, 'as': 'kv', 'in': '$$kv.k'}}}},
+        {'$unwind': '$langs'},
+        {'$group': {'_id': None, 'codes': {'$addToSet': '$langs'}}},
+    ]
+    res = list(Lesson.objects.aggregate(pipeline))
+    return set(res[0]['codes']) if res else set()
+
+
+def track_languages(track):
+    """Enabled offered languages a track has translations for (with display info)."""
+    codes = _track_language_codes(track)
+    if not codes:
+        return []
+    from apps.translations.models import TranslationSettings
+    return [
+        {'code': l.code, 'name': l.name, 'native_name': l.native_name or '', 'rtl': bool(l.rtl)}
+        for l in TranslationSettings.get_solo().enabled_languages() if l.code in codes
+    ]
+
+
 class TrackSerializer(serializers.Serializer):
     id = serializers.SerializerMethodField()
     title = serializers.CharField()
@@ -10,12 +44,19 @@ class TrackSerializer(serializers.Serializer):
     thumbnail_url = serializers.CharField()
     order = serializers.IntegerField()
     is_published = serializers.SerializerMethodField()
+    languages = serializers.SerializerMethodField()
 
     def get_id(self, obj):
         return str(obj.id)
 
     def get_is_published(self, obj):
         return obj.is_published
+
+    def get_languages(self, obj):
+        # Skip the extra aggregation for admin list/CRUD responses.
+        if self.context.get('admin'):
+            return []
+        return track_languages(obj)
 
 
 class SubjectListSerializer(serializers.Serializer):

@@ -116,9 +116,11 @@
     "viewCard": "Card view",
     "enrolled": "Enrolled",
     "noResults": "No tracks match your search.",
-    "clearFilters": "Clear filters"
+    "clearFilters": "Clear filters",
+    "availableIn": "Available languages"
   },
   "track": {
+    "availableIn": "Available in:",
     "enroll": "Enroll in Track",
     "enrolling": "Enrolling…",
     "enrolled": "Enrolled",
