@@ -674,23 +674,28 @@
             class="relative rounded-2xl p-6 transition-all duration-300"
             :style="phase.current
               ? 'background:rgba(35,78,204,0.08); border:1px solid rgba(35,78,204,0.3); box-shadow: 0 0 40px rgba(35,78,204,0.08);'
-              : 'background:rgba(255,255,255,0.02); border:1px solid rgba(255,255,255,0.07);'"
+              : phase.done
+                ? 'background:rgba(5,150,105,0.06); border:1px solid rgba(5,150,105,0.25);'
+                : 'background:rgba(255,255,255,0.02); border:1px solid rgba(255,255,255,0.07);'"
           >
             <div class="flex items-center justify-between mb-5">
               <span
-                class="text-[10px] font-bold uppercase tracking-widest px-3 py-1.5 rounded-full"
-                :style="phase.current
-                  ? 'background:#234ecc; color:#fff;'
-                  : 'background:rgba(255,255,255,0.06); color:rgba(255,255,255,0.3);'"
+                class="inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-widest px-3 py-1.5 rounded-full"
+                :style="phase.done
+                  ? 'background:#059669; color:#fff;'
+                  : phase.current
+                    ? 'background:#234ecc; color:#fff;'
+                    : 'background:rgba(255,255,255,0.06); color:rgba(255,255,255,0.3);'"
               >
-                {{ phase.current ? t('home.roadmapCurrentBadge') : t('home.roadmapPlannedBadge') }}
+                <svg v-if="phase.done" class="w-3 h-3 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M4.5 12.75l6 6 9-13.5"/></svg>
+                {{ phase.done ? t('home.roadmapCompleteBadge') : phase.current ? t('home.roadmapCurrentBadge') : t('home.roadmapPlannedBadge') }}
               </span>
               <span class="text-2xl font-black select-none" style="color:rgba(255,255,255,0.06);">{{ String(i + 1).padStart(2, '0') }}</span>
             </div>
-            <div class="icon-circle mb-4" :style="phase.current ? 'background:rgba(35,78,204,0.2);' : 'background:rgba(255,255,255,0.04);'">
-              <svg class="w-5 h-5" :style="phase.current ? 'color:#3d65e8;' : 'color:rgba(255,255,255,0.2);'" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" v-html="phase.iconPath"></svg>
+            <div class="icon-circle mb-4" :style="phase.current ? 'background:rgba(35,78,204,0.2);' : phase.done ? 'background:rgba(5,150,105,0.18);' : 'background:rgba(255,255,255,0.04);'">
+              <svg class="w-5 h-5" :style="phase.current ? 'color:#3d65e8;' : phase.done ? 'color:#10b981;' : 'color:rgba(255,255,255,0.2);'" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" v-html="phase.iconPath"></svg>
             </div>
-            <h3 class="font-bold text-lg mb-2" :style="phase.current ? 'color:#3d65e8;' : 'color:rgba(255,255,255,0.7);'">
+            <h3 class="font-bold text-lg mb-2" :style="phase.current ? 'color:#3d65e8;' : phase.done ? 'color:#10b981;' : 'color:rgba(255,255,255,0.7);'">
               {{ t(`home.${phase.key}Title`) }}
             </h3>
             <p class="text-sm leading-relaxed" style="color:rgba(255,255,255,0.35);">{{ t(`home.${phase.key}Desc`) }}</p>
@@ -991,12 +996,12 @@ const painPoints = [
 ]
 
 const phases = [
-  { key: 'phase1', current: true,  iconPath: `<rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/>` },
-  { key: 'phase2', current: false, iconPath: `<circle cx="12" cy="12" r="3"/><path d="M12 1v4M12 19v4M4.22 4.22l2.83 2.83M16.95 16.95l2.83 2.83M1 12h4M19 12h4M4.22 19.78l2.83-2.83M16.95 7.05l2.83-2.83"/>` },
-  { key: 'phase3', current: false, iconPath: `<path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>` },
-  { key: 'phase4', current: false, iconPath: `<rect x="5" y="2" width="14" height="20" rx="2" ry="2"/><line x1="12" y1="18" x2="12.01" y2="18"/>` },
-  { key: 'phase5', current: false, iconPath: `<path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/>` },
-  { key: 'phase6', current: false, iconPath: `<circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>` },
+  { key: 'phase1', done: true,  current: false, iconPath: `<rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/>` },
+  { key: 'phase2', done: false, current: true,  iconPath: `<circle cx="12" cy="12" r="3"/><path d="M12 1v4M12 19v4M4.22 4.22l2.83 2.83M16.95 16.95l2.83 2.83M1 12h4M19 12h4M4.22 19.78l2.83-2.83M16.95 7.05l2.83-2.83"/>` },
+  { key: 'phase3', done: false, current: false, iconPath: `<path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>` },
+  { key: 'phase4', done: false, current: false, iconPath: `<rect x="5" y="2" width="14" height="20" rx="2" ry="2"/><line x1="12" y1="18" x2="12.01" y2="18"/>` },
+  { key: 'phase5', done: false, current: false, iconPath: `<path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/>` },
+  { key: 'phase6', done: false, current: false, iconPath: `<circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>` },
 ]
 
 const audience = [
