@@ -65,15 +65,3 @@ def send_campaign(campaign_id):
     campaign.status = 'failed' if (failed and sent == 0) else 'sent'
     campaign.sent_at = datetime.now(timezone.utc)
     campaign.save()
-
-
-@shared_task(ignore_result=True)
-def send_test(campaign_id, email):
-    campaign = EmailCampaign.objects(id=campaign_id).first()
-    if not campaign or not email:
-        return
-    try:
-        _send_one(email, f'[TEST] {campaign.subject}', campaign.html_body,
-                  build_connection(), effective_from_email())
-    except Exception:
-        pass
