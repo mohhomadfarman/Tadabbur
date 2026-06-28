@@ -292,7 +292,7 @@ useSeo(() => ({
     : undefined,
 }))
 
-const viewMode = ref('icon')      // 'icon' | 'card'
+const viewMode = ref('card')      // 'icon' | 'card' — default to card view
 const searchQuery = ref('')
 const sortOrder = ref('default')  // 'default' | 'az' | 'za'
 const filterMode = ref('all')     // 'all' | 'enrolled' | 'not-enrolled'
