@@ -34,7 +34,22 @@
 
         <!-- Lesson header -->
         <div class="mb-8">
-          <h1 class="text-2xl sm:text-3xl font-bold text-gray-900 mb-3 leading-snug">{{ lesson.title }}</h1>
+          <!-- Language switcher -->
+          <div v-if="lesson.available_languages?.length" class="flex justify-end mb-3">
+            <label class="inline-flex items-center gap-2 text-xs text-gray-400">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="1.75" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+              <select
+                :value="currentLang"
+                @change="changeLanguage($event.target.value)"
+                class="border border-gray-200 rounded-lg px-2.5 py-1.5 text-sm bg-white text-gray-600 cursor-pointer focus:outline-none focus:ring-2 focus:ring-emerald-500/40"
+              >
+                <option value="">{{ t('lesson.original') }}</option>
+                <option v-for="l in lesson.available_languages" :key="l.code" :value="l.code">{{ l.name }}</option>
+              </select>
+            </label>
+          </div>
+
+          <h1 :dir="contentDir" class="text-2xl sm:text-3xl font-bold text-gray-900 mb-3 leading-snug">{{ lesson.title }}</h1>
           <div class="flex items-center gap-3 text-sm text-gray-400 flex-wrap">
             <span v-if="lesson.estimated_minutes" class="flex items-center gap-1">
               <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -56,7 +71,7 @@
               {{ t('lesson.completed') }}
             </span>
           </div>
-          <p v-if="lesson.summary" class="text-gray-500 mt-4 text-base leading-relaxed">
+          <p v-if="lesson.summary" :dir="contentDir" class="text-gray-500 mt-4 text-base leading-relaxed">
             {{ lesson.summary }}
           </p>
         </div>
@@ -94,7 +109,7 @@
         </div>
 
         <!-- Content blocks -->
-        <div v-else class="space-y-7">
+        <div v-else class="space-y-7" :dir="contentDir">
           <div v-for="block in lesson.content_blocks" :key="block.order">
 
             <!-- Text -->
@@ -279,7 +294,7 @@
 </template>
 
 <script setup>
-import { ref, reactive, onMounted, onServerPrefetch, onUnmounted, watch } from 'vue'
+import { ref, reactive, computed, onMounted, onServerPrefetch, onUnmounted, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import { curriculumApi } from '@/api/curriculum'
@@ -351,6 +366,22 @@ useSeo(() => {
 const quizSelected = reactive({})
 const quizSubmitted = reactive({})
 
+// ── Language switcher ────────────────────────────────────────────────────
+const currentLang = computed(() => lesson.value?.active_lang || '')
+const activeLangObj = computed(() =>
+  (lesson.value?.available_languages || []).find(l => l.code === currentLang.value) || null
+)
+const contentDir = computed(() => (activeLangObj.value?.rtl ? 'rtl' : 'ltr'))
+
+async function changeLanguage(code) {
+  if (code === currentLang.value) return
+  // Persist the per-track preference for logged-in learners.
+  if (auth.isLoggedIn && lesson.value?.track_slug) {
+    try { await progress.setTrackLanguage(lesson.value.track_slug, code) } catch { /* non-blocking */ }
+  }
+  await loadLesson(route.params.lessonSlug, code)
+}
+
 function youtubeId(url) {
   if (!url) return null
   const match = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([^&\s]+)/)
@@ -384,13 +415,13 @@ function updateReadingProgress() {
   readingProgress.value = docHeight > 0 ? Math.min(100, Math.round((scrollTop / docHeight) * 100)) : 0
 }
 
-async function loadLesson(slug) {
+async function loadLesson(slug, lang) {
   // Only show the skeleton when there's nothing on screen yet — keeps the
   // prerendered content visible while a logged-in refetch upgrades it in place.
   if (!lesson.value) loading.value = true
   error.value = ''
   try {
-    lesson.value = await curriculumApi.getLesson(slug)
+    lesson.value = await curriculumApi.getLesson(slug, lang)
     if (auth.isLoggedIn) await progress.fetchProgress()
   } catch (e) {
     error.value = e.response?.status === 404 ? t('lesson.notFound') : t('lesson.loadError')

@@ -116,6 +116,20 @@
             Analytics
           </RouterLink>
 
+          <!-- Languages (AI translation) -->
+          <RouterLink
+            v-if="auth.can('translations')"
+            :to="{ name: 'admin-translations' }"
+            class="flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-sm transition-colors"
+            :class="isActive('translations') ? 'bg-[#234ecc] text-white font-medium' : 'text-white/50 hover:text-white hover:bg-white/5'"
+            @click="sidebarOpen = false"
+          >
+            <svg class="w-4 h-4 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+              <path d="m5 8 6 6"/><path d="m4 14 6-6 2-3"/><path d="M2 5h12"/><path d="M7 2h1"/><path d="m22 22-5-10-5 10"/><path d="M14 18h6"/>
+            </svg>
+            Languages
+          </RouterLink>
+
           <!-- Roles & Permissions -->
           <RouterLink
             v-if="auth.can('roles')"
@@ -200,6 +214,7 @@ function isActive(section) {
   if (section === 'registrations') return p.startsWith('/admin/registrations')
   if (section === 'analytics')  return p.startsWith('/admin/analytics')
   if (section === 'roles')      return p.startsWith('/admin/roles')
+  if (section === 'translations') return p.startsWith('/admin/languages')
   return false
 }
 

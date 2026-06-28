@@ -132,6 +132,15 @@
     "subjectCompleted": "مكتمل",
     "subjectInProgress": "جارٍ"
   },
+  "enroll": {
+    "title": "اختر لغتك",
+    "subtitle": "اختر اللغة التي تريد متابعة {track} بها. يمكنك تغييرها في أي وقت.",
+    "original": "الأصل (الإنجليزية)",
+    "originalHint": "اللغة التي كُتبت بها الدروس.",
+    "cancel": "إلغاء",
+    "confirm": "التحاق",
+    "enrolling": "جارٍ الالتحاق…"
+  },
   "subject": {
     "lessons": "الدروس",
     "noLessons": "لا توجد دروس منشورة بعد.",
@@ -168,7 +177,9 @@
     "enrollRequiredDesc": "هذا الدرس جزء من مسار منظّم. سجّل مجانًا لفتح جميع الدروس وتتبّع تقدّمك.",
     "enrollBtn": "الالتحاق بالمسار",
     "enrolling": "جارٍ الالتحاق…",
-    "enrolledReloading": "تم الالتحاق! جارٍ تحميل الدرس…"
+    "enrolledReloading": "تم الالتحاق! جارٍ تحميل الدرس…",
+    "language": "اللغة",
+    "original": "الأصل"
   },
   "dashboard": {
     "welcome": "أهلاً وسهلاً",

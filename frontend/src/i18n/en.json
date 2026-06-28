@@ -132,6 +132,15 @@
     "subjectCompleted": "Completed",
     "subjectInProgress": "In Progress"
   },
+  "enroll": {
+    "title": "Choose your language",
+    "subtitle": "Pick the language you'd like to follow {track} in. You can change it anytime.",
+    "original": "Original (English)",
+    "originalHint": "The language the lessons were written in.",
+    "cancel": "Cancel",
+    "confirm": "Enroll",
+    "enrolling": "Enrolling…"
+  },
   "subject": {
     "lessons": "Lessons",
     "noLessons": "No lessons published yet.",
@@ -168,7 +177,9 @@
     "enrollRequiredDesc": "This lesson is part of a structured track. Enroll for free to unlock all lessons and track your progress.",
     "enrollBtn": "Enroll in Track",
     "enrolling": "Enrolling…",
-    "enrolledReloading": "Enrolled! Loading lesson…"
+    "enrolledReloading": "Enrolled! Loading lesson…",
+    "language": "Language",
+    "original": "Original"
   },
   "dashboard": {
     "welcome": "Welcome back",

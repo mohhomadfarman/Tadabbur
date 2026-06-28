@@ -18,10 +18,10 @@
         <button
           type="button"
           :disabled="saving"
-          @click="save"
+          @click="onSave"
           class="bg-[#234ecc] hover:bg-[#1a3ba8] disabled:opacity-60 text-white px-4 py-2 rounded-lg text-sm font-semibold transition-colors"
         >
-          {{ saving ? 'Saving…' : (isEdit ? 'Save Changes' : 'Create Lesson') }}
+          {{ saving ? 'Saving…' : saveLabel }}
         </button>
         <span v-if="saved" class="text-sm text-emerald-600 font-medium flex items-center gap-1.5">
           <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -54,21 +54,74 @@
       <!-- Left: metadata + block editor -->
       <div class="lg:col-span-2 space-y-6">
 
+        <!-- Language tabs (Original | translations | generate) -->
+        <div v-if="isEdit" class="bg-white border border-gray-200 rounded-2xl p-3 shadow-sm">
+          <div class="flex items-center gap-2 flex-wrap">
+            <button type="button" @click="activeLang = ''"
+              class="px-3 py-1.5 rounded-lg text-sm font-medium transition-colors"
+              :class="!activeLang ? 'bg-[#234ecc] text-white' : 'text-gray-500 hover:bg-gray-100'">
+              Original
+            </button>
+            <button v-for="code in translatedCodes" :key="code" type="button" @click="activeLang = code"
+              class="group inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium transition-colors"
+              :class="activeLang === code ? 'bg-[#234ecc] text-white' : 'text-gray-500 hover:bg-gray-100'">
+              {{ langName(code) }}
+              <span v-if="translations[code]?.is_outdated"
+                :class="activeLang === code ? 'text-amber-200' : 'text-amber-500'" title="Original changed since this was translated">●</span>
+              <span @click.stop="askDeleteTranslation(code)"
+                class="opacity-50 hover:opacity-100" title="Delete translation">×</span>
+            </button>
+
+            <div class="flex-1" />
+
+            <!-- Generate -->
+            <template v-if="availableLangs.length">
+              <select v-model="genLang"
+                class="border border-gray-200 rounded-lg px-2.5 py-1.5 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-[#234ecc]/40">
+                <option value="">Add language…</option>
+                <option v-for="l in availableLangs" :key="l.code" :value="l.code">{{ l.name }}</option>
+              </select>
+              <button type="button" @click="generateTranslation" :disabled="generating || !genLang"
+                class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-semibold bg-purple-600 hover:bg-purple-700 disabled:opacity-50 text-white transition-colors">
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M5 3v4M3 5h4M6 17v4m-2-2h4M13 3l2.5 6.5L22 12l-6.5 2.5L13 21l-2.5-6.5L4 12l6.5-2.5L13 3z"/></svg>
+                {{ generating ? 'Translating…' : 'Translate' }}
+              </button>
+            </template>
+            <RouterLink v-else :to="{ name: 'admin-translations' }" class="text-xs text-[#234ecc] hover:underline">
+              Add languages to enable translation
+            </RouterLink>
+          </div>
+
+          <!-- Outdated / translation banner -->
+          <div v-if="activeLang" class="mt-3 flex items-center justify-between gap-3 rounded-lg px-3 py-2 text-xs"
+            :class="translations[activeLang]?.is_outdated ? 'bg-amber-50 text-amber-700' : 'bg-purple-50 text-purple-700'">
+            <span v-if="translations[activeLang]?.is_outdated">
+              The original lesson changed after this translation was generated — review or re-translate.
+            </span>
+            <span v-else>Editing the <strong>{{ langName(activeLang) }}</strong> translation. Proofread, then save.</span>
+            <button type="button" @click="generateTranslationFor(activeLang)" :disabled="generating"
+              class="shrink-0 font-semibold hover:underline disabled:opacity-50">
+              {{ generating ? 'Translating…' : 'Re-translate' }}
+            </button>
+          </div>
+        </div>
+
         <!-- Metadata card -->
         <div class="bg-white border border-gray-200 rounded-2xl p-6 shadow-sm space-y-5">
           <div>
             <label class="block text-sm font-medium text-gray-700 mb-1.5">Title <span class="text-red-500">*</span></label>
             <input
-              v-model="form.title"
+              v-model="doc.title"
               @input="autofillSlug"
               type="text"
               required
+              :dir="editDir"
               placeholder="e.g. The Five Pillars of Islam"
               class="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#234ecc]/40"
             />
           </div>
 
-          <div>
+          <div v-if="!activeLang">
             <label class="block text-sm font-medium text-gray-700 mb-1.5">Slug</label>
             <div class="flex gap-2">
               <input
@@ -91,8 +144,9 @@
           <div>
             <label class="block text-sm font-medium text-gray-700 mb-1.5">Summary</label>
             <textarea
-              v-model="form.summary"
+              v-model="doc.summary"
               rows="2"
+              :dir="editDir"
               placeholder="Brief description shown in lesson lists…"
               class="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#234ecc]/40 resize-none"
             />
@@ -103,17 +157,17 @@
         <div>
           <div class="flex items-center justify-between mb-3">
             <h2 class="text-sm font-semibold text-gray-700">Content</h2>
-            <span class="text-xs text-gray-400">{{ form.content_blocks.length }} block{{ form.content_blocks.length !== 1 ? 's' : '' }}</span>
+            <span class="text-xs text-gray-400">{{ doc.content_blocks.length }} block{{ doc.content_blocks.length !== 1 ? 's' : '' }}</span>
           </div>
 
           <!-- Block list -->
           <div class="space-y-3">
-            <div v-if="form.content_blocks.length === 0" class="text-center text-gray-400 text-sm py-10 border-2 border-dashed border-gray-200 rounded-2xl">
+            <div v-if="doc.content_blocks.length === 0" class="text-center text-gray-400 text-sm py-10 border-2 border-dashed border-gray-200 rounded-2xl">
               No content yet — add your first block below.
             </div>
 
             <div
-              v-for="(block, idx) in form.content_blocks"
+              v-for="(block, idx) in doc.content_blocks"
               :key="idx"
               class="border rounded-2xl overflow-hidden shadow-sm"
               :class="BLOCK_BORDER_CLASSES[block.type]"
@@ -131,14 +185,14 @@
                 </span>
                 <span class="text-xs text-gray-400">#{{ idx + 1 }}</span>
                 <div class="flex-1" />
-                <div class="flex items-center gap-1">
+                <div v-if="!activeLang" class="flex items-center gap-1">
                   <button type="button" @click="moveBlock(idx, -1)" :disabled="idx === 0"
                     class="w-7 h-7 flex items-center justify-center rounded-lg text-gray-400 hover:text-gray-700 hover:bg-white/60 disabled:opacity-30 transition-colors">
                     <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7"/>
                     </svg>
                   </button>
-                  <button type="button" @click="moveBlock(idx, 1)" :disabled="idx === form.content_blocks.length - 1"
+                  <button type="button" @click="moveBlock(idx, 1)" :disabled="idx === doc.content_blocks.length - 1"
                     class="w-7 h-7 flex items-center justify-center rounded-lg text-gray-400 hover:text-gray-700 hover:bg-white/60 disabled:opacity-30 transition-colors">
                     <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
@@ -160,6 +214,7 @@
                     v-model="block.body.text"
                     placeholder="Start writing your paragraph…"
                     rows="5"
+                    :dir="editDir"
                     class="w-full text-gray-700 leading-relaxed text-[1.05rem] resize-y bg-transparent border-0 focus:outline-none focus:ring-0 placeholder:text-gray-300"
                   />
                 </div>
@@ -178,6 +233,7 @@
                   <textarea
                     v-model="block.body.translation"
                     rows="2"
+                    :dir="editDir"
                     placeholder="Enter English translation…"
                     class="w-full text-gray-600 italic text-sm bg-transparent border-0 border-b border-emerald-200 focus:outline-none focus:border-emerald-400 resize-none pb-2 placeholder:text-emerald-300"
                   />
@@ -206,6 +262,7 @@
                   <textarea
                     v-model="block.body.text"
                     rows="4"
+                    :dir="editDir"
                     placeholder="Enter hadith text…"
                     class="w-full text-gray-700 italic leading-relaxed bg-transparent border-0 border-b border-amber-200 focus:outline-none focus:border-amber-400 resize-y pb-2 placeholder:text-amber-200"
                   />
@@ -323,6 +380,7 @@
                   <p class="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-2">Quick Check</p>
                   <input
                     v-model="block.body.question"
+                    :dir="editDir"
                     placeholder="Enter your question…"
                     class="w-full font-medium text-gray-900 bg-transparent border-0 focus:outline-none text-base placeholder:text-gray-300"
                   />
@@ -361,6 +419,7 @@
                   <textarea
                     v-model="block.body.explanation"
                     rows="2"
+                    :dir="editDir"
                     placeholder="Explanation shown after answering (optional)…"
                     class="w-full text-sm text-blue-800 bg-blue-50 border border-blue-100 rounded-xl px-3 py-2 resize-none focus:outline-none focus:ring-1 focus:ring-blue-300 placeholder:text-blue-300"
                   />
@@ -370,8 +429,8 @@
             </div>
           </div>
 
-          <!-- Add block pills -->
-          <div class="flex flex-wrap gap-2 pt-2">
+          <!-- Add block pills (original only — translations mirror the source structure) -->
+          <div v-if="!activeLang" class="flex flex-wrap gap-2 pt-2">
             <button
               v-for="type in BLOCK_TYPES"
               :key="type.value"
@@ -513,6 +572,21 @@
       </div>
 
     </div>
+
+    <!-- Delete translation modal -->
+    <div v-if="deleteLangTarget" class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4 backdrop-blur-sm" @click.self="deleteLangTarget = null">
+      <div class="bg-white rounded-2xl shadow-2xl max-w-sm w-full p-6">
+        <h3 class="font-bold text-gray-900 mb-1">Delete translation?</h3>
+        <p class="text-sm text-gray-500 mb-5">The <strong>{{ langName(deleteLangTarget) }}</strong> translation of this lesson will be removed. The original is untouched.</p>
+        <div class="flex gap-3">
+          <button @click="deleteLangTarget = null" class="flex-1 px-4 py-2.5 text-sm text-gray-600 border border-gray-200 rounded-xl hover:text-gray-900 transition-colors">Cancel</button>
+          <button :disabled="deletingLang" @click="confirmDeleteTranslation" class="flex-1 px-4 py-2.5 bg-red-500 hover:bg-red-600 disabled:opacity-60 text-white text-sm font-semibold rounded-xl transition-colors">
+            {{ deletingLang ? 'Deleting…' : 'Delete' }}
+          </button>
+        </div>
+      </div>
+    </div>
+
   </div>
 </template>
 
@@ -520,6 +594,7 @@
 import { ref, reactive, onMounted, computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { adminApi } from '@/api/admin'
+import { curriculumApi } from '@/api/curriculum'
 
 const route = useRoute()
 const router = useRouter()
@@ -597,6 +672,121 @@ let slugWasEdited = false
 const imageUploading = reactive({})
 const imageInputRefs = ref([])
 
+// ── Translations ─────────────────────────────────────────────────────────
+const activeLang = ref('')            // '' = original; otherwise a language code
+const translations = reactive({})     // code -> { title, summary, meta_*, content_blocks, is_outdated, ... }
+const availableLangs = ref([])        // enabled languages from admin settings
+const genLang = ref('')               // selected language in the "Add language" dropdown
+const generating = ref(false)
+const deleteLangTarget = ref(null)
+const deletingLang = ref(false)
+
+// The document currently being edited: the original form, or a translation.
+const doc = computed(() =>
+  (activeLang.value && translations[activeLang.value]) ? translations[activeLang.value] : form.value
+)
+const translatedCodes = computed(() => Object.keys(translations))
+const editDir = computed(() => (activeLang.value && langRtl(activeLang.value)) ? 'rtl' : 'ltr')
+const saveLabel = computed(() =>
+  activeLang.value ? `Save ${langName(activeLang.value)}` : (isEdit.value ? 'Save Changes' : 'Create Lesson')
+)
+
+function langName(code) {
+  return availableLangs.value.find(l => l.code === code)?.name || code
+}
+function langRtl(code) {
+  return !!availableLangs.value.find(l => l.code === code)?.rtl
+}
+
+function normalizeTranslation(raw) {
+  return {
+    title: raw.title || '',
+    summary: raw.summary || '',
+    meta_title: raw.meta_title || '',
+    meta_description: raw.meta_description || '',
+    content_blocks: (raw.content_blocks || []).map(b => ({
+      type: b.type,
+      body: { ...BLOCK_DEFAULTS[b.type], ...b.body },
+    })),
+    is_outdated: !!raw.is_outdated,
+    translated_at: raw.translated_at || '',
+    model: raw.model || '',
+    edited: !!raw.edited,
+  }
+}
+
+async function generateTranslation() {
+  if (genLang.value) await generateTranslationFor(genLang.value)
+}
+
+async function generateTranslationFor(code) {
+  if (!isEdit.value) { apiError.value = 'Create the lesson first, then translate it.'; return }
+  apiError.value = ''
+  generating.value = true
+  try {
+    // Persist the latest original so Gemini translates the current content.
+    await adminApi.updateLesson(route.params.slug, buildOriginalPayload())
+    const res = await adminApi.generateTranslation(route.params.slug, code)
+    translations[code] = normalizeTranslation(res.translation)
+    activeLang.value = code
+    genLang.value = ''
+  } catch (e) {
+    apiError.value = e.response?.data?.detail
+      || 'Could not generate translation. Check the Gemini settings in Admin → Languages.'
+  } finally {
+    generating.value = false
+  }
+}
+
+async function saveTranslation() {
+  const code = activeLang.value
+  const tr = translations[code]
+  if (!tr) return
+  apiError.value = ''
+  saved.value = false
+  saving.value = true
+  try {
+    const res = await adminApi.saveTranslation(route.params.slug, code, {
+      title: tr.title,
+      summary: tr.summary,
+      meta_title: tr.meta_title,
+      meta_description: tr.meta_description,
+      content_blocks: tr.content_blocks.map((b, i) => ({ type: b.type, order: i, body: b.body })),
+      edited: true,
+    })
+    translations[code] = normalizeTranslation(res.translation)
+    saved.value = true
+    setTimeout(() => { saved.value = false }, 2500)
+  } catch {
+    apiError.value = 'Could not save the translation.'
+  } finally {
+    saving.value = false
+  }
+}
+
+function onSave() {
+  return activeLang.value ? saveTranslation() : save()
+}
+
+function askDeleteTranslation(code) {
+  deleteLangTarget.value = code
+}
+
+async function confirmDeleteTranslation() {
+  const code = deleteLangTarget.value
+  deletingLang.value = true
+  try {
+    await adminApi.deleteTranslation(route.params.slug, code)
+    delete translations[code]
+    if (activeLang.value === code) activeLang.value = ''
+    deleteLangTarget.value = null
+  } catch {
+    apiError.value = 'Could not delete the translation.'
+  } finally {
+    deletingLang.value = false
+  }
+}
+
 function youtubeId(url) {
   if (!url) return null
   const match = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([^&\s]+)/)
@@ -608,6 +798,7 @@ function slugify(text) {
 }
 
 function autofillSlug() {
+  if (activeLang.value) return  // slug belongs to the original only
   if (!slugWasEdited) form.value.slug = slugify(form.value.title)
 }
 
@@ -654,7 +845,7 @@ async function handleImageUpload(idx, event) {
       headers: { 'Content-Type': file.type },
     })
     if (!res.ok) throw new Error(`Upload failed: ${res.status}`)
-    form.value.content_blocks[idx].body.url = public_url
+    doc.value.content_blocks[idx].body.url = public_url
   } catch {
     apiError.value = 'Image upload failed. Please try again or paste a URL.'
   } finally {
@@ -663,28 +854,32 @@ async function handleImageUpload(idx, event) {
   }
 }
 
+function buildOriginalPayload() {
+  return {
+    subject_slug: form.value.subject_slug,
+    title: form.value.title,
+    slug: form.value.slug,
+    summary: form.value.summary,
+    estimated_minutes: form.value.estimated_minutes,
+    order: form.value.order,
+    status: form.value.status,
+    meta_title: form.value.meta_title,
+    meta_description: form.value.meta_description,
+    og_image: form.value.og_image,
+    content_blocks: form.value.content_blocks.map((b, i) => ({
+      type: b.type,
+      order: i,
+      body: b.body,
+    })),
+  }
+}
+
 async function save() {
   apiError.value = ''
   saved.value = false
   saving.value = true
   try {
-    const payload = {
-      subject_slug: form.value.subject_slug,
-      title: form.value.title,
-      slug: form.value.slug,
-      summary: form.value.summary,
-      estimated_minutes: form.value.estimated_minutes,
-      order: form.value.order,
-      status: form.value.status,
-      meta_title: form.value.meta_title,
-      meta_description: form.value.meta_description,
-      og_image: form.value.og_image,
-      content_blocks: form.value.content_blocks.map((b, i) => ({
-        type: b.type,
-        order: i,
-        body: b.body,
-      })),
-    }
+    const payload = buildOriginalPayload()
     if (isEdit.value) {
       await adminApi.updateLesson(route.params.slug, payload)
       saved.value = true
@@ -715,6 +910,8 @@ onMounted(async () => {
     })
   )
 
+  try { availableLangs.value = await curriculumApi.getLanguages() } catch { /* none configured */ }
+
   if (!isEdit.value) return
   try {
     const data = await adminApi.getLesson(route.params.slug)
@@ -735,6 +932,11 @@ onMounted(async () => {
       })),
     }
     slugWasEdited = true
+
+    // Load any existing translations into the per-language editors.
+    Object.entries(data.translations || {}).forEach(([code, tr]) => {
+      translations[code] = normalizeTranslation(tr)
+    })
   } catch (e) {
     loadError.value = e.response?.status === 404
       ? 'Lesson not found.'

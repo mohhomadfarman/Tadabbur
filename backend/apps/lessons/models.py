@@ -24,6 +24,12 @@ class Lesson(Document):
     status = StringField(choices=['draft', 'published'], default='draft')
     estimated_minutes = IntField(default=0)
     content_blocks = EmbeddedDocumentListField(ContentBlock)
+    # AI translations keyed by language code, e.g.
+    #   { 'hinglish': { title, summary, meta_title, meta_description,
+    #                   content_blocks: [...], source_updated_at, model,
+    #                   translated_at, edited } }
+    # The original (source) language always lives in the top-level fields above.
+    translations = DictField()
     # SEO — optional overrides; fall back to title/summary when empty
     meta_title = StringField(max_length=70, default='')
     meta_description = StringField(max_length=200, default='')

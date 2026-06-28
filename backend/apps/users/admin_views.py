@@ -23,6 +23,7 @@ SECTION_LABELS = {
     'analytics': 'Analytics',
     'roles': 'Roles & Permissions',
     'registrations': 'Registrations',
+    'translations': 'Languages',
 }
 
 ACTIVITY_LIMIT = 100

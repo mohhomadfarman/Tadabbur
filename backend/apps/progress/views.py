@@ -18,6 +18,28 @@ def _get_or_create_user_progress(user):
     return up
 
 
+def _valid_language(code):
+    """Return code if it's a currently-enabled translation language, else ''."""
+    code = (code or '').strip()
+    if not code:
+        return ''
+    from apps.translations.models import TranslationSettings
+    enabled = {l.code for l in TranslationSettings.get_solo().enabled_languages()}
+    return code if code in enabled else ''
+
+
+def _set_track_language(up, track_slug, code):
+    """Store (or clear) the per-track reading language. Returns the stored value."""
+    langs = dict(up.track_languages or {})
+    valid = _valid_language(code)
+    if valid:
+        langs[track_slug] = valid
+    else:
+        langs.pop(track_slug, None)
+    up.track_languages = langs
+    return langs.get(track_slug, '')
+
+
 class MarkCompleteView(APIView):
     permission_classes = [IsAuthenticated]
 
@@ -62,12 +84,14 @@ class UserProgressView(APIView):
         up = UserProgress.objects(user=request.user).first()
 
         enrolled_tracks = []
+        track_languages = {}
         current_streak = 0
         longest_streak = 0
         last_activity = None
 
         if up:
             enrolled_tracks = up.enrolled_tracks or []
+            track_languages = up.track_languages or {}
             current_streak = up.current_streak_days or 0
             longest_streak = up.longest_streak_days or 0
             last_activity = up.last_activity_date.isoformat() if up.last_activity_date else None
@@ -114,6 +138,7 @@ class UserProgressView(APIView):
             'completed_lessons': completed_slugs,
             'total_lessons_completed': len(completed_slugs),
             'enrolled_tracks': enrolled_tracks,
+            'track_languages': track_languages,
             'current_streak_days': current_streak,
             'longest_streak_days': longest_streak,
             'last_activity': last_activity,
@@ -132,11 +157,14 @@ class EnrollTrackView(APIView):
         up = _get_or_create_user_progress(request.user)
         if track_slug not in up.enrolled_tracks:
             up.enrolled_tracks.append(track_slug)
-            up.updated_at = datetime.now(timezone.utc)
-            up.save()
-            return Response({'enrolled': True, 'track_slug': track_slug})
 
-        return Response({'enrolled': True, 'track_slug': track_slug})
+        language = ''
+        if 'language' in request.data:
+            language = _set_track_language(up, track_slug, request.data.get('language'))
+
+        up.updated_at = datetime.now(timezone.utc)
+        up.save()
+        return Response({'enrolled': True, 'track_slug': track_slug, 'language': language})
 
     def delete(self, request, track_slug):
         up = UserProgress.objects(user=request.user).first()
@@ -145,6 +173,18 @@ class EnrollTrackView(APIView):
             up.updated_at = datetime.now(timezone.utc)
             up.save()
         return Response({'enrolled': False, 'track_slug': track_slug})
+
+
+class SetTrackLanguageView(APIView):
+    """Change the reading language for a track (the lesson-page switcher)."""
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request, track_slug):
+        up = _get_or_create_user_progress(request.user)
+        language = _set_track_language(up, track_slug, request.data.get('language'))
+        up.updated_at = datetime.now(timezone.utc)
+        up.save()
+        return Response({'track_slug': track_slug, 'language': language})
 
 
 class TrackProgressView(APIView):

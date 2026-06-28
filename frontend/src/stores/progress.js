@@ -5,6 +5,7 @@ import { progressApi } from '@/api/progress'
 export const useProgressStore = defineStore('progress', () => {
   const completedLessons = ref(new Set())
   const enrolledTracks = ref([])
+  const trackLanguages = ref({})       // { track_slug: lang_code }
   const currentStreak = ref(0)
   const longestStreak = ref(0)
   const totalCompleted = ref(0)
@@ -24,6 +25,7 @@ export const useProgressStore = defineStore('progress', () => {
       completedLessons.value = new Set(data.completed_lessons)
       totalCompleted.value = data.total_lessons_completed
       enrolledTracks.value = data.enrolled_tracks || []
+      trackLanguages.value = data.track_languages || {}
       currentStreak.value = data.current_streak_days || 0
       longestStreak.value = data.longest_streak_days || 0
       continueLesson.value = data.continue_learning || null
@@ -49,17 +51,28 @@ export const useProgressStore = defineStore('progress', () => {
     }
   }
 
-  async function enrollTrack(trackSlug) {
+  async function enrollTrack(trackSlug, language = '') {
     if (enrolling.value) return
     enrolling.value = true
     try {
-      await progressApi.enrollTrack(trackSlug)
+      const res = await progressApi.enrollTrack(trackSlug, language)
       if (!enrolledTracks.value.includes(trackSlug)) {
         enrolledTracks.value.push(trackSlug)
       }
+      trackLanguages.value = { ...trackLanguages.value, [trackSlug]: res?.language || '' }
     } finally {
       enrolling.value = false
     }
+  }
+
+  async function setTrackLanguage(trackSlug, language = '') {
+    const res = await progressApi.setTrackLanguage(trackSlug, language)
+    trackLanguages.value = { ...trackLanguages.value, [trackSlug]: res?.language || '' }
+    return res?.language || ''
+  }
+
+  function getTrackLanguage(trackSlug) {
+    return trackLanguages.value[trackSlug] || ''
   }
 
   async function unenrollTrack(trackSlug) {
@@ -90,6 +103,7 @@ export const useProgressStore = defineStore('progress', () => {
   function reset() {
     completedLessons.value = new Set()
     enrolledTracks.value = []
+    trackLanguages.value = {}
     currentStreak.value = 0
     longestStreak.value = 0
     totalCompleted.value = 0
@@ -102,6 +116,7 @@ export const useProgressStore = defineStore('progress', () => {
   return {
     completedLessons,
     enrolledTracks,
+    trackLanguages,
     currentStreak,
     longestStreak,
     totalCompleted,
@@ -114,6 +129,8 @@ export const useProgressStore = defineStore('progress', () => {
     fetchProgress,
     markComplete,
     enrollTrack,
+    setTrackLanguage,
+    getTrackLanguage,
     unenrollTrack,
     fetchTrackProgress,
     isCompleted,

@@ -22,6 +22,11 @@ export const adminApi = {
   updateLesson: (slug, data) => client.patch(`/lessons/admin/${slug}/`, data).then(r => r.data),
   deleteLesson: (slug) => client.delete(`/lessons/admin/${slug}/`),
 
+  // Lesson translations (section: curriculum)
+  generateTranslation: (slug, language) => client.post(`/lessons/admin/${slug}/translate/`, { language }).then(r => r.data),
+  saveTranslation:     (slug, code, data) => client.put(`/lessons/admin/${slug}/translations/${code}/`, data).then(r => r.data),
+  deleteTranslation:   (slug, code) => client.delete(`/lessons/admin/${slug}/translations/${code}/`),
+
   // Media upload
   getUploadUrl: (filename, contentType, folder) =>
     client.post('/media/upload-url/', { filename, content_type: contentType, folder }).then(r => r.data),
@@ -55,4 +60,8 @@ export const adminApi = {
   // Launch page settings (section: registrations)
   getLaunchSettings:    ()     => client.get('/events/settings/').then(r => r.data),
   updateLaunchSettings: (data) => client.patch('/events/settings/', data).then(r => r.data),
+
+  // Translation languages + Gemini settings (section: translations)
+  getTranslationSettings:    ()     => client.get('/translations/settings/').then(r => r.data),
+  updateTranslationSettings: (data) => client.patch('/translations/settings/', data).then(r => r.data),
 }
