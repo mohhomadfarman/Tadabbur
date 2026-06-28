@@ -11,7 +11,7 @@ from rest_framework.views import APIView
 from apps.common.permissions import section_required
 from .models import EmailTemplate, EmailCampaign, Unsubscribe, EmailSettings, CAMPAIGN_STATUSES
 from .segments import segment_options, resolve_segment, read_unsub_token
-from .tasks import send_campaign, send_test
+from .tasks import send_campaign, deliver_message
 
 
 def _iso(dt):
@@ -312,6 +312,8 @@ class SendCampaignView(APIView):
 
 
 class TestSendView(APIView):
+    """Send a campaign test email synchronously (like the template test-send) so
+    it surfaces the real SMTP error and never depends on the Celery worker."""
     permission_classes = [section_required('email')]
 
     def post(self, request, campaign_id):
@@ -321,7 +323,10 @@ class TestSendView(APIView):
         email = (request.data.get('email') or '').strip()
         if not email:
             return Response({'email': 'A test recipient email is required.'}, status=status.HTTP_400_BAD_REQUEST)
-        send_test.delay(str(c.id), email)
+        try:
+            deliver_message(f'[TEST] {c.subject}' if c.subject else '[TEST]', c.html_body, email)
+        except Exception as e:
+            return Response({'detail': f'Send failed: {e}'}, status=status.HTTP_502_BAD_GATEWAY)
         return Response({'sent': True})
 
 
