@@ -143,6 +143,10 @@
     "confirm": "Enroll",
     "enrolling": "Enrolling…"
   },
+  "announce": {
+    "close": "Close",
+    "next": "Next"
+  },
   "subject": {
     "lessons": "Lessons",
     "noLessons": "No lessons published yet.",

@@ -143,6 +143,10 @@
     "confirm": "التحاق",
     "enrolling": "جارٍ الالتحاق…"
   },
+  "announce": {
+    "close": "إغلاق",
+    "next": "التالي"
+  },
   "subject": {
     "lessons": "الدروس",
     "noLessons": "لا توجد دروس منشورة بعد.",

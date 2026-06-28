@@ -10,6 +10,9 @@
     >
       <RouterView />
     </main>
+
+    <!-- Global admin-authored pop-up modals (logged-in users, normal pages) -->
+    <AnnouncementModal />
   </div>
 </template>
 
@@ -19,6 +22,7 @@ import { useRoute } from 'vue-router'
 import { useHead } from '@unhead/vue'
 import { useAuthStore } from '@/stores/auth'
 import AppHeader from '@/components/common/AppHeader.vue'
+import AnnouncementModal from '@/components/AnnouncementModal.vue'
 
 const auth  = useAuthStore()
 const route = useRoute()

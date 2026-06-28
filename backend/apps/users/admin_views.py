@@ -24,6 +24,7 @@ SECTION_LABELS = {
     'roles': 'Roles & Permissions',
     'registrations': 'Registrations',
     'translations': 'Languages',
+    'announcements': 'Announcements',
 }
 
 ACTIVITY_LIMIT = 100

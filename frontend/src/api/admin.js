@@ -64,4 +64,11 @@ export const adminApi = {
   // Translation languages + Gemini settings (section: translations)
   getTranslationSettings:    ()     => client.get('/translations/settings/').then(r => r.data),
   updateTranslationSettings: (data) => client.patch('/translations/settings/', data).then(r => r.data),
+
+  // Announcements / pop-up modals (section: announcements)
+  listAnnouncements:   ()         => client.get('/announcements/admin/').then(r => r.data),
+  getAnnouncement:     (id)       => client.get(`/announcements/admin/${id}/`).then(r => r.data),
+  createAnnouncement:  (data)     => client.post('/announcements/admin/', data).then(r => r.data),
+  updateAnnouncement:  (id, data) => client.patch(`/announcements/admin/${id}/`, data).then(r => r.data),
+  deleteAnnouncement:  (id)       => client.delete(`/announcements/admin/${id}/`),
 }

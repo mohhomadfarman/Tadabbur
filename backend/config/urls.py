@@ -17,4 +17,5 @@ urlpatterns = [
     path('api/v1/videos/',  include('apps.videos.urls')),
     path('api/v1/events/',  include('apps.events.urls')),
     path('api/v1/translations/', include('apps.translations.urls')),
+    path('api/v1/announcements/', include('apps.announcements.urls')),
 ]

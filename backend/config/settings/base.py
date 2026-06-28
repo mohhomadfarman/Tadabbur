@@ -31,6 +31,7 @@ INSTALLED_APPS = [
     'apps.videos',
     'apps.events',
     'apps.translations',
+    'apps.announcements',
 ]
 
 MIDDLEWARE = [

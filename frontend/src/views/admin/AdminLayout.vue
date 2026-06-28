@@ -130,6 +130,20 @@
             Languages
           </RouterLink>
 
+          <!-- Announcements (pop-up modals) -->
+          <RouterLink
+            v-if="auth.can('announcements')"
+            :to="{ name: 'admin-announcements' }"
+            class="flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-sm transition-colors"
+            :class="isActive('announcements') ? 'bg-[#234ecc] text-white font-medium' : 'text-white/50 hover:text-white hover:bg-white/5'"
+            @click="sidebarOpen = false"
+          >
+            <svg class="w-4 h-4 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M10.1 2.18a9.93 9.93 0 0 1 3.8 0"/><path d="M5.6 4.6a10 10 0 0 1 12.8 0"/><path d="M3 9a14 14 0 0 1 18 0"/><path d="M12 18h.01"/><path d="M8.5 13.5a5 5 0 0 1 7 0"/>
+            </svg>
+            Announcements
+          </RouterLink>
+
           <!-- Roles & Permissions -->
           <RouterLink
             v-if="auth.can('roles')"
@@ -215,6 +229,7 @@ function isActive(section) {
   if (section === 'analytics')  return p.startsWith('/admin/analytics')
   if (section === 'roles')      return p.startsWith('/admin/roles')
   if (section === 'translations') return p.startsWith('/admin/languages')
+  if (section === 'announcements') return p.startsWith('/admin/announcements')
   return false
 }
 
