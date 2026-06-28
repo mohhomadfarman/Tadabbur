@@ -27,6 +27,12 @@
         <div>
           <h1 class="text-2xl sm:text-3xl font-bold text-gray-900 mb-2">{{ track.title }}</h1>
           <p class="text-gray-500 max-w-2xl">{{ track.description }}</p>
+
+          <!-- Available translation languages -->
+          <div v-if="track.languages?.length" class="flex items-center gap-2 mt-3 flex-wrap">
+            <span class="text-xs text-gray-400">{{ t('track.availableIn') }}</span>
+            <TrackLanguages :languages="track.languages" :max="6" />
+          </div>
         </div>
 
         <!-- Enroll button (authenticated users only) -->
@@ -146,6 +152,16 @@
       </div>
     </template>
 
+    <!-- Language choice on enroll -->
+    <EnrollLanguageModal
+      v-if="showEnrollModal"
+      :track-title="track?.title || ''"
+      :languages="languages"
+      :enrolling="progress.enrolling"
+      @confirm="confirmEnroll"
+      @cancel="showEnrollModal = false"
+    />
+
   </div>
 </template>
 
@@ -156,6 +172,8 @@ import { useI18n } from 'vue-i18n'
 import { curriculumApi } from '@/api/curriculum'
 import { useAuthStore } from '@/stores/auth'
 import { useProgressStore } from '@/stores/progress'
+import EnrollLanguageModal from '@/components/EnrollLanguageModal.vue'
+import TrackLanguages from '@/components/TrackLanguages.vue'
 import { useSsrDataStore } from '@/stores/ssrData'
 import { useSeo, SEO_ORIGIN } from '@/composables/useSeo'
 
@@ -170,6 +188,10 @@ const track = ref(ssr.get(ssrKey))
 const loading = ref(track.value == null)
 const error = ref('')
 const trackProgressData = ref(null)
+
+const showEnrollModal = ref(false)
+const languages = ref([])
+const languagesLoaded = ref(false)
 
 // Prerender the public track so its subjects + SEO meta land in the static HTML.
 onServerPrefetch(async () => {
@@ -216,7 +238,21 @@ function subjectStatus(slug) {
 }
 
 async function handleEnroll() {
-  await progress.enrollTrack(track.value.slug)
+  // Offer a language choice when translations are available; otherwise enroll directly.
+  if (!languagesLoaded.value) {
+    try { languages.value = await curriculumApi.getLanguages() } catch { languages.value = [] }
+    languagesLoaded.value = true
+  }
+  if (languages.value.length) {
+    showEnrollModal.value = true
+  } else {
+    await progress.enrollTrack(track.value.slug)
+  }
+}
+
+async function confirmEnroll(language) {
+  await progress.enrollTrack(track.value.slug, language)
+  showEnrollModal.value = false
 }
 
 onMounted(async () => {

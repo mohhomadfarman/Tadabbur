@@ -30,6 +30,8 @@ INSTALLED_APPS = [
     'apps.library',
     'apps.videos',
     'apps.events',
+    'apps.translations',
+    'apps.announcements',
 ]
 
 MIDDLEWARE = [
@@ -125,6 +127,11 @@ CELERY_TASK_SERIALIZER = 'json'
 # YouTube Data API v3
 YOUTUBE_API_KEY    = config('YOUTUBE_API_KEY',    default='')
 YOUTUBE_CHANNEL_ID = config('YOUTUBE_CHANNEL_ID', default='')
+
+# Google Gemini — AI lesson translation. The key is normally managed from the
+# admin panel (stored in TranslationSettings); this env var is only a fallback
+# for when the DB value is empty. Never exposed to the frontend.
+GEMINI_API_KEY = config('GEMINI_API_KEY', default='')
 
 STATIC_URL = '/static/'
 STATIC_ROOT = BASE_DIR / 'staticfiles'

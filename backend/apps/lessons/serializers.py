@@ -32,9 +32,39 @@ class LessonDetailSerializer(LessonListSerializer):
     content_blocks = serializers.SerializerMethodField()
     prev_lesson = serializers.SerializerMethodField()
     next_lesson = serializers.SerializerMethodField()
-    meta_title = serializers.CharField(default='')
-    meta_description = serializers.CharField(default='')
+    # Translatable text — overridden to serve the active translation when present.
+    title = serializers.SerializerMethodField()
+    summary = serializers.SerializerMethodField()
+    meta_title = serializers.SerializerMethodField()
+    meta_description = serializers.SerializerMethodField()
     og_image = serializers.CharField(default='')
+    # Language switcher support.
+    active_lang = serializers.SerializerMethodField()
+    available_languages = serializers.SerializerMethodField()
+
+    def _translated(self, obj, field):
+        tr = self.context.get('translation')
+        if tr and isinstance(tr.get(field), str) and tr[field].strip():
+            return tr[field]
+        return getattr(obj, field, '') or ''
+
+    def get_title(self, obj):
+        return self._translated(obj, 'title')
+
+    def get_summary(self, obj):
+        return self._translated(obj, 'summary')
+
+    def get_meta_title(self, obj):
+        return self._translated(obj, 'meta_title')
+
+    def get_meta_description(self, obj):
+        return self._translated(obj, 'meta_description')
+
+    def get_active_lang(self, obj):
+        return self.context.get('active_lang', '')
+
+    def get_available_languages(self, obj):
+        return self.context.get('available_languages', [])
 
     def get_subject_id(self, obj):
         return str(obj.subject.id)
@@ -58,7 +88,11 @@ class LessonDetailSerializer(LessonListSerializer):
         return self.context.get('needs_enrollment', False)
 
     def get_content_blocks(self, obj):
-        blocks = sorted(obj.content_blocks, key=lambda b: b.order)
+        translation = self.context.get('translation')
+        if translation is not None:
+            blocks = sorted(translation.get('content_blocks', []), key=lambda b: b.get('order', 0))
+        else:
+            blocks = sorted(obj.content_blocks, key=lambda b: b.order)
         if self.context.get('needs_enrollment', False):
             # Authenticated but not enrolled — send no content
             return []

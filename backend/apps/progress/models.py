@@ -1,6 +1,6 @@
 from mongoengine import (
     Document, ReferenceField, StringField, BooleanField,
-    DateTimeField, IntField, ListField, DateField,
+    DateTimeField, IntField, ListField, DateField, DictField,
 )
 from datetime import datetime, timezone, date
 from apps.users.models import User
@@ -53,6 +53,7 @@ class UserProgress(Document):
     """Per-user aggregate: enrolled tracks, streak, last activity."""
     user = ReferenceField(User, required=True, unique=True)
     enrolled_tracks = ListField(StringField())        # list of track slugs
+    track_languages = DictField()                     # { track_slug: lang_code } reading preference
     current_streak_days = IntField(default=0)
     longest_streak_days = IntField(default=0)
     last_activity_date = DateField()                  # date-only for streak calculation

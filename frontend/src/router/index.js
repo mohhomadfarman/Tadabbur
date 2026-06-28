@@ -118,6 +118,8 @@ export const routes = [
       { path: 'users/:id',     name: 'admin-user-detail', meta: { section: 'users' },      component: () => import('@/views/admin/AdminUserDetailView.vue') },
       { path: 'roles',         name: 'admin-roles',       meta: { section: 'roles' },      component: () => import('@/views/admin/AdminRolesView.vue') },
       { path: 'registrations', name: 'admin-registrations', meta: { section: 'registrations' }, component: () => import('@/views/admin/AdminRegistrationsView.vue') },
+      { path: 'languages',     name: 'admin-translations', meta: { section: 'translations' }, component: () => import('@/views/admin/AdminTranslationsView.vue') },
+      { path: 'announcements', name: 'admin-announcements', meta: { section: 'announcements' }, component: () => import('@/views/admin/AdminAnnouncementsView.vue') },
     ],
   },
 ]

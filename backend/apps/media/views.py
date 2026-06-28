@@ -30,7 +30,7 @@ FOLDER_MAP = {
 
 class GenerateUploadURLView(APIView):
     """Return a presigned PUT URL so the browser can upload directly to MinIO."""
-    permission_classes = [any_section_required(['curriculum', 'library', 'videos'])]
+    permission_classes = [any_section_required(['curriculum', 'library', 'videos', 'announcements'])]
 
     def post(self, request):
         filename = (request.data.get('filename') or '').strip()

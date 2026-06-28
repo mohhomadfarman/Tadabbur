@@ -116,9 +116,11 @@
     "viewCard": "عرض البطاقات",
     "enrolled": "مسجّل",
     "noResults": "لا توجد مسارات تطابق بحثك.",
-    "clearFilters": "مسح الفلاتر"
+    "clearFilters": "مسح الفلاتر",
+    "availableIn": "اللغات المتاحة"
   },
   "track": {
+    "availableIn": "متاح بـ:",
     "enroll": "الالتحاق بالمسار",
     "enrolling": "جارٍ الالتحاق…",
     "enrolled": "ملتحق",
@@ -131,6 +133,19 @@
     "lessons": "دروس",
     "subjectCompleted": "مكتمل",
     "subjectInProgress": "جارٍ"
+  },
+  "enroll": {
+    "title": "اختر لغتك",
+    "subtitle": "اختر اللغة التي تريد متابعة {track} بها. يمكنك تغييرها في أي وقت.",
+    "original": "الأصل (الإنجليزية)",
+    "originalHint": "اللغة التي كُتبت بها الدروس.",
+    "cancel": "إلغاء",
+    "confirm": "التحاق",
+    "enrolling": "جارٍ الالتحاق…"
+  },
+  "announce": {
+    "close": "إغلاق",
+    "next": "التالي"
   },
   "subject": {
     "lessons": "الدروس",
@@ -168,7 +183,9 @@
     "enrollRequiredDesc": "هذا الدرس جزء من مسار منظّم. سجّل مجانًا لفتح جميع الدروس وتتبّع تقدّمك.",
     "enrollBtn": "الالتحاق بالمسار",
     "enrolling": "جارٍ الالتحاق…",
-    "enrolledReloading": "تم الالتحاق! جارٍ تحميل الدرس…"
+    "enrolledReloading": "تم الالتحاق! جارٍ تحميل الدرس…",
+    "language": "اللغة",
+    "original": "الأصل"
   },
   "dashboard": {
     "welcome": "أهلاً وسهلاً",
