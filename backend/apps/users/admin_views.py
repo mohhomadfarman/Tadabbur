@@ -25,6 +25,10 @@ SECTION_LABELS = {
     'registrations': 'Registrations',
     'translations': 'Languages',
     'announcements': 'Announcements',
+    'features': 'Feature Flags',
+    'feedback': 'Feedback',
+    'badges': 'Badges & Rewards',
+    'email': 'Email Marketing',
 }
 
 ACTIVITY_LIMIT = 100

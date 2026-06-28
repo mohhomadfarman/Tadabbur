@@ -61,6 +61,29 @@ When in doubt — ask. The cost of a question is zero. The cost of a mistake can
 
 ---
 
+## Mandatory: Every New User-Facing Feature Must Be Feature-Flagged
+
+The project has a Feature Flag system (`backend/apps/features/`, `frontend/src/stores/features.js`).
+Admins toggle features on/off and scope them to **all** users or a **selected** group
+(beta / pre-testing) from **Admin → Feature Flags**. Any new user-facing feature MUST be
+wired into it before it ships:
+
+1. **Register** its key in `backend/apps/features/registry.py` (`FEATURE_REGISTRY`) with a
+   `label`, `description`, `owner_section`, and `default_enabled`.
+2. **Seed** it — `seed_feature_flags` reads the registry; run it on deploy (alongside `seed_roles`).
+3. **Gate the BACKEND** — call `feature_enabled('<key>', request.user)` (from
+   `apps/features/service.py`) in the relevant views. Never rely on the frontend alone.
+4. **Gate the FRONTEND** — wrap the UI with `v-if="features.isEnabled('<key>')"`
+   (from `stores/features.js`).
+5. If it needs admin management, add a section to `SECTIONS`
+   (`apps/common/permissions.py`) + `SECTION_LABELS` (`apps/users/admin_views.py`) and an admin view.
+
+A feature is **not "done"** until both the backend and frontend gates are in place.
+**Net-new** features start `default_enabled=false` (beta-first); only **retrofits** of
+already-live features start `enabled=true` so nothing breaks.
+
+---
+
 ## Stack (Phase 1)
 
 | Layer | Technology |

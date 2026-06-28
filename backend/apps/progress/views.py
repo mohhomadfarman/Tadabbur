@@ -71,6 +71,14 @@ class MarkCompleteView(APIView):
             up.update_streak()
             up.save()
 
+        # Evaluate badge awards (track/lessons/streak criteria). Never let a
+        # badge bug break completion — it's a no-op when the feature is off.
+        try:
+            from apps.badges.awards import evaluate_awards
+            evaluate_awards(request.user)
+        except Exception:
+            pass
+
         return Response({'lesson_slug': slug, 'completed': True})
 
 

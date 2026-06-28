@@ -32,6 +32,10 @@ INSTALLED_APPS = [
     'apps.events',
     'apps.translations',
     'apps.announcements',
+    'apps.features',
+    'apps.feedback',
+    'apps.badges',
+    'apps.emails',
 ]
 
 MIDDLEWARE = [
@@ -123,6 +127,19 @@ CELERY_BROKER_URL = config('REDIS_URL', default='redis://localhost:6379/0')
 CELERY_RESULT_BACKEND = config('REDIS_URL', default='redis://localhost:6379/0')
 CELERY_ACCEPT_CONTENT = ['json']
 CELERY_TASK_SERIALIZER = 'json'
+
+# Email (SMTP) — used by the Email Marketing feature (apps.emails).
+# Defaults to the console backend so dev never crashes when SMTP is unset; set
+# EMAIL_BACKEND=django.core.mail.backends.smtp.EmailBackend + the SMTP_* vars in
+# production. Credentials come ONLY from env — never hard-code or commit them.
+EMAIL_BACKEND = config('EMAIL_BACKEND', default='django.core.mail.backends.console.EmailBackend')
+EMAIL_HOST = config('EMAIL_HOST', default='')
+EMAIL_PORT = config('EMAIL_PORT', default=587, cast=int)
+EMAIL_HOST_USER = config('EMAIL_HOST_USER', default='')
+EMAIL_HOST_PASSWORD = config('EMAIL_HOST_PASSWORD', default='')
+EMAIL_USE_TLS = config('EMAIL_USE_TLS', default=True, cast=bool)
+EMAIL_USE_SSL = config('EMAIL_USE_SSL', default=False, cast=bool)
+DEFAULT_FROM_EMAIL = config('DEFAULT_FROM_EMAIL', default='Tadabbur <no-reply@thetadabbur.org>')
 
 # YouTube Data API v3
 YOUTUBE_API_KEY    = config('YOUTUBE_API_KEY',    default='')

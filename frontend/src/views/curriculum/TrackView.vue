@@ -29,7 +29,7 @@
           <p class="text-gray-500 max-w-2xl">{{ track.description }}</p>
 
           <!-- Available translation languages -->
-          <div v-if="track.languages?.length" class="flex items-center gap-2 mt-3 flex-wrap">
+          <div v-if="track.languages?.length && features.isEnabled('ai_translation')" class="flex items-center gap-2 mt-3 flex-wrap">
             <span class="text-xs text-gray-400">{{ t('track.availableIn') }}</span>
             <TrackLanguages :languages="track.languages" :max="6" />
           </div>
@@ -172,6 +172,7 @@ import { useI18n } from 'vue-i18n'
 import { curriculumApi } from '@/api/curriculum'
 import { useAuthStore } from '@/stores/auth'
 import { useProgressStore } from '@/stores/progress'
+import { useFeaturesStore } from '@/stores/features'
 import EnrollLanguageModal from '@/components/EnrollLanguageModal.vue'
 import TrackLanguages from '@/components/TrackLanguages.vue'
 import { useSsrDataStore } from '@/stores/ssrData'
@@ -180,6 +181,7 @@ import { useSeo, SEO_ORIGIN } from '@/composables/useSeo'
 const route = useRoute()
 const auth = useAuthStore()
 const progress = useProgressStore()
+const features = useFeaturesStore()
 const ssr = useSsrDataStore()
 const { t } = useI18n()
 
@@ -239,11 +241,11 @@ function subjectStatus(slug) {
 
 async function handleEnroll() {
   // Offer a language choice when translations are available; otherwise enroll directly.
-  if (!languagesLoaded.value) {
+  if (features.isEnabled('ai_translation') && !languagesLoaded.value) {
     try { languages.value = await curriculumApi.getLanguages() } catch { languages.value = [] }
     languagesLoaded.value = true
   }
-  if (languages.value.length) {
+  if (features.isEnabled('ai_translation') && languages.value.length) {
     showEnrollModal.value = true
   } else {
     await progress.enrollTrack(track.value.slug)

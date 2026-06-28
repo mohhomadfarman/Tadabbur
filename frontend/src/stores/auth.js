@@ -2,6 +2,8 @@ import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
 import { authApi } from '@/api/auth'
 import { useProgressStore } from '@/stores/progress'
+import { useFeaturesStore } from '@/stores/features'
+import { useBadgesStore } from '@/stores/badges'
 
 // No localStorage during SSG prerender — the store starts logged-out on the
 // server and rehydrates from localStorage on the client.
@@ -29,6 +31,8 @@ export const useAuthStore = defineStore('auth', () => {
     user.value = response.user
     localStorage.setItem('access_token', response.access)
     localStorage.setItem('refresh_token', response.refresh)
+    // Re-resolve feature flags for the now-authenticated user (beta cohorts).
+    useFeaturesStore().loadFlags()
   }
 
   async function register(email, username, password, fullName) {
@@ -38,6 +42,7 @@ export const useAuthStore = defineStore('auth', () => {
     user.value = response.user
     localStorage.setItem('access_token', response.access)
     localStorage.setItem('refresh_token', response.refresh)
+    useFeaturesStore().loadFlags()
   }
 
   async function fetchUser() {
@@ -52,6 +57,11 @@ export const useAuthStore = defineStore('auth', () => {
     localStorage.removeItem('access_token')
     localStorage.removeItem('refresh_token')
     useProgressStore().reset()
+    useBadgesStore().reset()
+    // Drop personalized flags, then reload anonymous defaults.
+    const features = useFeaturesStore()
+    features.reset()
+    features.loadFlags()
   }
 
   return {

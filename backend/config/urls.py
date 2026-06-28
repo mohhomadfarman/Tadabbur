@@ -18,4 +18,8 @@ urlpatterns = [
     path('api/v1/events/',  include('apps.events.urls')),
     path('api/v1/translations/', include('apps.translations.urls')),
     path('api/v1/announcements/', include('apps.announcements.urls')),
+    path('api/v1/features/', include('apps.features.urls')),
+    path('api/v1/feedback/', include('apps.feedback.urls')),
+    path('api/v1/badges/',   include('apps.badges.urls')),
+    path('api/v1/emails/',   include('apps.emails.urls')),
 ]
