@@ -58,6 +58,20 @@
         <div class="flex items-center gap-3">
           <span v-if="saved" class="text-sm text-emerald-600 font-medium">Saved ✓</span>
           <span v-if="formError" class="text-sm text-red-600">{{ formError }}</span>
+          <!-- Pause / Resume -->
+          <button v-if="form.id && form.status === 'scheduled'" :disabled="pausing" @click="doPause"
+            class="bg-amber-50 border border-amber-200 hover:bg-amber-100 disabled:opacity-60 text-amber-700 px-4 py-2 rounded-lg text-sm font-semibold transition-colors">
+            {{ pausing ? '…' : 'Pause' }}
+          </button>
+          <button v-if="form.id && form.status === 'paused'" :disabled="pausing" @click="doPause"
+            class="bg-emerald-50 border border-emerald-200 hover:bg-emerald-100 disabled:opacity-60 text-emerald-700 px-4 py-2 rounded-lg text-sm font-semibold transition-colors">
+            {{ pausing ? '…' : 'Resume' }}
+          </button>
+          <!-- Delete -->
+          <button v-if="form.id && !isActive" @click="confirmDelete = true"
+            class="bg-red-50 border border-red-200 hover:bg-red-100 text-red-600 px-4 py-2 rounded-lg text-sm font-semibold transition-colors">
+            Delete
+          </button>
           <button v-if="!isSent" :disabled="saving" @click="save"
             class="bg-white border border-gray-200 hover:bg-gray-50 disabled:opacity-60 text-gray-700 px-4 py-2 rounded-lg text-sm font-semibold transition-colors">
             {{ saving ? 'Saving…' : (form.id ? 'Save draft' : 'Create draft') }}
@@ -152,6 +166,22 @@
       </div>
     </template>
 
+    <!-- Delete confirmation -->
+    <div v-if="confirmDelete" class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4 backdrop-blur-sm" @click.self="confirmDelete = false">
+      <div class="bg-white rounded-2xl shadow-2xl max-w-sm w-full p-6">
+        <h3 class="font-bold text-gray-900 mb-1">Delete this campaign?</h3>
+        <p class="text-sm text-gray-500 mb-5">
+          <strong>{{ form.name }}</strong> will be permanently deleted. This cannot be undone.
+        </p>
+        <div class="flex gap-3">
+          <button @click="confirmDelete = false" class="flex-1 px-4 py-2.5 text-sm text-gray-600 border border-gray-200 rounded-xl hover:text-gray-900 transition-colors">Cancel</button>
+          <button :disabled="deleting" @click="doDelete" class="flex-1 px-4 py-2.5 bg-red-600 hover:bg-red-700 disabled:opacity-60 text-white text-sm font-semibold rounded-xl transition-colors">
+            {{ deleting ? 'Deleting…' : 'Delete' }}
+          </button>
+        </div>
+      </div>
+    </div>
+
     <!-- Send confirmation -->
     <div v-if="confirmSend" class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4 backdrop-blur-sm" @click.self="confirmSend = false">
       <div class="bg-white rounded-2xl shadow-2xl max-w-sm w-full p-6">
@@ -195,14 +225,19 @@ const testMsg = ref('')
 
 const confirmSend = ref(false)
 const sending = ref(false)
+const pausing = ref(false)
+const confirmDelete = ref(false)
+const deleting = ref(false)
 let pollTimer = null
 
 const isSent = computed(() => ['sending', 'sent'].includes(form.status))
+const isActive = computed(() => ['sending', 'sent'].includes(form.status))
 
 function statusClass(s) {
   return {
     draft: 'bg-gray-100 text-gray-500',
     scheduled: 'bg-amber-100 text-amber-700',
+    paused: 'bg-orange-100 text-orange-600',
     sending: 'bg-blue-100 text-blue-700',
     sent: 'bg-emerald-100 text-emerald-700',
     failed: 'bg-red-100 text-red-700',
@@ -290,8 +325,8 @@ async function doTest() {
   testing.value = true; testMsg.value = ''
   try {
     await adminApi.testEmailCampaign(form.id, testEmail.value.trim())
-    testMsg.value = 'Test queued — check that inbox.'
-  } catch { testMsg.value = '' ; formError.value = 'Test send failed.' }
+    testMsg.value = 'Test email sent — check that inbox.'
+  } catch (e) { testMsg.value = ''; formError.value = e?.response?.data?.detail || 'Test send failed.' }
   finally { testing.value = false }
 }
 
@@ -309,6 +344,36 @@ async function doSend() {
     confirmSend.value = false
   } finally {
     sending.value = false
+  }
+}
+
+async function doPause() {
+  pausing.value = true; formError.value = ''
+  try {
+    const c = await adminApi.pauseEmailCampaign(form.id)
+    form.status = c.status
+    form.scheduled_at = toLocalInput(c.scheduled_at)
+    if (c.info) formError.value = c.info
+    await load()
+  } catch (e) {
+    formError.value = e?.response?.data?.detail || 'Could not pause/resume.'
+  } finally {
+    pausing.value = false
+  }
+}
+
+async function doDelete() {
+  deleting.value = true
+  try {
+    await adminApi.deleteEmailCampaign(form.id)
+    confirmDelete.value = false
+    editing.value = null
+    await load()
+  } catch {
+    formError.value = 'Could not delete the campaign.'
+    confirmDelete.value = false
+  } finally {
+    deleting.value = false
   }
 }
 

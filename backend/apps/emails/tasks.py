@@ -44,6 +44,9 @@ def send_campaign(campaign_id):
     campaign = EmailCampaign.objects(id=campaign_id).first()
     if not campaign:
         return
+    # Skip if the campaign was paused or cancelled since it was queued.
+    if campaign.status not in ('scheduled', 'sending', 'draft'):
+        return
     campaign.status = 'sending'
     campaign.save()
 

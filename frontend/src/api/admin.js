@@ -103,6 +103,7 @@ export const adminApi = {
   updateEmailCampaign: (id, data) => client.patch(`/emails/admin/campaigns/${id}/`, data).then(r => r.data),
   deleteEmailCampaign: (id)       => client.delete(`/emails/admin/campaigns/${id}/`),
   sendEmailCampaign:   (id, data) => client.post(`/emails/admin/campaigns/${id}/send/`, data || {}).then(r => r.data),
+  pauseEmailCampaign:  (id)       => client.post(`/emails/admin/campaigns/${id}/pause/`).then(r => r.data),
   testEmailCampaign:   (id, email) => client.post(`/emails/admin/campaigns/${id}/test/`, { email }).then(r => r.data),
   listEmailSegments:   ()         => client.get('/emails/admin/segments/').then(r => r.data),
   previewEmailSegment: (segment)  => client.get('/emails/admin/segments/', { params: { segment } }).then(r => r.data),

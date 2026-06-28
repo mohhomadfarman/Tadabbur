@@ -9,7 +9,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from apps.common.permissions import section_required
-from .models import EmailTemplate, EmailCampaign, Unsubscribe, EmailSettings, CAMPAIGN_STATUSES
+from .models import EmailTemplate, EmailCampaign, Unsubscribe, EmailSettings
 from .segments import segment_options, resolve_segment, read_unsub_token
 from .tasks import send_campaign, deliver_message
 
@@ -143,7 +143,7 @@ class AdminTestSendView(APIView):
         html_body = request.data.get('html_body') or ''
         try:
             from .tasks import deliver_message
-            deliver_message(f'[TEST] {subject}' if subject else '[TEST]', html_body, email)
+            deliver_message(subject or '(no subject)', html_body, email)
         except Exception as e:
             return Response({'detail': f'Send failed: {e}'}, status=status.HTTP_502_BAD_GATEWAY)
         return Response({'sent': True})
@@ -291,6 +291,8 @@ class SendCampaignView(APIView):
             return Response({'detail': 'Not found.'}, status=status.HTTP_404_NOT_FOUND)
         if c.status in ('sending', 'sent'):
             return Response({'detail': 'This campaign has already been sent.'}, status=status.HTTP_400_BAD_REQUEST)
+        if c.status not in ('draft', 'scheduled', 'paused', 'failed'):
+            return Response({'detail': f'Cannot send a campaign with status "{c.status}".'}, status=status.HTTP_400_BAD_REQUEST)
         if not c.subject or not c.html_body:
             return Response({'detail': 'Add a subject and body before sending.'}, status=status.HTTP_400_BAD_REQUEST)
 
@@ -311,6 +313,44 @@ class SendCampaignView(APIView):
         return Response({'sending': True})
 
 
+class PauseCampaignView(APIView):
+    """Toggle a scheduled campaign between paused and scheduled.
+    - scheduled → paused  (the queued Celery task will bail on status check)
+    - paused → scheduled  (re-queues with the original scheduled_at if still future,
+                           otherwise moves back to draft so admin can re-schedule)"""
+    permission_classes = [section_required('email')]
+
+    def post(self, request, campaign_id):
+        c = _get(EmailCampaign, campaign_id)
+        if not c:
+            return Response({'detail': 'Not found.'}, status=status.HTTP_404_NOT_FOUND)
+
+        now = datetime.now(timezone.utc)
+
+        if c.status == 'scheduled':
+            c.status = 'paused'
+            c.updated_at = now
+            c.save()
+            return Response(_campaign_row(c))
+
+        if c.status == 'paused':
+            if c.scheduled_at and c.scheduled_at > now:
+                c.status = 'scheduled'
+                c.updated_at = now
+                c.save()
+                send_campaign.apply_async(args=[str(c.id)], eta=c.scheduled_at)
+                return Response(_campaign_row(c))
+            else:
+                # Scheduled time has passed — move to draft so admin re-schedules.
+                c.status = 'draft'
+                c.scheduled_at = None
+                c.updated_at = now
+                c.save()
+                return Response({**_campaign_row(c), 'info': 'Scheduled time has passed — campaign moved back to draft. Set a new send time.'})
+
+        return Response({'detail': f'Cannot pause/resume a campaign with status "{c.status}".'}, status=status.HTTP_400_BAD_REQUEST)
+
+
 class TestSendView(APIView):
     """Send a campaign test email synchronously (like the template test-send) so
     it surfaces the real SMTP error and never depends on the Celery worker."""
@@ -324,7 +364,7 @@ class TestSendView(APIView):
         if not email:
             return Response({'email': 'A test recipient email is required.'}, status=status.HTTP_400_BAD_REQUEST)
         try:
-            deliver_message(f'[TEST] {c.subject}' if c.subject else '[TEST]', c.html_body, email)
+            deliver_message(c.subject or '(no subject)', c.html_body, email)
         except Exception as e:
             return Response({'detail': f'Send failed: {e}'}, status=status.HTTP_502_BAD_GATEWAY)
         return Response({'sent': True})

@@ -5,7 +5,7 @@ from mongoengine import (
     IntField, BooleanField,
 )
 
-CAMPAIGN_STATUSES = ('draft', 'scheduled', 'sending', 'sent', 'failed')
+CAMPAIGN_STATUSES = ('draft', 'scheduled', 'paused', 'sending', 'sent', 'failed')
 
 
 class EmailSettings(Document):
