@@ -3,7 +3,7 @@ from .views import (
     AdminEmailSettingsView, AdminTestSendView,
     AdminEmailTemplateListView, AdminEmailTemplateDetailView,
     AdminEmailCampaignListView, AdminEmailCampaignDetailView,
-    SendCampaignView, TestSendView, AdminSegmentsView, UnsubscribeView,
+    SendCampaignView, PauseCampaignView, TestSendView, AdminSegmentsView, UnsubscribeView,
 )
 
 urlpatterns = [
@@ -25,5 +25,6 @@ urlpatterns = [
     path('admin/campaigns/', AdminEmailCampaignListView.as_view(), name='admin-email-campaign-list'),
     path('admin/campaigns/<str:campaign_id>/', AdminEmailCampaignDetailView.as_view(), name='admin-email-campaign-detail'),
     path('admin/campaigns/<str:campaign_id>/send/', SendCampaignView.as_view(), name='admin-email-campaign-send'),
+    path('admin/campaigns/<str:campaign_id>/pause/', PauseCampaignView.as_view(), name='admin-email-campaign-pause'),
     path('admin/campaigns/<str:campaign_id>/test/', TestSendView.as_view(), name='admin-email-campaign-test'),
 ]
