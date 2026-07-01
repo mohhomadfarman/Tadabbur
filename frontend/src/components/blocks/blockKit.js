@@ -38,7 +38,7 @@ export const BLOCK_BORDER_CLASSES = {
 }
 
 export const BLOCK_DEFAULTS = {
-  text:   { text: '' },
+  text:   { text: '', source: '' },
   verse:  { arabic: '', translation: '', surah: '', ayah: null },
   hadith: { text: '', source: '', narrator: '' },
   image:  { url: '', caption: '' },

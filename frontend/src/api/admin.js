@@ -8,6 +8,13 @@ export const adminApi = {
   updateTrack: (slug, data) => client.patch(`/curriculum/admin/tracks/${slug}/`, data).then(r => r.data),
   deleteTrack: (slug) => client.delete(`/curriculum/admin/tracks/${slug}/`),
 
+  // Categories (curriculum taxonomy — levels are owned/inline, no separate endpoints)
+  listCategories:  ()         => client.get('/curriculum/admin/categories/').then(r => r.data),
+  getCategory:     (slug)     => client.get(`/curriculum/admin/categories/${slug}/`).then(r => r.data),
+  createCategory:  (data)     => client.post('/curriculum/admin/categories/', data).then(r => r.data),
+  updateCategory:  (slug, data) => client.patch(`/curriculum/admin/categories/${slug}/`, data).then(r => r.data),
+  deleteCategory:  (slug)     => client.delete(`/curriculum/admin/categories/${slug}/`),
+
   // Subjects
   listSubjects: (trackSlug) => client.get('/curriculum/admin/subjects/', { params: { track: trackSlug } }).then(r => r.data),
   getSubject: (slug) => client.get(`/curriculum/admin/subjects/${slug}/`).then(r => r.data),

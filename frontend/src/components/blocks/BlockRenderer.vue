@@ -3,9 +3,14 @@
     <div v-for="block in blocks" :key="block.order">
 
       <!-- Text -->
-      <p v-if="block.type === 'text'" class="text-gray-700 leading-relaxed text-[1.05rem]">
-        {{ block.body.text }}
-      </p>
+      <div v-if="block.type === 'text'">
+        <p class="text-gray-700 leading-relaxed text-[1.05rem]">
+          {{ block.body.text }}
+        </p>
+        <p v-if="block.body.source" class="text-xs text-gray-400 mt-1.5">
+          — {{ block.body.source }}
+        </p>
+      </div>
 
       <!-- Verse -->
       <div

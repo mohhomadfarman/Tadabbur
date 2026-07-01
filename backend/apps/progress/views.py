@@ -8,7 +8,7 @@ from apps.lessons.models import Lesson
 from apps.curriculum.models import Track, Subject
 from apps.common.permissions import section_required
 from .models import LessonProgress, UserProgress, QuizAttempt
-from .completion import track_is_complete
+from .completion import track_is_complete, track_completion
 
 
 def _get_or_create_user_progress(user):
@@ -261,6 +261,19 @@ class TrackProgressView(APIView):
             'percent': round(completed_all / total_all * 100) if total_all else 0,
             'subjects': subjects_data,
         })
+
+
+class TracksProgressView(APIView):
+    """Bulk completion % for every published track, for the current learner —
+    powers /learn's green-badge + sort-to-bottom without an API call per track."""
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        result = {}
+        for track in Track.objects(is_published=True).only('slug'):
+            done, total = track_completion(request.user, track.slug)
+            result[track.slug] = round(done / total * 100) if total else 0
+        return Response(result)
 
 
 class SaveQuizAnswerView(APIView):

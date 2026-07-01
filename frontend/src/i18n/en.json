@@ -118,7 +118,10 @@
     "enrolled": "Enrolled",
     "noResults": "No tracks match your search.",
     "clearFilters": "Clear filters",
-    "availableIn": "Available languages"
+    "availableIn": "Available languages",
+    "allTracks": "All Tracks",
+    "allLevels": "All levels",
+    "completed": "Completed"
   },
   "track": {
     "availableIn": "Available in:",

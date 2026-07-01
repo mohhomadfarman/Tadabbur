@@ -118,7 +118,10 @@
     "enrolled": "مسجّل",
     "noResults": "لا توجد مسارات تطابق بحثك.",
     "clearFilters": "مسح الفلاتر",
-    "availableIn": "اللغات المتاحة"
+    "availableIn": "اللغات المتاحة",
+    "allTracks": "كل المسارات",
+    "allLevels": "كل المستويات",
+    "completed": "مكتمل"
   },
   "track": {
     "availableIn": "متاح بـ:",

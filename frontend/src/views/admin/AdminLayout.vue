@@ -60,6 +60,20 @@
             Curriculum
           </RouterLink>
 
+          <!-- Categories -->
+          <RouterLink
+            v-if="auth.can('curriculum')"
+            :to="{ name: 'admin-categories' }"
+            class="flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-sm transition-colors"
+            :class="isActive('categories') ? 'bg-[#234ecc] text-white font-medium' : 'text-white/50 hover:text-white hover:bg-white/5'"
+            @click="sidebarOpen = false"
+          >
+            <svg class="w-4 h-4 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M4 4h16v4H4zM4 12h7v8H4zM14 12h6v8h-6z"/>
+            </svg>
+            Categories
+          </RouterLink>
+
           <!-- Library -->
           <RouterLink
             v-if="auth.can('library')"
@@ -319,6 +333,7 @@ function isActive(section) {
   const p = route.path
   if (section === 'overview')   return p === '/admin'
   if (section === 'curriculum') return p.startsWith('/admin/curriculum') || p.startsWith('/admin/tracks') || p.startsWith('/admin/subjects') || p.startsWith('/admin/lessons')
+  if (section === 'categories') return p.startsWith('/admin/categories')
   if (section === 'library')    return p.startsWith('/admin/library')
   if (section === 'users')      return p.startsWith('/admin/users')
   if (section === 'registrations') return p.startsWith('/admin/registrations')
