@@ -171,7 +171,7 @@ class EnrollTrackView(APIView):
 
     def post(self, request, track_slug):
         track = Track.objects(slug=track_slug, is_published=True).first()
-        if not track:
+        if not track or not track.is_visible_to(request.user):
             return Response({'detail': 'Track not found.'}, status=status.HTTP_404_NOT_FOUND)
 
         up = _get_or_create_user_progress(request.user)

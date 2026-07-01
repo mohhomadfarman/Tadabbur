@@ -46,9 +46,14 @@ class LessonDetailView(APIView):
 
         track_slug = ''
         track_title = ''
+        track_is_beta = False
         try:
-            track_slug = lesson.subject.track.slug
-            track_title = lesson.subject.track.title
+            track = lesson.subject.track
+            if not track.is_visible_to(request.user):
+                return Response({'detail': 'Not found.'}, status=status.HTTP_404_NOT_FOUND)
+            track_slug = track.slug
+            track_title = track.title
+            track_is_beta = track.audience == 'selected'
         except Exception:
             pass
 
@@ -92,6 +97,7 @@ class LessonDetailView(APIView):
             'needs_enrollment': is_auth and not enrolled and bool(track_slug),
             'track_slug': track_slug,
             'track_title': track_title,
+            'track_is_beta': track_is_beta,
             'translation': translation,
             'active_lang': active_lang,
             'available_languages': available_languages,

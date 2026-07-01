@@ -47,6 +47,9 @@ class TrackSerializer(serializers.Serializer):
     languages = serializers.SerializerMethodField()
     category = serializers.SerializerMethodField()
     level = serializers.SerializerMethodField()
+    is_beta = serializers.SerializerMethodField()
+    audience = serializers.SerializerMethodField()
+    allowed_user_ids = serializers.SerializerMethodField()
 
     def get_id(self, obj):
         return str(obj.id)
@@ -59,6 +62,17 @@ class TrackSerializer(serializers.Serializer):
         if self.context.get('admin'):
             return []
         return track_languages(obj)
+
+    def get_is_beta(self, obj):
+        return obj.audience == 'selected'
+
+    def get_audience(self, obj):
+        # Admin-only — never reveal restriction internals in public responses.
+        return obj.audience if self.context.get('admin') else None
+
+    def get_allowed_user_ids(self, obj):
+        # Admin-only — would otherwise leak which users are beta testers.
+        return list(obj.allowed_user_ids or []) if self.context.get('admin') else None
 
     def get_category(self, obj):
         if not obj.category:
@@ -107,6 +121,7 @@ class SubjectDetailSerializer(SubjectListSerializer):
     track_id = serializers.SerializerMethodField()
     track_title = serializers.SerializerMethodField()
     track_slug = serializers.SerializerMethodField()
+    is_beta = serializers.SerializerMethodField()
     lessons = serializers.SerializerMethodField()
     meta_title = serializers.CharField(default='')
     meta_description = serializers.CharField(default='')
@@ -120,6 +135,9 @@ class SubjectDetailSerializer(SubjectListSerializer):
 
     def get_track_slug(self, obj):
         return obj.track.slug
+
+    def get_is_beta(self, obj):
+        return bool(obj.track and obj.track.audience == 'selected')
 
     def get_lessons(self, obj):
         from apps.lessons.serializers import LessonListSerializer

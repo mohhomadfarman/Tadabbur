@@ -27,6 +27,7 @@ class LessonDetailSerializer(LessonListSerializer):
     subject_slug = serializers.SerializerMethodField()
     track_slug = serializers.SerializerMethodField()
     track_title = serializers.SerializerMethodField()
+    is_beta = serializers.SerializerMethodField()
     is_truncated = serializers.SerializerMethodField()
     needs_enrollment = serializers.SerializerMethodField()
     content_blocks = serializers.SerializerMethodField()
@@ -80,6 +81,9 @@ class LessonDetailSerializer(LessonListSerializer):
 
     def get_track_title(self, obj):
         return self.context.get('track_title', '')
+
+    def get_is_beta(self, obj):
+        return bool(self.context.get('track_is_beta', False))
 
     def get_is_truncated(self, obj):
         return self.context.get('truncate', False)

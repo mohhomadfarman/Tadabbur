@@ -216,6 +216,9 @@ useSeo(() => {
     description: tr.meta_description || tr.description,
     url,
     image: tr.og_image || tr.thumbnail_url || undefined,
+    // Beta tracks are already excluded from the sitemap/prerender, but this
+    // is a cheap extra guard in case a tester's link ever gets crawled directly.
+    noindex: tr.is_beta || undefined,
     jsonLd: {
       '@context': 'https://schema.org',
       '@type': 'Course',

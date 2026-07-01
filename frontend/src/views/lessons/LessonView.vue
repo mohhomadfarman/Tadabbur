@@ -273,6 +273,7 @@ useSeo(() => {
     description: desc,
     url,
     image: l.og_image || undefined,
+    noindex: l.is_beta || undefined,
     jsonLd: {
       '@context': 'https://schema.org',
       '@type': 'LearningResource',

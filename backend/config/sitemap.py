@@ -53,8 +53,11 @@ def sitemap_xml(request):
         _url(f'{base}/terms',   changefreq='yearly',  priority='0.3'),
     ]
 
-    # Tracks
-    tracks = Track.objects(is_published=True).order_by('order')
+    # Tracks — audience='selected' (beta/testing) tracks are never crawlable;
+    # excluding them here also excludes their subjects/lessons below, since
+    # those only get included via the track_slug_by_id lookup built from
+    # this same queryset.
+    tracks = Track.objects(is_published=True, audience__ne='selected').order_by('order')
     track_slug_by_id = {}
     for t in tracks:
         track_slug_by_id[str(t.id)] = t.slug

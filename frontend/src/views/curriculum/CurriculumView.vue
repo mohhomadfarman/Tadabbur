@@ -169,6 +169,15 @@
           ? 'border-2 border-emerald-300 hover:border-emerald-400'
           : 'border border-gray-100 hover:shadow-md hover:border-emerald-200'"
       >
+        <!-- Beta badge (opposite corner — can coexist with Completed/Enrolled) -->
+        <span
+          v-if="track.is_beta"
+          class="absolute top-4 left-4 rtl:left-auto rtl:right-4 text-xs font-semibold
+                 bg-amber-400 text-amber-950 px-2 py-0.5 rounded-full"
+        >
+          {{ t('curriculum.beta') }}
+        </span>
+
         <!-- Completed / Enrolled badge -->
         <span
           v-if="auth.isLoggedIn && progress.isTrackComplete(track.slug)"
@@ -247,6 +256,15 @@
           >
             <div v-html="buildIcon(track.slug, '3rem', 'rgba(255,255,255,0.88)')"></div>
           </div>
+
+          <!-- Beta badge overlay (opposite corner) -->
+          <span
+            v-if="track.is_beta"
+            class="absolute top-3 left-3 rtl:left-auto rtl:right-3 text-xs font-semibold
+                   bg-amber-400 text-amber-950 px-2.5 py-1 rounded-full shadow-sm"
+          >
+            {{ t('curriculum.beta') }}
+          </span>
 
           <!-- Completed / Enrolled badge overlay -->
           <span
