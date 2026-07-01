@@ -14,6 +14,23 @@ def _iso(dt):
     return dt.isoformat() if dt else None
 
 
+def _user_chip(u):
+    """Small profile summary attached to each feedback comment for the admin view."""
+    if not u:
+        return None
+    try:
+        return {
+            'id': str(u.id),
+            'full_name': u.full_name,
+            'email': u.email,
+            'avatar_url': (u.profile.avatar_url if u.profile else '') or '',
+            'role': u.role,
+            'joined_at': _iso(u.created_at),
+        }
+    except Exception:
+        return None
+
+
 class SubmitFeedbackView(APIView):
     """Learner submits a rating (1–5) + optional comment for a completed track.
     Idempotent per (user, track) — re-submitting updates the existing record."""
@@ -91,7 +108,12 @@ class AdminFeedbackListView(APIView):
             # Up to 10 most recent comments for this track.
             comments = []
             for fb in TrackFeedback.objects(track_slug=slug, comment__ne='').order_by('-updated_at').limit(10):
-                comments.append({'rating': fb.rating, 'comment': fb.comment, 'at': _iso(fb.updated_at)})
+                comments.append({
+                    'rating': fb.rating,
+                    'comment': fb.comment,
+                    'at': _iso(fb.updated_at),
+                    'user': _user_chip(fb.user),
+                })
             result.append({
                 'track_slug': slug,
                 'count': r['count'],

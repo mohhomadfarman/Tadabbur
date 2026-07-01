@@ -8,7 +8,7 @@ from rest_framework.permissions import AllowAny
 from apps.common.permissions import section_required
 from apps.curriculum.models import Subject
 from config.redirects import record_slug_redirect
-from .models import Lesson, ContentBlock
+from .models import Lesson, ContentBlock, LessonView
 from .serializers import LessonDetailSerializer, LessonListSerializer
 
 BLOCK_TYPES = ('text', 'verse', 'hadith', 'image', 'video', 'quiz')
@@ -54,6 +54,20 @@ class LessonDetailView(APIView):
 
         up = UserProgress.objects(user=request.user).first() if is_auth else None
         enrolled = bool(up and track_slug and track_slug in (up.enrolled_tracks or []))
+
+        # Record a (user, lesson, day) read event for admin analytics — never
+        # let logging break the page load. Anonymous views aren't logged.
+        if is_auth:
+            try:
+                now = datetime.now(timezone.utc)
+                LessonView.objects(
+                    user=request.user, lesson_slug=slug, view_date=now.date(),
+                ).modify(
+                    upsert=True, new=True,
+                    set__viewed_at=now, set__track_slug=track_slug,
+                )
+            except Exception:
+                pass
 
         # ── Resolve the active translation ────────────────────────────────────
         # Only languages still enabled by admins are offered in the switcher, but

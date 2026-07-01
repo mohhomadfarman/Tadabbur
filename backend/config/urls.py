@@ -24,4 +24,6 @@ urlpatterns = [
     path('api/v1/feedback/', include('apps.feedback.urls')),
     path('api/v1/badges/',   include('apps.badges.urls')),
     path('api/v1/emails/',   include('apps.emails.urls')),
+    path('api/v1/analytics/', include('apps.analytics.urls')),
+    path('api/v1/automations/', include('apps.automations.urls')),
 ]

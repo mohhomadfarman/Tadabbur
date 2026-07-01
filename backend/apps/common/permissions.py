@@ -2,7 +2,7 @@ from rest_framework.permissions import BasePermission
 
 # The unit of access control. A Role grants a subset of these; holding a section
 # means view + edit within that section of the admin panel / API.
-SECTIONS = ['curriculum', 'library', 'videos', 'users', 'analytics', 'roles', 'registrations', 'translations', 'announcements', 'features', 'feedback', 'badges', 'email']
+SECTIONS = ['curriculum', 'library', 'videos', 'users', 'analytics', 'roles', 'registrations', 'translations', 'announcements', 'features', 'feedback', 'badges', 'email', 'automations']
 
 
 def _user_sections(user):

@@ -8,6 +8,7 @@ from apps.lessons.models import Lesson
 from apps.curriculum.models import Track, Subject
 from apps.common.permissions import section_required
 from .models import LessonProgress, UserProgress, QuizAttempt
+from .completion import track_is_complete
 
 
 def _get_or_create_user_progress(user):
@@ -76,6 +77,17 @@ class MarkCompleteView(APIView):
         try:
             from apps.badges.awards import evaluate_awards
             evaluate_awards(request.user)
+        except Exception:
+            pass
+
+        # Evaluate email automation rules (lesson_completed always; also
+        # track_completed the moment the last lesson in the track is done).
+        # Never let an automation bug break completion.
+        try:
+            from apps.automations.engine import handle_trigger
+            handle_trigger(request.user, 'lesson_completed', track_slug)
+            if not already_done and track_slug and track_is_complete(request.user, track_slug):
+                handle_trigger(request.user, 'track_completed', track_slug)
         except Exception:
             pass
 
@@ -172,6 +184,15 @@ class EnrollTrackView(APIView):
 
         up.updated_at = datetime.now(timezone.utc)
         up.save()
+
+        # "Track started" automation trigger (e.g. a delayed "keep going"
+        # reminder if it's still incomplete). Never breaks enrollment.
+        try:
+            from apps.automations.engine import handle_trigger
+            handle_trigger(request.user, 'track_started', track_slug)
+        except Exception:
+            pass
+
         return Response({'enrolled': True, 'track_slug': track_slug, 'language': language})
 
     def delete(self, request, track_slug):
