@@ -65,6 +65,7 @@
               class="w-full px-4 py-2.5 text-base border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
               :placeholder="t('auth.register.passwordHint')"
             />
+            <p v-if="errors.password" class="text-red-600 text-xs mt-1">{{ errors.password }}</p>
           </div>
 
           <button
@@ -101,8 +102,18 @@ const form = ref({ fullName: '', username: '', email: '', password: '' })
 const loading = ref(false)
 const errors = ref({})
 
+const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+
 async function handleRegister() {
   errors.value = {}
+  if (!EMAIL_RE.test(form.value.email.trim())) {
+    errors.value.email = t('auth.register.invalidEmail')
+  }
+  if (form.value.password.length < 8) {
+    errors.value.password = t('auth.register.passwordHint')
+  }
+  if (errors.value.email || errors.value.password) return
+
   loading.value = true
   try {
     await auth.register(form.value.email, form.value.username, form.value.password, form.value.fullName)

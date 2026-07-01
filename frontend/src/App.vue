@@ -8,6 +8,7 @@
       class="min-h-screen"
       :class="(isHomePage || route.meta.fullScreen) ? '' : 'pt-24'"
     >
+      <EmailVerificationBanner v-if="!route.meta.fullScreen" />
       <RouterView />
     </main>
 
@@ -28,6 +29,7 @@ import { useFeaturesStore } from '@/stores/features'
 import AppHeader from '@/components/common/AppHeader.vue'
 import AnnouncementModal from '@/components/AnnouncementModal.vue'
 import BadgeRewardModal from '@/components/BadgeRewardModal.vue'
+import EmailVerificationBanner from '@/components/EmailVerificationBanner.vue'
 
 const auth     = useAuthStore()
 const features = useFeaturesStore()

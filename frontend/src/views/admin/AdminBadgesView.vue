@@ -149,6 +149,27 @@
               Delete badge
             </button>
           </div>
+
+          <!-- Grant to a learner -->
+          <div v-if="form.id" class="bg-white border border-gray-200 rounded-2xl p-5 shadow-sm space-y-3">
+            <p class="text-sm font-medium text-gray-700">Grant to a learner</p>
+            <input v-model="grantQuery" type="text" placeholder="Search by name, email or username…"
+              class="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#234ecc]/40" />
+            <p v-if="grantMessage" class="text-xs text-emerald-600">{{ grantMessage }}</p>
+            <div v-if="grantQuery.trim()" class="max-h-48 overflow-y-auto space-y-1">
+              <p v-if="grantResults.length === 0" class="text-xs text-gray-400 py-2">No matching users.</p>
+              <div v-for="u in grantResults" :key="u.id" class="flex items-center justify-between gap-2 px-2 py-1.5 rounded-lg hover:bg-gray-50">
+                <div class="min-w-0">
+                  <p class="text-xs font-medium text-gray-800 truncate">{{ u.full_name || u.username }}</p>
+                  <p class="text-xs text-gray-400 truncate">{{ u.email }}</p>
+                </div>
+                <button @click="grant(u)" :disabled="granting === u.id"
+                  class="shrink-0 text-xs font-semibold px-2.5 py-1 rounded-lg bg-[#234ecc]/10 text-[#234ecc] hover:bg-[#234ecc]/20 disabled:opacity-60 transition-colors">
+                  {{ granting === u.id ? 'Granting…' : 'Grant' }}
+                </button>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </template>
@@ -171,7 +192,7 @@
 </template>
 
 <script setup>
-import { ref, reactive, onMounted } from 'vue'
+import { ref, reactive, computed, onMounted } from 'vue'
 import { adminApi } from '@/api/admin'
 
 const items = ref([])
@@ -187,6 +208,40 @@ const uploading = ref(false)
 
 const deleteTarget = ref(null)
 const deleting = ref(false)
+
+const users = ref([])
+const grantQuery = ref('')
+const granting = ref(null)
+const grantMessage = ref('')
+
+const grantResults = computed(() => {
+  const q = grantQuery.value.trim().toLowerCase()
+  if (!q) return []
+  return users.value
+    .filter(u => `${u.full_name || ''} ${u.email} ${u.username}`.toLowerCase().includes(q))
+    .slice(0, 8)
+})
+
+async function loadUsers() {
+  if (users.value.length) return
+  try { users.value = await adminApi.listUsers() } catch { /* grant section stays empty */ }
+}
+
+async function grant(u) {
+  granting.value = u.id
+  grantMessage.value = ''
+  try {
+    await adminApi.grantBadge(form.id, u.id)
+    grantMessage.value = `Granted to ${u.full_name || u.email}.`
+    grantQuery.value = ''
+    const b = await adminApi.getBadge(form.id)
+    form.awarded_count = b.awarded_count || 0
+  } catch {
+    grantMessage.value = 'Could not grant this badge.'
+  } finally {
+    granting.value = null
+  }
+}
 
 const CRITERIA_LABELS = {
   manual: 'Manual',
@@ -214,6 +269,8 @@ function reset() {
   Object.assign(form, { id: null, name: '', description: '', icon_url: '', criteria_type: 'manual', criteria_value: '', reward: '', is_active: true, awarded_count: 0 })
   formError.value = ''
   saved.value = false
+  grantQuery.value = ''
+  grantMessage.value = ''
 }
 
 function startNew() {
@@ -231,6 +288,7 @@ async function startEdit(row) {
       is_active: b.is_active, awarded_count: b.awarded_count || 0,
     })
     editing.value = true
+    loadUsers()
   } catch {
     error.value = 'Could not open that badge.'
   }
@@ -275,6 +333,7 @@ async function save() {
     saved.value = true
     setTimeout(() => { saved.value = false }, 2500)
     await load()
+    loadUsers()
   } catch (e) {
     formError.value = e?.response?.data?.key || e?.response?.data?.name || e?.response?.data?.criteria_type || 'Could not save.'
   } finally {

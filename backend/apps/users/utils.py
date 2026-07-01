@@ -35,3 +35,26 @@ def decode_refresh_token(token):
     if payload.get('type') != 'refresh':
         raise jwt.InvalidTokenError('Not a refresh token.')
     return payload
+
+
+def generate_action_token(user, action, minutes):
+    """A short-lived, single-purpose JWT (email verification, password reset).
+    Stateless by design — no DB row to invalidate, so `action` + `exp` are what
+    keep a verify-email link from being replayed as a password-reset link."""
+    now = datetime.now(timezone.utc)
+    payload = {
+        'user_id': str(user.id),
+        'action': action,
+        'exp': now + timedelta(minutes=minutes),
+        'iat': now,
+    }
+    return jwt.encode(payload, settings.SECRET_KEY, algorithm='HS256')
+
+
+def decode_action_token(token, action):
+    """Decode and validate an action token. Raises jwt.InvalidTokenError /
+    jwt.ExpiredSignatureError on failure."""
+    payload = jwt.decode(token, settings.SECRET_KEY, algorithms=['HS256'])
+    if payload.get('action') != action:
+        raise jwt.InvalidTokenError('Token is not valid for this action.')
+    return payload

@@ -14,4 +14,16 @@ export const authApi = {
 
   updateProfile: (data) =>
     client.patch('/auth/profile/', data).then(r => r.data),
+
+  verifyEmail: (token) =>
+    client.post('/auth/verify-email/', { token }).then(r => r.data),
+
+  resendVerification: () =>
+    client.post('/auth/resend-verification/').then(r => r.data),
+
+  forgotPassword: (email) =>
+    client.post('/auth/forgot-password/', { email }).then(r => r.data),
+
+  resetPassword: (token, password) =>
+    client.post('/auth/reset-password/', { token, password }).then(r => r.data),
 }

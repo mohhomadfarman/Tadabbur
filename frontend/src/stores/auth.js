@@ -50,6 +50,10 @@ export const useAuthStore = defineStore('auth', () => {
     user.value = data
   }
 
+  async function resendVerification() {
+    return authApi.resendVerification()
+  }
+
   function logout() {
     user.value = null
     token.value = null
@@ -67,6 +71,6 @@ export const useAuthStore = defineStore('auth', () => {
   return {
     user, token, isLoggedIn, isAdmin, isAuthor,
     sections, can, hasAdminAccess,
-    login, register, logout, fetchUser,
+    login, register, logout, fetchUser, resendVerification,
   }
 })

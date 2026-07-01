@@ -260,9 +260,45 @@
       "hasAccount": "Already have an account?",
       "signIn": "Sign in",
       "error": "Registration failed. Please try again.",
+      "invalidEmail": "Enter a valid email address.",
       "namePlaceholder": "Your name",
       "usernamePlaceholder": "learner123",
       "emailPlaceholder": "you{'@'}example.com"
+    },
+    "forgotLink": "Forgot password?",
+    "forgotPassword": {
+      "title": "Reset your password",
+      "subtitle": "We'll email you a link to set a new one.",
+      "email": "Email",
+      "emailPlaceholder": "you{'@'}example.com",
+      "send": "Send reset link",
+      "sending": "Sending…",
+      "success": "If an account exists for that email, a reset link has been sent.",
+      "backToLogin": "Back to sign in"
+    },
+    "resetPassword": {
+      "title": "Set a new password",
+      "password": "New password",
+      "passwordHint": "At least 8 characters",
+      "confirm": "Confirm password",
+      "mismatch": "Passwords don't match.",
+      "save": "Set new password",
+      "saving": "Saving…",
+      "success": "Your password has been reset. You can sign in now.",
+      "invalidToken": "This link is invalid or has expired.",
+      "goToLogin": "Go to sign in"
+    },
+    "verifyEmail": {
+      "verifying": "Verifying your email…",
+      "success": "Your email has been verified.",
+      "error": "This verification link is invalid or has expired.",
+      "goToDashboard": "Go to dashboard",
+      "goToLogin": "Go to sign in"
+    },
+    "verifyBanner": {
+      "message": "Please verify your email address.",
+      "resend": "Resend email",
+      "sent": "Sent! Check your inbox."
     }
   }
 }
