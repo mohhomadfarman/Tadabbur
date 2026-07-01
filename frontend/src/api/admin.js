@@ -114,4 +114,15 @@ export const adminApi = {
 
   // Generic single test-send (synchronous — returns the real SMTP error on failure)
   testSendEmail:       (data)     => client.post('/emails/admin/test-send/', data).then(r => r.data),
+
+  // Overview dashboard (section: analytics)
+  getOverviewStats: (days) => client.get('/analytics/admin/overview/', { params: { days } }).then(r => r.data),
+
+  // Email automation workflows (section: automations)
+  listWorkflows:   ()         => client.get('/automations/admin/workflows/').then(r => r.data),
+  getWorkflow:     (id)       => client.get(`/automations/admin/workflows/${id}/`).then(r => r.data),
+  createWorkflow:  (data)     => client.post('/automations/admin/workflows/', data).then(r => r.data),
+  updateWorkflow:  (id, data) => client.patch(`/automations/admin/workflows/${id}/`, data).then(r => r.data),
+  deleteWorkflow:  (id)       => client.delete(`/automations/admin/workflows/${id}/`),
+  getWorkflowSends: (id)      => client.get(`/automations/admin/workflows/${id}/sends/`).then(r => r.data),
 }

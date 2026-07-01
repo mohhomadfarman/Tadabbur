@@ -47,6 +47,16 @@
         <div v-if="row.recent_comments.length" class="pt-4 border-t border-gray-100 space-y-3">
           <p class="text-xs font-medium text-gray-500">Recent comments</p>
           <div v-for="(c, i) in row.recent_comments" :key="i" class="text-sm">
+            <div class="flex items-center gap-2 mb-1">
+              <div v-if="c.user?.avatar_url" class="w-6 h-6 rounded-full overflow-hidden shrink-0 bg-gray-100">
+                <img :src="c.user.avatar_url" class="w-full h-full object-cover" alt="" />
+              </div>
+              <div v-else class="w-6 h-6 rounded-full shrink-0 bg-[#234ecc]/10 text-[#234ecc] text-[10px] font-semibold flex items-center justify-center">
+                {{ initials(c.user) }}
+              </div>
+              <span class="font-medium text-gray-800 truncate">{{ displayName(c.user) }}</span>
+              <span v-if="c.user?.joined_at" class="text-[11px] text-gray-400 shrink-0">joined {{ formatDate(c.user.joined_at) }}</span>
+            </div>
             <div class="flex items-center gap-1 mb-0.5">
               <svg v-for="s in c.rating" :key="s" class="w-3 h-3 text-amber-400" fill="currentColor" viewBox="0 0 24 24"><path d="M12 17.27 18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
             </div>
@@ -69,6 +79,21 @@ const error = ref('')
 function pct(row, n) {
   if (!row.count) return 0
   return Math.round(((row.distribution[String(n)] || 0) / row.count) * 100)
+}
+
+function displayName(u) {
+  if (!u) return 'Deleted user'
+  return u.full_name || u.email || 'Unknown'
+}
+
+function initials(u) {
+  const name = u ? (u.full_name || u.email || '?') : '?'
+  return name.trim().charAt(0).toUpperCase()
+}
+
+function formatDate(iso) {
+  if (!iso) return ''
+  return new Date(iso).toLocaleDateString('en-GB', { year: 'numeric', month: 'short', day: 'numeric' })
 }
 
 async function load() {

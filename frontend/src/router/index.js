@@ -121,6 +121,7 @@ export const routes = [
     meta: { requiresAdminAccess: true, fullScreen: true, noindex: true },
     children: [
       { path: '',                     name: 'admin',              component: () => import('@/views/admin/AdminDashboardView.vue') },
+      { path: 'curriculum',          name: 'admin-curriculum',   meta: { section: 'curriculum' }, component: () => import('@/views/admin/AdminCurriculumView.vue') },
       { path: 'tracks/new',          name: 'admin-track-new',    meta: { section: 'curriculum' }, component: () => import('@/views/admin/TrackEditorView.vue') },
       { path: 'tracks/:slug/edit',   name: 'admin-track-edit',   meta: { section: 'curriculum' }, component: () => import('@/views/admin/TrackEditorView.vue') },
       { path: 'tracks/:slug',        name: 'admin-track-detail', meta: { section: 'curriculum' }, component: () => import('@/views/admin/AdminTrackDetailView.vue') },
@@ -144,6 +145,7 @@ export const routes = [
       { path: 'email/campaigns', name: 'admin-email-campaigns', meta: { section: 'email' }, component: () => import('@/views/admin/AdminEmailCampaignsView.vue') },
       { path: 'email/templates', name: 'admin-email-templates', meta: { section: 'email' }, component: () => import('@/views/admin/AdminEmailTemplatesView.vue') },
       { path: 'email/settings',  name: 'admin-email-settings',  meta: { section: 'email' }, component: () => import('@/views/admin/AdminEmailSettingsView.vue') },
+      { path: 'automations',   name: 'admin-automations',   meta: { section: 'automations' }, component: () => import('@/views/admin/AdminAutomationsView.vue') },
     ],
   },
 ]

@@ -29,6 +29,7 @@ SECTION_LABELS = {
     'feedback': 'Feedback',
     'badges': 'Badges & Rewards',
     'email': 'Email Marketing',
+    'automations': 'Email Automation',
 }
 
 ACTIVITY_LIMIT = 100

@@ -37,6 +37,8 @@ INSTALLED_APPS = [
     'apps.feedback',
     'apps.badges',
     'apps.emails',
+    'apps.analytics',
+    'apps.automations',
 ]
 
 MIDDLEWARE = [

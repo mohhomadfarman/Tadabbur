@@ -49,7 +49,7 @@
           <!-- Curriculum -->
           <RouterLink
             v-if="auth.can('curriculum')"
-            to="/admin"
+            :to="{ name: 'admin-curriculum' }"
             class="flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-sm transition-colors"
             :class="isActive('curriculum') ? 'bg-[#234ecc] text-white font-medium' : 'text-white/50 hover:text-white hover:bg-white/5'"
             @click="sidebarOpen = false"
@@ -210,6 +210,20 @@
             Email Settings
           </RouterLink>
 
+          <!-- Email Automation (dark-launched behind its own flag) -->
+          <RouterLink
+            v-if="auth.can('automations') && features.isEnabled('email_automation')"
+            :to="{ name: 'admin-automations' }"
+            class="flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-sm transition-colors"
+            :class="isActive('automations') ? 'bg-[#234ecc] text-white font-medium' : 'text-white/50 hover:text-white hover:bg-white/5'"
+            @click="sidebarOpen = false"
+          >
+            <svg class="w-4 h-4 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M13 2 3 14h9l-1 8 10-12h-9l1-8z"/>
+            </svg>
+            Automation
+          </RouterLink>
+
           <!-- Feature Flags -->
           <RouterLink
             v-if="auth.can('features')"
@@ -304,7 +318,7 @@ onUnmounted(() => window.removeEventListener('resize', checkMobile))
 function isActive(section) {
   const p = route.path
   if (section === 'overview')   return p === '/admin'
-  if (section === 'curriculum') return p.startsWith('/admin/tracks') || p.startsWith('/admin/subjects') || p.startsWith('/admin/lessons')
+  if (section === 'curriculum') return p.startsWith('/admin/curriculum') || p.startsWith('/admin/tracks') || p.startsWith('/admin/subjects') || p.startsWith('/admin/lessons')
   if (section === 'library')    return p.startsWith('/admin/library')
   if (section === 'users')      return p.startsWith('/admin/users')
   if (section === 'registrations') return p.startsWith('/admin/registrations')
@@ -318,6 +332,7 @@ function isActive(section) {
   if (section === 'email-campaigns') return p.startsWith('/admin/email/campaigns')
   if (section === 'email-templates') return p.startsWith('/admin/email/templates')
   if (section === 'email-settings')  return p.startsWith('/admin/email/settings')
+  if (section === 'automations') return p.startsWith('/admin/automations')
   return false
 }
 

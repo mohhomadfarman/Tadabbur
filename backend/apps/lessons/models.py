@@ -1,10 +1,11 @@
 from mongoengine import (
     Document, EmbeddedDocument, ReferenceField,
-    StringField, IntField, DateTimeField,
+    StringField, IntField, DateTimeField, DateField,
     EmbeddedDocumentListField, DictField,
 )
 from datetime import datetime, timezone
 from apps.curriculum.models import Subject
+from apps.users.models import User
 from config.rebuild import RebuildOnChange
 
 
@@ -45,3 +46,23 @@ class Lesson(RebuildOnChange, Document):
 
     def __str__(self):
         return self.title
+
+
+class LessonView(Document):
+    """One row per (user, lesson, day) — a dedupe'd 'read' event, so admin
+    analytics can answer 'how many users read content today/this week' without
+    unbounded write volume from every page load/refresh."""
+    user = ReferenceField(User, required=True, reverse_delete_rule=2)  # CASCADE
+    lesson_slug = StringField(required=True)
+    track_slug = StringField(default='')  # denormalized, like LessonProgress
+    view_date = DateField(required=True)  # UTC day — part of the daily-unique index
+    viewed_at = DateTimeField(default=lambda: datetime.now(timezone.utc))
+
+    meta = {
+        'collection': 'lesson_views',
+        'indexes': [
+            {'fields': ['user', 'lesson_slug', 'view_date'], 'unique': True},
+            'view_date',
+            'track_slug',
+        ],
+    }

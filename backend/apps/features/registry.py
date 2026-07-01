@@ -50,6 +50,13 @@ FEATURE_REGISTRY = [
         'default_enabled': False,  # net-new: beta-first
         'owner_section': 'email',
     },
+    {
+        'key': 'email_automation',
+        'label': 'Email Automation',
+        'description': 'Condition-based transactional email reminders on learner events.',
+        'default_enabled': False,  # net-new: beta-first
+        'owner_section': 'automations',
+    },
 ]
 
 _BY_KEY = {spec['key']: spec for spec in FEATURE_REGISTRY}
