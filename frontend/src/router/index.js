@@ -21,6 +21,24 @@ export const routes = [
     meta: { guestOnly: true, noindex: true },
   },
   {
+    path: '/forgot-password',
+    name: 'forgot-password',
+    component: () => import('@/views/auth/ForgotPasswordView.vue'),
+    meta: { guestOnly: true, noindex: true },
+  },
+  {
+    path: '/reset-password',
+    name: 'reset-password',
+    component: () => import('@/views/auth/ResetPasswordView.vue'),
+    meta: { guestOnly: true, noindex: true },
+  },
+  {
+    path: '/verify-email',
+    name: 'verify-email',
+    component: () => import('@/views/auth/VerifyEmailView.vue'),
+    meta: { noindex: true },
+  },
+  {
     path: '/learn',
     name: 'curriculum',
     component: () => import('@/views/curriculum/CurriculumView.vue'),

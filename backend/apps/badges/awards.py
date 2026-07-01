@@ -6,7 +6,15 @@ from datetime import datetime, timezone
 from apps.features.service import feature_enabled
 from apps.progress.models import LessonProgress, UserProgress
 from apps.progress.completion import track_is_complete
+from apps.emails.transactional import send_transactional_email, badge_earned_email_body
 from .models import Badge, UserBadge
+
+
+def _notify_badge_earned(user, badge):
+    try:
+        send_transactional_email.delay(f'You earned a badge: {badge.name}', badge_earned_email_body(badge), user.email)
+    except Exception:
+        pass  # never let a notification failure break badge awarding
 
 
 def _criteria_met(badge, user):
@@ -50,6 +58,7 @@ def evaluate_awards(user):
         try:
             ub = UserBadge(user=user, badge=badge, awarded_at=datetime.now(timezone.utc)).save()
             newly.append(ub)
+            _notify_badge_earned(user, badge)
         except Exception:
             pass  # unique-index race — already awarded
     return newly
@@ -61,6 +70,8 @@ def grant_badge(user, badge):
     if existing:
         return existing
     try:
-        return UserBadge(user=user, badge=badge, awarded_at=datetime.now(timezone.utc)).save()
+        ub = UserBadge(user=user, badge=badge, awarded_at=datetime.now(timezone.utc)).save()
+        _notify_badge_earned(user, badge)
+        return ub
     except Exception:
         return UserBadge.objects(user=user, badge=badge).first()

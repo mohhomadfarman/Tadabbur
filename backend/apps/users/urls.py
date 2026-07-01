@@ -1,5 +1,8 @@
 from django.urls import path
-from .views import RegisterView, LoginView, TokenRefreshView, ProfileView
+from .views import (
+    RegisterView, LoginView, TokenRefreshView, ProfileView,
+    VerifyEmailView, ResendVerificationView, ForgotPasswordView, ResetPasswordView,
+)
 from .admin_views import (
     AdminUserListView, AdminUserDetailView, AdminUserPasswordView,
     AdminUserActivityView, RoleListView, RoleDetailView, SectionListView,
@@ -10,6 +13,10 @@ urlpatterns = [
     path('login/', LoginView.as_view(), name='auth-login'),
     path('token/refresh/', TokenRefreshView.as_view(), name='auth-token-refresh'),
     path('profile/', ProfileView.as_view(), name='auth-profile'),
+    path('verify-email/', VerifyEmailView.as_view(), name='auth-verify-email'),
+    path('resend-verification/', ResendVerificationView.as_view(), name='auth-resend-verification'),
+    path('forgot-password/', ForgotPasswordView.as_view(), name='auth-forgot-password'),
+    path('reset-password/', ResetPasswordView.as_view(), name='auth-reset-password'),
 
     # Admin panel — user management (section: users)
     path('admin/users/', AdminUserListView.as_view(), name='admin-user-list'),

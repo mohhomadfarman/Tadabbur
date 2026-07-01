@@ -1,16 +1,30 @@
 import jwt
 from datetime import datetime, timezone
+from django.conf import settings
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework import status
 
+from apps.emails.transactional import (
+    send_transactional_email, verification_email_body, password_reset_email_body,
+)
 from .models import User
 from .serializers import (
     RegisterSerializer, LoginSerializer,
     UserProfileSerializer, TokenRefreshSerializer,
+    ForgotPasswordSerializer, ResetPasswordSerializer, VerifyEmailSerializer,
 )
-from .utils import generate_tokens, decode_refresh_token
+from .utils import (
+    generate_tokens, decode_refresh_token,
+    generate_action_token, decode_action_token,
+)
+
+
+def _send_verification_email(user):
+    token = generate_action_token(user, 'verify_email', minutes=60 * 24)
+    url = f"{settings.SITE_URL.rstrip('/')}/verify-email?token={token}"
+    send_transactional_email.delay('Verify your Tadabbur email', verification_email_body(url), user.email)
 
 
 class RegisterView(APIView):
@@ -29,6 +43,7 @@ class RegisterView(APIView):
         )
         user.set_password(data['password'])
         user.save()
+        _send_verification_email(user)
 
         tokens = generate_tokens(user)
         return Response(
@@ -123,3 +138,75 @@ class ProfileView(APIView):
                     setattr(user.profile, field, profile_data[field])
         user.save()
         return Response(UserProfileSerializer(user).data)
+
+
+class VerifyEmailView(APIView):
+    permission_classes = [AllowAny]
+
+    def post(self, request):
+        serializer = VerifyEmailSerializer(data=request.data)
+        if not serializer.is_valid():
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            payload = decode_action_token(serializer.validated_data['token'], 'verify_email')
+            user = User.objects.get(id=payload['user_id'])
+        except jwt.ExpiredSignatureError:
+            return Response({'error': 'This verification link has expired.'}, status=status.HTTP_400_BAD_REQUEST)
+        except (jwt.InvalidTokenError, User.DoesNotExist):
+            return Response({'error': 'Invalid verification link.'}, status=status.HTTP_400_BAD_REQUEST)
+
+        if not user.is_verified:
+            user.is_verified = True
+            user.save()
+        return Response({'verified': True})
+
+
+class ResendVerificationView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        user = request.user
+        if user.is_verified:
+            return Response({'detail': 'Your email is already verified.'})
+        _send_verification_email(user)
+        return Response({'detail': 'Verification email sent.'})
+
+
+class ForgotPasswordView(APIView):
+    permission_classes = [AllowAny]
+
+    def post(self, request):
+        serializer = ForgotPasswordSerializer(data=request.data)
+        if not serializer.is_valid():
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+        user = User.objects(email=serializer.validated_data['email'].lower()).first()
+        if user:
+            token = generate_action_token(user, 'reset_password', minutes=30)
+            url = f"{settings.SITE_URL.rstrip('/')}/reset-password?token={token}"
+            send_transactional_email.delay('Reset your Tadabbur password', password_reset_email_body(url), user.email)
+
+        # Always the same response — don't reveal whether the account exists.
+        return Response({'detail': 'If an account exists for that email, a reset link has been sent.'})
+
+
+class ResetPasswordView(APIView):
+    permission_classes = [AllowAny]
+
+    def post(self, request):
+        serializer = ResetPasswordSerializer(data=request.data)
+        if not serializer.is_valid():
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            payload = decode_action_token(serializer.validated_data['token'], 'reset_password')
+            user = User.objects.get(id=payload['user_id'])
+        except jwt.ExpiredSignatureError:
+            return Response({'error': 'This reset link has expired.'}, status=status.HTTP_400_BAD_REQUEST)
+        except (jwt.InvalidTokenError, User.DoesNotExist):
+            return Response({'error': 'Invalid reset link.'}, status=status.HTTP_400_BAD_REQUEST)
+
+        user.set_password(serializer.validated_data['password'])
+        user.save()
+        return Response({'reset': True})

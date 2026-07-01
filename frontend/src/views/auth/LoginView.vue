@@ -25,7 +25,12 @@
           </div>
 
           <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1">{{ t('auth.login.password') }}</label>
+            <div class="flex items-center justify-between mb-1">
+              <label class="block text-sm font-medium text-gray-700">{{ t('auth.login.password') }}</label>
+              <RouterLink to="/forgot-password" class="text-xs text-emerald-700 hover:underline font-medium">
+                {{ t('auth.forgotLink') }}
+              </RouterLink>
+            </div>
             <input
               v-model="form.password"
               type="password"
@@ -71,8 +76,14 @@ const form = ref({ email: '', password: '' })
 const loading = ref(false)
 const error = ref('')
 
+const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+
 async function handleLogin() {
   error.value = ''
+  if (!EMAIL_RE.test(form.value.email.trim())) {
+    error.value = t('auth.login.error')
+    return
+  }
   loading.value = true
   try {
     await auth.login(form.value.email, form.value.password)
