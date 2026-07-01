@@ -108,13 +108,22 @@
             {{ track.title.charAt(0).toUpperCase() }}
           </div>
 
-          <!-- Status badge -->
-          <span
-            class="absolute top-2.5 right-2.5 text-xs font-semibold px-2 py-0.5 rounded-full shadow-sm"
-            :class="track.is_published ? 'bg-emerald-500 text-white' : 'bg-white/95 text-gray-600 border border-gray-200'"
-          >
-            {{ track.is_published ? 'Published' : 'Draft' }}
-          </span>
+          <!-- Status + audience badges -->
+          <div class="absolute top-2.5 right-2.5 flex items-center gap-1.5">
+            <span
+              v-if="track.audience === 'selected'"
+              title="Only visible to selected testers"
+              class="text-xs font-semibold px-2 py-0.5 rounded-full shadow-sm bg-amber-400 text-amber-950"
+            >
+              Beta
+            </span>
+            <span
+              class="text-xs font-semibold px-2 py-0.5 rounded-full shadow-sm"
+              :class="track.is_published ? 'bg-emerald-500 text-white' : 'bg-white/95 text-gray-600 border border-gray-200'"
+            >
+              {{ track.is_published ? 'Published' : 'Draft' }}
+            </span>
+          </div>
 
           <!-- Hover action overlay -->
           <div class="absolute top-2.5 left-2.5 hidden group-hover:flex gap-1.5">

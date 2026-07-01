@@ -121,7 +121,8 @@
     "availableIn": "Available languages",
     "allTracks": "All Tracks",
     "allLevels": "All levels",
-    "completed": "Completed"
+    "completed": "Completed",
+    "beta": "Beta"
   },
   "track": {
     "availableIn": "Available in:",

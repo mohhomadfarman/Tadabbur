@@ -177,6 +177,7 @@ useSeo(() => {
     description: s.meta_description || s.description,
     url,
     image: s.og_image || s.thumbnail_url || undefined,
+    noindex: s.is_beta || undefined,
     jsonLd: {
       '@context': 'https://schema.org',
       '@type': 'Course',

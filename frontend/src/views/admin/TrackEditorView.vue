@@ -158,6 +158,53 @@
             </div>
           </div>
 
+          <!-- Audience -->
+          <div class="bg-white border border-gray-200 rounded-2xl p-5 shadow-sm">
+            <p class="text-sm font-medium text-gray-700 mb-1">Who can see this track</p>
+            <p class="text-xs text-gray-400 mb-3">Publish to a few testers first, then switch to "All users" once you're happy with it.</p>
+            <div class="flex gap-2">
+              <button type="button" @click="form.audience = 'all'"
+                class="text-xs font-medium px-3 py-1.5 rounded-lg border transition-colors"
+                :class="form.audience === 'all' ? 'border-[#234ecc] bg-[#234ecc]/5 text-[#234ecc]' : 'border-gray-200 text-gray-500 hover:bg-gray-50'">
+                All users
+              </button>
+              <button type="button" @click="form.audience = 'selected'"
+                class="text-xs font-medium px-3 py-1.5 rounded-lg border transition-colors"
+                :class="form.audience === 'selected' ? 'border-[#234ecc] bg-[#234ecc]/5 text-[#234ecc]' : 'border-gray-200 text-gray-500 hover:bg-gray-50'">
+                Selected users
+              </button>
+            </div>
+
+            <div v-if="form.audience === 'selected'" class="mt-3">
+              <div v-if="form.allowed_user_ids.length" class="flex flex-wrap gap-1.5 mb-2">
+                <span v-for="uid in form.allowed_user_ids" :key="uid"
+                  class="inline-flex items-center gap-1.5 text-xs bg-gray-100 text-gray-700 rounded-full ps-2.5 pe-1 py-1">
+                  {{ userLabel(uid) }}
+                  <button @click="removeUser(uid)" class="w-4 h-4 rounded-full inline-flex items-center justify-center text-gray-400 hover:text-red-500 hover:bg-red-50">
+                    <svg class="w-3 h-3" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M18 6 6 18M6 6l12 12"/></svg>
+                  </button>
+                </span>
+              </div>
+              <div class="relative">
+                <input v-model="userSearch" @input="onUserSearch" type="text"
+                  placeholder="Search users by email or name…"
+                  class="w-full border border-gray-200 rounded-xl px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#234ecc]/40" />
+                <div v-if="userResults.length"
+                  class="absolute z-10 mt-1 w-full bg-white border border-gray-200 rounded-xl shadow-lg max-h-56 overflow-y-auto">
+                  <button v-for="u in userResults" :key="u.id" @click="addUser(u)"
+                    class="w-full text-left px-4 py-2 text-sm hover:bg-gray-50 flex items-center justify-between gap-2"
+                    :class="form.allowed_user_ids.includes(u.id) ? 'opacity-50 pointer-events-none' : ''">
+                    <span class="truncate">
+                      <span class="text-gray-800">{{ u.full_name || u.username }}</span>
+                      <span class="text-gray-400 ms-1.5">{{ u.email }}</span>
+                    </span>
+                  </button>
+                </div>
+              </div>
+              <p class="text-[11px] text-gray-400 mt-1.5">Only these users will see this track while it's published.</p>
+            </div>
+          </div>
+
           <!-- SEO -->
           <div class="bg-white border border-gray-200 rounded-2xl p-5 shadow-sm space-y-4">
             <div class="flex items-center justify-between">
@@ -216,7 +263,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue'
+import { ref, reactive, computed, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { adminApi } from '@/api/admin'
 
@@ -225,7 +272,11 @@ const router = useRouter()
 
 const isEdit = computed(() => !!route.params.slug)
 
-const form = ref({ title: '', slug: '', description: '', thumbnail_url: '', order: 0, is_published: false, category_slug: '', level_slug: '', meta_title: '', meta_description: '', og_image: '' })
+const form = ref({
+  title: '', slug: '', description: '', thumbnail_url: '', order: 0, is_published: false,
+  category_slug: '', level_slug: '', audience: 'all', allowed_user_ids: [],
+  meta_title: '', meta_description: '', og_image: '',
+})
 const loadingTrack = ref(false)
 const saving = ref(false)
 const saved = ref(false)
@@ -234,6 +285,39 @@ let slugWasEdited = false
 
 const categories = ref([])
 const selectedCategory = computed(() => categories.value.find(c => c.slug === form.value.category_slug) || null)
+
+const userSearch = ref('')
+const userResults = ref([])
+const userCache = reactive({})
+let userSearchTimer = null
+
+function userLabel(uid) {
+  const u = userCache[uid]
+  return u ? (u.email || u.username || uid) : '…'
+}
+
+function onUserSearch() {
+  clearTimeout(userSearchTimer)
+  const q = userSearch.value.trim()
+  if (!q) { userResults.value = []; return }
+  userSearchTimer = setTimeout(async () => {
+    try {
+      const users = await adminApi.searchFeatureUsers(q)
+      users.forEach(u => { userCache[u.id] = u })
+      userResults.value = users
+    } catch { userResults.value = [] }
+  }, 250)
+}
+
+function addUser(u) {
+  if (!form.value.allowed_user_ids.includes(u.id)) form.value.allowed_user_ids.push(u.id)
+  userCache[u.id] = u
+  userSearch.value = ''
+  userResults.value = []
+}
+function removeUser(uid) {
+  form.value.allowed_user_ids = form.value.allowed_user_ids.filter(id => id !== uid)
+}
 
 const thumbnailValid = computed(() => form.value.thumbnail_url?.startsWith('http'))
 
@@ -294,11 +378,19 @@ onMounted(async () => {
       is_published: data.is_published,
       category_slug: data.category?.slug || '',
       level_slug: data.level?.slug || '',
+      audience: data.audience || 'all',
+      allowed_user_ids: [...(data.allowed_user_ids || [])],
       meta_title: data.meta_title || '',
       meta_description: data.meta_description || '',
       og_image: data.og_image || '',
     }
     slugWasEdited = true
+    if (form.value.allowed_user_ids.length) {
+      try {
+        const users = await adminApi.resolveFeatureUsers(form.value.allowed_user_ids)
+        users.forEach(u => { userCache[u.id] = u })
+      } catch { /* labels just show as … */ }
+    }
   } finally {
     loadingTrack.value = false
   }

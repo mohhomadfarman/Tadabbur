@@ -121,7 +121,8 @@
     "availableIn": "اللغات المتاحة",
     "allTracks": "كل المسارات",
     "allLevels": "كل المستويات",
-    "completed": "مكتمل"
+    "completed": "مكتمل",
+    "beta": "تجريبي"
   },
   "track": {
     "availableIn": "متاح بـ:",

@@ -55,7 +55,8 @@ class TrackListView(APIView):
 
     def get(self, request):
         tracks = Track.objects(is_published=True).order_by('order')
-        return Response(TrackSerializer(tracks, many=True).data)
+        visible = [t for t in tracks if t.is_visible_to(request.user)]
+        return Response(TrackSerializer(visible, many=True).data)
 
 
 class TrackDetailView(APIView):
@@ -63,7 +64,7 @@ class TrackDetailView(APIView):
 
     def get(self, request, slug):
         track = Track.objects(slug=slug, is_published=True).first()
-        if not track:
+        if not track or not track.is_visible_to(request.user):
             return Response({'detail': 'Not found.'}, status=status.HTTP_404_NOT_FOUND)
         return Response(TrackDetailSerializer(track).data)
 
@@ -73,7 +74,7 @@ class SubjectDetailView(APIView):
 
     def get(self, request, slug):
         subject = Subject.objects(slug=slug, is_published=True).first()
-        if not subject:
+        if not subject or not (subject.track and subject.track.is_visible_to(request.user)):
             return Response({'detail': 'Not found.'}, status=status.HTTP_404_NOT_FOUND)
         return Response(SubjectDetailSerializer(subject).data)
 
@@ -115,6 +116,8 @@ class AdminTrackListView(APIView):
             is_published=False,
             category=category,
             level_slug=level_slug,
+            audience=(request.data.get('audience') or 'all').strip(),
+            allowed_user_ids=request.data.get('allowed_user_ids') or [],
             meta_title=request.data.get('meta_title', ''),
             meta_description=request.data.get('meta_description', ''),
             og_image=request.data.get('og_image', ''),
@@ -156,6 +159,10 @@ class AdminTrackDetailView(APIView):
                 return Response({'level_slug': 'Level does not belong to the selected category.'}, status=status.HTTP_400_BAD_REQUEST)
             track.category = category
             track.level_slug = level_slug
+        if 'audience' in request.data:
+            track.audience = (request.data.get('audience') or 'all').strip()
+        if 'allowed_user_ids' in request.data:
+            track.allowed_user_ids = request.data.get('allowed_user_ids') or []
         old_slug = track.slug
         if 'slug' in request.data:
             new_slug = request.data['slug'].strip()

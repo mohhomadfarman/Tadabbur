@@ -1,6 +1,6 @@
 from mongoengine import (
     Document, EmbeddedDocument, ReferenceField, StringField, IntField,
-    BooleanField, DateTimeField, EmbeddedDocumentListField,
+    BooleanField, DateTimeField, EmbeddedDocumentListField, ListField,
 )
 from datetime import datetime, timezone
 
@@ -43,6 +43,11 @@ class Track(RebuildOnChange, Document):
     # isn't its own Document, so it's referenced by slug, not id).
     category = ReferenceField(Category, null=True)
     level_slug = StringField(default='')
+    # Staged rollout — publish to a handful of testers before everyone.
+    # 'all'      -> every user, once is_published
+    # 'selected' -> only users whose id is in allowed_user_ids (beta / pre-testing)
+    audience = StringField(default='all')
+    allowed_user_ids = ListField(StringField())
     # SEO — optional overrides; fall back to title/description when empty
     meta_title = StringField(max_length=70, default='')
     meta_description = StringField(max_length=200, default='')
@@ -54,6 +59,15 @@ class Track(RebuildOnChange, Document):
         'collection': 'tracks',
         'indexes': ['slug', 'is_published', 'order', 'category'],
     }
+
+    def is_visible_to(self, user):
+        """Resolve whether `user` (or anonymous) can see this track."""
+        if not self.is_published:
+            return False
+        if self.audience != 'selected':
+            return True
+        uid = getattr(user, 'id', None)
+        return bool(uid) and str(uid) in (self.allowed_user_ids or [])
 
     def __str__(self):
         return self.title
