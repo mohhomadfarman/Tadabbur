@@ -3,6 +3,7 @@ from .views import (
     TrackListView, TrackDetailView, SubjectDetailView,
     AdminTrackListView, AdminTrackDetailView,
     AdminSubjectListView, AdminSubjectDetailView,
+    AdminCategoryListView, AdminCategoryDetailView,
 )
 
 urlpatterns = [
@@ -16,4 +17,6 @@ urlpatterns = [
     path('admin/tracks/<slug:slug>/', AdminTrackDetailView.as_view(), name='admin-track-detail'),
     path('admin/subjects/', AdminSubjectListView.as_view(), name='admin-subject-list'),
     path('admin/subjects/<slug:slug>/', AdminSubjectDetailView.as_view(), name='admin-subject-detail'),
+    path('admin/categories/', AdminCategoryListView.as_view(), name='admin-category-list'),
+    path('admin/categories/<slug:slug>/', AdminCategoryDetailView.as_view(), name='admin-category-detail'),
 ]

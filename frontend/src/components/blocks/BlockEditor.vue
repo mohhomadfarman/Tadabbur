@@ -42,9 +42,14 @@
 
         <!-- TEXT -->
         <template v-if="block.type === 'text'">
-          <div class="bg-white px-5 py-4">
+          <div class="bg-white px-5 py-4 space-y-2">
             <textarea v-model="block.body.text" placeholder="Start writing your paragraph…" rows="5" :dir="dir"
               class="w-full text-gray-700 leading-relaxed text-[1.05rem] resize-y bg-transparent border-0 focus:outline-none focus:ring-0 placeholder:text-gray-300" />
+            <div class="flex items-center gap-2 text-xs pt-2 border-t border-gray-100">
+              <span class="text-gray-400">Source:</span>
+              <input v-model="block.body.source" placeholder="Optional reference (e.g. book/page, scholar, link)…"
+                class="flex-1 text-gray-500 bg-transparent border-0 focus:outline-none placeholder:text-gray-300" />
+            </div>
           </div>
         </template>
 

@@ -45,6 +45,8 @@ class TrackSerializer(serializers.Serializer):
     order = serializers.IntegerField()
     is_published = serializers.SerializerMethodField()
     languages = serializers.SerializerMethodField()
+    category = serializers.SerializerMethodField()
+    level = serializers.SerializerMethodField()
 
     def get_id(self, obj):
         return str(obj.id)
@@ -57,6 +59,17 @@ class TrackSerializer(serializers.Serializer):
         if self.context.get('admin'):
             return []
         return track_languages(obj)
+
+    def get_category(self, obj):
+        if not obj.category:
+            return None
+        return {'slug': obj.category.slug, 'title': obj.category.title}
+
+    def get_level(self, obj):
+        if not obj.category or not obj.level_slug:
+            return None
+        level = next((l for l in obj.category.levels if l.slug == obj.level_slug), None)
+        return {'slug': level.slug, 'name': level.name} if level else None
 
 
 class SubjectListSerializer(serializers.Serializer):

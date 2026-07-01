@@ -133,6 +133,29 @@
                 class="w-32 border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#234ecc]/40"
               />
             </div>
+
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1.5">Category</label>
+              <select
+                v-model="form.category_slug"
+                @change="form.level_slug = ''"
+                class="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-[#234ecc]/40"
+              >
+                <option value="">No category</option>
+                <option v-for="c in categories" :key="c.slug" :value="c.slug">{{ c.title }}</option>
+              </select>
+            </div>
+
+            <div v-if="selectedCategory">
+              <label class="block text-sm font-medium text-gray-700 mb-1.5">Level</label>
+              <select
+                v-model="form.level_slug"
+                class="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-[#234ecc]/40"
+              >
+                <option value="">No level</option>
+                <option v-for="l in selectedCategory.levels" :key="l.slug" :value="l.slug">{{ l.name }}</option>
+              </select>
+            </div>
           </div>
 
           <!-- SEO -->
@@ -202,12 +225,15 @@ const router = useRouter()
 
 const isEdit = computed(() => !!route.params.slug)
 
-const form = ref({ title: '', slug: '', description: '', thumbnail_url: '', order: 0, is_published: false, meta_title: '', meta_description: '', og_image: '' })
+const form = ref({ title: '', slug: '', description: '', thumbnail_url: '', order: 0, is_published: false, category_slug: '', level_slug: '', meta_title: '', meta_description: '', og_image: '' })
 const loadingTrack = ref(false)
 const saving = ref(false)
 const saved = ref(false)
 const apiError = ref('')
 let slugWasEdited = false
+
+const categories = ref([])
+const selectedCategory = computed(() => categories.value.find(c => c.slug === form.value.category_slug) || null)
 
 const thumbnailValid = computed(() => form.value.thumbnail_url?.startsWith('http'))
 
@@ -253,6 +279,8 @@ async function save() {
 }
 
 onMounted(async () => {
+  adminApi.listCategories().then(list => { categories.value = list }).catch(() => {})
+
   if (!isEdit.value) return
   loadingTrack.value = true
   try {
@@ -264,6 +292,8 @@ onMounted(async () => {
       thumbnail_url: data.thumbnail_url || '',
       order: data.order ?? 0,
       is_published: data.is_published,
+      category_slug: data.category?.slug || '',
+      level_slug: data.level?.slug || '',
       meta_title: data.meta_title || '',
       meta_description: data.meta_description || '',
       og_image: data.og_image || '',

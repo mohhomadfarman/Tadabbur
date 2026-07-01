@@ -13,6 +13,7 @@ export const useProgressStore = defineStore('progress', () => {
   const lastActivity = ref(null)
 
   const trackProgressCache = ref({})
+  const tracksProgress = ref({})       // { track_slug: percent } for ALL published tracks
 
   const loaded = ref(false)
   const marking = ref(false)
@@ -92,12 +93,24 @@ export const useProgressStore = defineStore('progress', () => {
     }
   }
 
+  async function fetchTracksProgress() {
+    try {
+      tracksProgress.value = await progressApi.getTracksProgress()
+    } catch {
+      // unauthenticated or network error — stay empty
+    }
+  }
+
   function isCompleted(slug) {
     return completedLessons.value.has(slug)
   }
 
   function isEnrolled(trackSlug) {
     return enrolledTracks.value.includes(trackSlug)
+  }
+
+  function isTrackComplete(trackSlug) {
+    return tracksProgress.value[trackSlug] === 100
   }
 
   function reset() {
@@ -110,6 +123,7 @@ export const useProgressStore = defineStore('progress', () => {
     continueLesson.value = null
     lastActivity.value = null
     trackProgressCache.value = {}
+    tracksProgress.value = {}
     loaded.value = false
   }
 
@@ -123,6 +137,7 @@ export const useProgressStore = defineStore('progress', () => {
     continueLesson,
     lastActivity,
     trackProgressCache,
+    tracksProgress,
     loaded,
     marking,
     enrolling,
@@ -133,8 +148,10 @@ export const useProgressStore = defineStore('progress', () => {
     getTrackLanguage,
     unenrollTrack,
     fetchTrackProgress,
+    fetchTracksProgress,
     isCompleted,
     isEnrolled,
+    isTrackComplete,
     reset,
   }
 })

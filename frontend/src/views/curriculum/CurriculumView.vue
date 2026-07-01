@@ -7,6 +7,34 @@
       <p class="text-gray-500">{{ t('curriculum.subtitle') }}</p>
     </div>
 
+    <!-- Category tabs -->
+    <div class="flex items-center gap-2 mb-4 flex-wrap">
+      <button
+        v-for="cat in categoryTabs"
+        :key="cat.slug"
+        @click="activeCategory = cat.slug"
+        :class="activeCategory === cat.slug
+          ? 'bg-emerald-700 text-white border-emerald-700'
+          : 'bg-white text-gray-600 border-gray-200 hover:border-emerald-300 hover:text-emerald-700'"
+        class="text-sm font-medium px-4 py-2 rounded-full border transition-all"
+      >
+        {{ cat.title }}
+      </button>
+    </div>
+
+    <!-- Level filter (once a specific category is active) -->
+    <div v-if="activeCategory !== 'all' && levelOptions.length" class="mb-4">
+      <select
+        v-model="activeLevel"
+        class="text-sm bg-white border border-gray-200 rounded-xl px-3 py-2.5
+               focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-400
+               text-gray-700 cursor-pointer transition-all"
+      >
+        <option value="">{{ t('curriculum.allLevels') }}</option>
+        <option v-for="lvl in levelOptions" :key="lvl.slug" :value="lvl.slug">{{ lvl.name }}</option>
+      </select>
+    </div>
+
     <!-- Toolbar: Search + Sort + View toggle -->
     <div class="flex flex-col sm:flex-row gap-3 mb-4">
 
@@ -136,12 +164,27 @@
         v-for="track in displayedTracks"
         :key="track.id"
         :to="{ name: 'track', params: { trackSlug: track.slug } }"
-        class="group relative bg-white border border-gray-100 rounded-2xl p-6 shadow-sm
-               hover:shadow-md hover:border-emerald-200 transition-all"
+        class="group relative bg-white rounded-2xl p-6 shadow-sm transition-all"
+        :class="auth.isLoggedIn && progress.isTrackComplete(track.slug)
+          ? 'border-2 border-emerald-300 hover:border-emerald-400'
+          : 'border border-gray-100 hover:shadow-md hover:border-emerald-200'"
       >
-        <!-- Enrolled badge -->
+        <!-- Completed / Enrolled badge -->
         <span
-          v-if="auth.isLoggedIn && progress.isEnrolled(track.slug)"
+          v-if="auth.isLoggedIn && progress.isTrackComplete(track.slug)"
+          class="absolute top-4 right-4 rtl:right-auto rtl:left-4 inline-flex items-center gap-1
+                 text-xs font-semibold bg-emerald-600 text-white
+                 px-2 py-0.5 rounded-full"
+        >
+          <svg class="w-3 h-3 shrink-0" fill="currentColor" viewBox="0 0 20 20">
+            <path fill-rule="evenodd"
+                  d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                  clip-rule="evenodd"/>
+          </svg>
+          {{ t('curriculum.completed') }}
+        </span>
+        <span
+          v-else-if="auth.isLoggedIn && progress.isEnrolled(track.slug)"
           class="absolute top-4 right-4 rtl:right-auto rtl:left-4 inline-flex items-center gap-1
                  text-xs font-medium bg-emerald-50 text-emerald-700 border border-emerald-200
                  px-2 py-0.5 rounded-full"
@@ -184,8 +227,10 @@
         v-for="track in displayedTracks"
         :key="track.id"
         :to="{ name: 'track', params: { trackSlug: track.slug } }"
-        class="group bg-white border border-gray-100 rounded-2xl shadow-sm
-               hover:shadow-md hover:border-emerald-200 transition-all overflow-hidden"
+        class="group bg-white rounded-2xl shadow-sm transition-all overflow-hidden"
+        :class="auth.isLoggedIn && progress.isTrackComplete(track.slug)
+          ? 'border-2 border-emerald-300 hover:border-emerald-400'
+          : 'border border-gray-100 hover:shadow-md hover:border-emerald-200'"
       >
         <!-- Hero: real image or gradient + icon -->
         <div class="relative h-36 overflow-hidden">
@@ -203,9 +248,21 @@
             <div v-html="buildIcon(track.slug, '3rem', 'rgba(255,255,255,0.88)')"></div>
           </div>
 
-          <!-- Enrolled badge overlay -->
+          <!-- Completed / Enrolled badge overlay -->
           <span
-            v-if="auth.isLoggedIn && progress.isEnrolled(track.slug)"
+            v-if="auth.isLoggedIn && progress.isTrackComplete(track.slug)"
+            class="absolute top-3 right-3 rtl:right-auto rtl:left-3 inline-flex items-center gap-1
+                   text-xs font-semibold bg-emerald-600 text-white px-2.5 py-1 rounded-full shadow-sm"
+          >
+            <svg class="w-3 h-3 shrink-0" fill="currentColor" viewBox="0 0 20 20">
+              <path fill-rule="evenodd"
+                    d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                    clip-rule="evenodd"/>
+            </svg>
+            {{ t('curriculum.completed') }}
+          </span>
+          <span
+            v-else-if="auth.isLoggedIn && progress.isEnrolled(track.slug)"
             class="absolute top-3 right-3 rtl:right-auto rtl:left-3 inline-flex items-center gap-1
                    text-xs font-semibold bg-white/95 text-emerald-700 px-2.5 py-1 rounded-full shadow-sm"
           >
@@ -242,7 +299,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, onServerPrefetch } from 'vue'
+import { ref, computed, watch, onMounted, onServerPrefetch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { curriculumApi } from '@/api/curriculum'
 import { useAuthStore } from '@/stores/auth'
@@ -296,6 +353,8 @@ const viewMode = ref('card')      // 'icon' | 'card' — default to card view
 const searchQuery = ref('')
 const sortOrder = ref('default')  // 'default' | 'az' | 'za'
 const filterMode = ref('all')     // 'all' | 'enrolled' | 'not-enrolled'
+const activeCategory = ref('all') // 'all' | category slug
+const activeLevel = ref('')       // '' (any level) | level slug, scoped to activeCategory
 
 const filterOptions = computed(() => [
   { value: 'all',          label: t('curriculum.filterAll') },
@@ -303,8 +362,43 @@ const filterOptions = computed(() => [
   { value: 'not-enrolled', label: t('curriculum.filterNotEnrolled') },
 ])
 
+// Tabs are derived from the tracks actually returned — a category with no
+// published tracks never gets a stray tab, and no separate API call is needed.
+const categoryTabs = computed(() => {
+  const seen = new Map()
+  for (const track of tracks.value) {
+    if (track.category && !seen.has(track.category.slug)) {
+      seen.set(track.category.slug, track.category.title)
+    }
+  }
+  return [
+    { slug: 'all', title: t('curriculum.allTracks') },
+    ...[...seen.entries()].map(([slug, title]) => ({ slug, title })),
+  ]
+})
+
+const levelOptions = computed(() => {
+  if (activeCategory.value === 'all') return []
+  const seen = new Map()
+  for (const track of tracks.value) {
+    if (track.category?.slug === activeCategory.value && track.level && !seen.has(track.level.slug)) {
+      seen.set(track.level.slug, track.level.name)
+    }
+  }
+  return [...seen.entries()].map(([slug, name]) => ({ slug, name }))
+})
+
+watch(activeCategory, () => { activeLevel.value = '' })
+
 const displayedTracks = computed(() => {
   let result = tracks.value
+
+  if (activeCategory.value !== 'all') {
+    result = result.filter(track => track.category?.slug === activeCategory.value)
+  }
+  if (activeLevel.value) {
+    result = result.filter(track => track.level?.slug === activeLevel.value)
+  }
 
   if (searchQuery.value.trim()) {
     const q = searchQuery.value.toLowerCase()
@@ -321,8 +415,17 @@ const displayedTracks = computed(() => {
       result = result.filter(track => !progress.isEnrolled(track.slug))
   }
 
-  if (sortOrder.value === 'az') return [...result].sort((a, b) => a.title.localeCompare(b.title))
-  if (sortOrder.value === 'za') return [...result].sort((a, b) => b.title.localeCompare(a.title))
+  if (sortOrder.value === 'az') result = [...result].sort((a, b) => a.title.localeCompare(b.title))
+  else if (sortOrder.value === 'za') result = [...result].sort((a, b) => b.title.localeCompare(a.title))
+  else result = [...result]
+
+  // Completed tracks always sink to the bottom, regardless of sort mode.
+  if (auth.isLoggedIn) {
+    const incomplete = result.filter(track => !progress.isTrackComplete(track.slug))
+    const complete = result.filter(track => progress.isTrackComplete(track.slug))
+    result = [...incomplete, ...complete]
+  }
+
   return result
 })
 
@@ -330,6 +433,8 @@ function clearFilters() {
   searchQuery.value = ''
   sortOrder.value = 'default'
   filterMode.value = 'all'
+  activeCategory.value = 'all'
+  activeLevel.value = ''
 }
 
 // --- Icon & gradient system ---
@@ -383,7 +488,10 @@ onMounted(async () => {
     if (!tracks.value.length) {
       tracks.value = await curriculumApi.getTracks()
     }
-    if (auth.isLoggedIn) await progress.fetchProgress()
+    if (auth.isLoggedIn) {
+      await progress.fetchProgress()
+      progress.fetchTracksProgress()
+    }
   } catch {
     error.value = t('curriculum.loadError')
   } finally {

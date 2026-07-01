@@ -122,6 +122,7 @@ export const routes = [
     children: [
       { path: '',                     name: 'admin',              component: () => import('@/views/admin/AdminDashboardView.vue') },
       { path: 'curriculum',          name: 'admin-curriculum',   meta: { section: 'curriculum' }, component: () => import('@/views/admin/AdminCurriculumView.vue') },
+      { path: 'categories',          name: 'admin-categories',   meta: { section: 'curriculum' }, component: () => import('@/views/admin/AdminCategoriesView.vue') },
       { path: 'tracks/new',          name: 'admin-track-new',    meta: { section: 'curriculum' }, component: () => import('@/views/admin/TrackEditorView.vue') },
       { path: 'tracks/:slug/edit',   name: 'admin-track-edit',   meta: { section: 'curriculum' }, component: () => import('@/views/admin/TrackEditorView.vue') },
       { path: 'tracks/:slug',        name: 'admin-track-detail', meta: { section: 'curriculum' }, component: () => import('@/views/admin/AdminTrackDetailView.vue') },

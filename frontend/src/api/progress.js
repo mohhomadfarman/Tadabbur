@@ -8,5 +8,6 @@ export const progressApi = {
   unenrollTrack: (trackSlug) => client.delete(`/progress/enroll/${trackSlug}/`).then(r => r.data),
   setTrackLanguage: (trackSlug, language) => client.post(`/progress/track-language/${trackSlug}/`, { language: language || '' }).then(r => r.data),
   getTrackProgress: (trackSlug) => client.get(`/progress/track/${trackSlug}/`).then(r => r.data),
+  getTracksProgress: () => client.get('/progress/tracks-progress/').then(r => r.data),
   getAdminLessonStats: (lessonSlug) => client.get('/progress/admin/lesson-stats/', { params: lessonSlug ? { lesson: lessonSlug } : {} }).then(r => r.data),
 }
