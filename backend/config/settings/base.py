@@ -22,6 +22,7 @@ INSTALLED_APPS = [
     'rest_framework',
     'corsheaders',
     'storages',
+    'apps.common',
     'apps.users',
     'apps.curriculum',
     'apps.lessons',
@@ -127,6 +128,12 @@ CELERY_BROKER_URL = config('REDIS_URL', default='redis://localhost:6379/0')
 CELERY_RESULT_BACKEND = config('REDIS_URL', default='redis://localhost:6379/0')
 CELERY_ACCEPT_CONTENT = ['json']
 CELERY_TASK_SERIALIZER = 'json'
+
+# GitHub deploy trigger — auto-rebuild the prerendered (SSG) frontend when
+# content is published. Fine-grained PAT scoped to this repo with
+# "Actions: Read and write". Empty token => auto-rebuild is simply disabled.
+GITHUB_DEPLOY_TOKEN = config('GITHUB_DEPLOY_TOKEN', default='')
+GITHUB_REPO         = config('GITHUB_REPO', default='mohhomadfarman/Tadabbur')
 
 # Email (SMTP) — used by the Email Marketing feature (apps.emails).
 # Defaults to the console backend so dev never crashes when SMTP is unset; set
