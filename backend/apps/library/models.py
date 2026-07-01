@@ -4,6 +4,8 @@ from mongoengine import (
     FloatField, ListField, DateTimeField, EmbeddedDocumentListField,
 )
 
+from config.rebuild import RebuildOnChange
+
 
 class Volume(EmbeddedDocument):
     number       = IntField(default=1)
@@ -13,7 +15,7 @@ class Volume(EmbeddedDocument):
     file_size_mb = FloatField(default=0.0)
 
 
-class Book(Document):
+class Book(RebuildOnChange, Document):
     title        = StringField(required=True, max_length=300)
     slug         = StringField(required=True, unique=True, max_length=300)
     author       = StringField(max_length=200, default='')

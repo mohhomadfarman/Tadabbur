@@ -6,6 +6,7 @@ from rest_framework import status
 from rest_framework.permissions import AllowAny
 
 from apps.common.permissions import section_required
+from config.redirects import record_slug_redirect
 from .models import Track, Subject
 from .serializers import (
     TrackSerializer, TrackDetailSerializer,
@@ -103,6 +104,7 @@ class AdminTrackDetailView(APIView):
             track.order = int(request.data['order'])
         if 'is_published' in request.data:
             track.is_published = bool(request.data['is_published'])
+        old_slug = track.slug
         if 'slug' in request.data:
             new_slug = request.data['slug'].strip()
             if new_slug != slug and Track.objects(slug=new_slug).first():
@@ -111,6 +113,17 @@ class AdminTrackDetailView(APIView):
 
         track.updated_at = datetime.now(timezone.utc)
         track.save()
+
+        if track.slug != old_slug:
+            record_slug_redirect(f'/learn/{old_slug}', f'/learn/{track.slug}')
+            # Subject URLs embed the parent track's slug, so every subject
+            # under this track needs its own redirect too.
+            for subject in Subject.objects(track=track):
+                record_slug_redirect(
+                    f'/learn/{old_slug}/{subject.slug}',
+                    f'/learn/{track.slug}/{subject.slug}',
+                )
+
         return Response(TrackSerializer(track, context={'admin': True}).data)
 
     def delete(self, request, slug):
@@ -186,6 +199,7 @@ class AdminSubjectDetailView(APIView):
             subject.order = int(request.data['order'])
         if 'is_published' in request.data:
             subject.is_published = bool(request.data['is_published'])
+        old_slug = subject.slug
         if 'slug' in request.data:
             new_slug = request.data['slug'].strip()
             if new_slug != slug and Subject.objects(slug=new_slug).first():
@@ -194,6 +208,11 @@ class AdminSubjectDetailView(APIView):
 
         subject.updated_at = datetime.now(timezone.utc)
         subject.save()
+
+        if subject.slug != old_slug:
+            track_slug = subject.track.slug
+            record_slug_redirect(f'/learn/{track_slug}/{old_slug}', f'/learn/{track_slug}/{subject.slug}')
+
         return Response(SubjectListSerializer(subject, context={'admin': True}).data)
 
     def delete(self, request, slug):

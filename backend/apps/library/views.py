@@ -9,6 +9,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from apps.common.permissions import section_required
+from config.redirects import record_slug_redirect
 
 from .models import Book, Volume
 from .serializers import (
@@ -184,8 +185,19 @@ class AdminBookDetailView(APIView):
         if 'volumes' in request.data:
             book.volumes = _build_volumes(request.data['volumes'])
 
+        old_slug = book.slug
+        if 'slug' in request.data:
+            new_slug = request.data['slug'].strip()
+            if new_slug != slug and Book.objects(slug=new_slug).first():
+                return Response({'slug': 'A book with this slug already exists.'}, status=status.HTTP_400_BAD_REQUEST)
+            book.slug = new_slug
+
         book.updated_at = datetime.now(timezone.utc)
         book.save()
+
+        if book.slug != old_slug:
+            record_slug_redirect(f'/library/{old_slug}', f'/library/{book.slug}')
+
         return Response(BookDetailSerializer(book).data)
 
     def delete(self, request, slug):

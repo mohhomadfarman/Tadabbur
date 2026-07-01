@@ -7,6 +7,7 @@ from rest_framework.permissions import AllowAny
 
 from apps.common.permissions import section_required
 from apps.curriculum.models import Subject
+from config.redirects import record_slug_redirect
 from .models import Lesson, ContentBlock
 from .serializers import LessonDetailSerializer, LessonListSerializer
 
@@ -163,6 +164,7 @@ class AdminLessonDetailView(APIView):
             lesson.order = int(request.data['order'])
         if 'status' in request.data and request.data['status'] in ('draft', 'published'):
             lesson.status = request.data['status']
+        old_slug = lesson.slug
         if 'slug' in request.data:
             new_slug = request.data['slug'].strip()
             if new_slug != slug and Lesson.objects(slug=new_slug).first():
@@ -180,6 +182,10 @@ class AdminLessonDetailView(APIView):
 
         lesson.updated_at = datetime.now(timezone.utc)
         lesson.save()
+
+        if lesson.slug != old_slug:
+            record_slug_redirect(f'/lesson/{old_slug}', f'/lesson/{lesson.slug}')
+
         return Response(AdminLessonSerializer(lesson).data)
 
     def delete(self, request, slug):
