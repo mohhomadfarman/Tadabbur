@@ -503,7 +503,11 @@ function trackGradient(slug) {
 
 onMounted(async () => {
   try {
-    if (!tracks.value.length) {
+    // The prerendered/cached list is always built anonymously, so a track
+    // scoped to specific testers (audience: 'selected') is never in it — a
+    // logged-in user needs a fresh, authenticated fetch to see their own beta
+    // tracks. Anonymous visitors can keep the prerendered list as-is.
+    if (!tracks.value.length || auth.isLoggedIn) {
       tracks.value = await curriculumApi.getTracks()
     }
     if (auth.isLoggedIn) {
