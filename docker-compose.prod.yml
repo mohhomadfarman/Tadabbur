@@ -28,7 +28,8 @@ services:
       context: ./backend
     container_name: tadabbur_backend
     restart: unless-stopped
-    command: sh -c "python manage.py migrate --noinput && gunicorn config.wsgi:application --bind 0.0.0.0:8000 --workers 4 --timeout 120"
+    # GUNICORN_WORKERS (optional, in the server's .env): 2×vCPU+1 is a good rule.
+    command: sh -c "python manage.py migrate --noinput && gunicorn config.wsgi:application --bind 0.0.0.0:8000 --workers ${GUNICORN_WORKERS:-4} --timeout 120"
     env_file: .env
     volumes:
       - static_files:/app/staticfiles

@@ -5,6 +5,7 @@ from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.permissions import AllowAny
 
+from apps.common.cache import cache_anonymous_get
 from apps.common.permissions import section_required
 from apps.curriculum.models import Subject
 from config.redirects import record_slug_redirect
@@ -34,6 +35,10 @@ def _normalize_blocks(raw_list):
 class LessonDetailView(APIView):
     permission_classes = [AllowAny]
 
+    # Safe for anonymous responses only (the decorator guarantees that):
+    # enrollment state and LessonView analytics logging below are both
+    # authenticated-only paths, and authenticated requests bypass the cache.
+    @cache_anonymous_get()
     def get(self, request, slug):
         from apps.progress.models import UserProgress
         from apps.translations.models import TranslationSettings
