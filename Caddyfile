@@ -1,3 +1,9 @@
+{
+    servers {
+        protocols h1 h2
+    }
+}
+
 thetadabbur.org, www.thetadabbur.org {
     reverse_proxy tadabbur_nginx:80
 
