@@ -94,6 +94,19 @@ if _MONGO_HOST:
         authentication_source='admin',
     )
 
+# Cache — Redis (same instance as the Celery broker; Django's key prefix keeps
+# the namespaces apart). Backs anonymous API response caching (apps.common.cache),
+# the sitemap.xml cache, and DRF throttle counters — Redis-backed so all gunicorn
+# workers share one view of them. development.py overrides this with LocMemCache
+# (CI has no Redis service).
+CACHES = {
+    'default': {
+        'BACKEND': 'django.core.cache.backends.redis.RedisCache',
+        'LOCATION': config('REDIS_URL', default='redis://localhost:6379/0'),
+        'KEY_PREFIX': 'tadabbur',
+    }
+}
+
 # DRF — custom JWT auth backed by MongoEngine User documents.
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
@@ -104,6 +117,18 @@ REST_FRAMEWORK = {
     ),
     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
     'PAGE_SIZE': 20,
+    # Per-IP rates for the ScopedRateThrottle on auth endpoints
+    # (apps/users/views.py). Everything else stays unthrottled — the SSG
+    # prerender hammers public endpoints from a single IP at build time.
+    'DEFAULT_THROTTLE_RATES': {
+        'auth-login': '10/min',
+        'auth-register': '20/hour',
+        'auth-forgot': '5/hour',
+        'auth-reset': '10/hour',
+        'auth-resend': '5/hour',
+        'auth-verify': '30/hour',
+        'auth-refresh': '60/min',
+    },
 }
 
 # CORS

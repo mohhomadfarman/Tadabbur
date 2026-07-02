@@ -4,6 +4,7 @@ from django.conf import settings
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.permissions import AllowAny, IsAuthenticated
+from rest_framework.throttling import ScopedRateThrottle
 from rest_framework import status
 
 from apps.emails.transactional import (
@@ -27,8 +28,15 @@ def _send_verification_email(user):
     send_transactional_email.delay('Verify your Tadabbur email', verification_email_body(url), user.email)
 
 
+# Rate limits (scopes/rates in settings REST_FRAMEWORK['DEFAULT_THROTTLE_RATES'])
+# protect the credential and email-sending endpoints from brute force and abuse.
+# Throttle counters live in the default cache (Redis in prod), shared across
+# all gunicorn workers.
+
 class RegisterView(APIView):
     permission_classes = [AllowAny]
+    throttle_classes = [ScopedRateThrottle]
+    throttle_scope = 'auth-register'
 
     def post(self, request):
         serializer = RegisterSerializer(data=request.data)
@@ -54,6 +62,8 @@ class RegisterView(APIView):
 
 class LoginView(APIView):
     permission_classes = [AllowAny]
+    throttle_classes = [ScopedRateThrottle]
+    throttle_scope = 'auth-login'
 
     def post(self, request):
         serializer = LoginSerializer(data=request.data)
@@ -90,6 +100,8 @@ class LoginView(APIView):
 
 class TokenRefreshView(APIView):
     permission_classes = [AllowAny]
+    throttle_classes = [ScopedRateThrottle]
+    throttle_scope = 'auth-refresh'
 
     def post(self, request):
         serializer = TokenRefreshSerializer(data=request.data)
@@ -142,6 +154,8 @@ class ProfileView(APIView):
 
 class VerifyEmailView(APIView):
     permission_classes = [AllowAny]
+    throttle_classes = [ScopedRateThrottle]
+    throttle_scope = 'auth-verify'
 
     def post(self, request):
         serializer = VerifyEmailSerializer(data=request.data)
@@ -164,6 +178,8 @@ class VerifyEmailView(APIView):
 
 class ResendVerificationView(APIView):
     permission_classes = [IsAuthenticated]
+    throttle_classes = [ScopedRateThrottle]
+    throttle_scope = 'auth-resend'
 
     def post(self, request):
         user = request.user
@@ -175,6 +191,8 @@ class ResendVerificationView(APIView):
 
 class ForgotPasswordView(APIView):
     permission_classes = [AllowAny]
+    throttle_classes = [ScopedRateThrottle]
+    throttle_scope = 'auth-forgot'
 
     def post(self, request):
         serializer = ForgotPasswordSerializer(data=request.data)
@@ -193,6 +211,8 @@ class ForgotPasswordView(APIView):
 
 class ResetPasswordView(APIView):
     permission_classes = [AllowAny]
+    throttle_classes = [ScopedRateThrottle]
+    throttle_scope = 'auth-reset'
 
     def post(self, request):
         serializer = ResetPasswordSerializer(data=request.data)

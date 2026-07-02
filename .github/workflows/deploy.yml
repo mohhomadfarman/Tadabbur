@@ -81,6 +81,10 @@ jobs:
         working-directory: frontend
         env:
           VITE_API_BASE_URL: /api/v1
+          # This job only verifies the frontend compiles — don't fail it on a
+          # sitemap fetch hiccup. The production image build (on the server)
+          # gets NO fallback: a bad sitemap there must fail the deploy.
+          SSG_ALLOW_FALLBACK: '1'
         run: npm run build
 
   # ── 2. SSH into server: pull code, build images, restart stack ───────────────

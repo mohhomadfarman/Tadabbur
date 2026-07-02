@@ -13,9 +13,11 @@ Mirrors the Vue SPA route shape so every indexable page is discoverable:
 from xml.sax.saxutils import escape
 
 from django.conf import settings
+from django.core.cache import cache
 from django.http import HttpResponse
 from django.views.decorators.http import require_GET
 
+from apps.common.cache import content_generation
 from apps.curriculum.models import Track, Subject
 from apps.lessons.models import Lesson
 from apps.library.models import Book
@@ -43,6 +45,17 @@ def _url(loc, lastmod=None, changefreq=None, priority=None):
 
 @require_GET
 def sitemap_xml(request):
+    # Building the sitemap walks every published track/subject/lesson/book, so
+    # cache the XML. The key embeds the content generation (bumped on every
+    # content save/delete via config/rebuild.py), so publishes refresh it
+    # immediately; the TTL covers anything that doesn't bump the counter.
+    cache_key = f'sitemap:{content_generation()}'
+    cached = cache.get(cache_key)
+    if cached is not None:
+        response = HttpResponse(cached, content_type='application/xml')
+        response['X-Cache'] = 'HIT'
+        return response
+
     base = settings.SITE_URL
     urls = [
         _url(f'{base}/',        changefreq='weekly',  priority='1.0'),
@@ -66,9 +79,13 @@ def sitemap_xml(request):
             lastmod=_w3c(t.updated_at), changefreq='weekly', priority='0.8',
         ))
 
-    # Subjects (only those under a published track)
+    # Subjects (only those under a published track). no_dereference: we only
+    # need the referenced ids, and lazily dereferencing would both cost one
+    # query per row and raise DoesNotExist on orphaned refs (e.g. a lesson
+    # whose subject was deleted), 500ing the whole sitemap. Orphans simply
+    # don't match the slug maps and are excluded — the correct outcome.
     subject_track_slug = {}
-    subjects = Subject.objects(is_published=True).order_by('order')
+    subjects = Subject.objects(is_published=True).no_dereference().order_by('order')
     for s in subjects:
         t_slug = track_slug_by_id.get(str(s.track.id)) if s.track else None
         if not t_slug:
@@ -80,7 +97,7 @@ def sitemap_xml(request):
         ))
 
     # Lessons (only those under an indexable subject)
-    lessons = Lesson.objects(status='published').order_by('order')
+    lessons = Lesson.objects(status='published').no_dereference().order_by('order')
     for l in lessons:
         if not (l.subject and str(l.subject.id) in subject_track_slug):
             continue
@@ -102,4 +119,7 @@ def sitemap_xml(request):
         + '\n'.join(urls)
         + '\n</urlset>\n'
     )
-    return HttpResponse(xml, content_type='application/xml')
+    cache.set(cache_key, xml, 3600)
+    response = HttpResponse(xml, content_type='application/xml')
+    response['X-Cache'] = 'MISS'
+    return response

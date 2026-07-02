@@ -39,3 +39,9 @@ CSRF_COOKIE_SECURE = True
 # SSL terminates at the host nginx reverse proxy; trust its forwarded header
 # so Django doesn't see internal HTTP traffic as insecure and infinite-redirect.
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+
+# Two trusted proxies append to X-Forwarded-For in front of Django: Caddy
+# (TLS terminator) and the nginx router. DRF throttles must key on the real
+# client IP from that header — without this every request appears to come
+# from the nginx container IP and all users would share one throttle bucket.
+REST_FRAMEWORK = {**REST_FRAMEWORK, 'NUM_PROXIES': 2}

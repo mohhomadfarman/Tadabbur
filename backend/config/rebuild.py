@@ -24,6 +24,14 @@ _LOCK_KEY = 'tadabbur:frontend-rebuild:pending'
 def schedule_rebuild():
     """Debounced trigger for a frontend rebuild. Safe to call on every mutation
     — never raises, so it can never break the caller's save()/delete()."""
+    # Invalidate the anonymous API response / sitemap caches first, before the
+    # deploy-token early-return — dev and CI have no token but still cache.
+    try:
+        from apps.common.cache import bump_content_generation
+        bump_content_generation()
+    except Exception:
+        pass
+
     if not settings.GITHUB_DEPLOY_TOKEN:
         return
     try:

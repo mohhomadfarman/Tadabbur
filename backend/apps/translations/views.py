@@ -7,6 +7,7 @@ from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
+from apps.common.cache import cache_anonymous_get
 from apps.common.permissions import section_required
 from .models import TranslationSettings, Language
 
@@ -80,6 +81,7 @@ class PublicLanguagesView(APIView):
     """Public: the enabled languages a learner can choose from (no key, no config)."""
     permission_classes = [AllowAny]
 
+    @cache_anonymous_get()
     def get(self, request):
         s = TranslationSettings.get_solo()
         return Response([_public_language(l) for l in s.enabled_languages()])

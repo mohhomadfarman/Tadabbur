@@ -8,6 +8,7 @@ from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
+from apps.common.cache import cache_anonymous_get
 from apps.common.permissions import section_required
 from config.redirects import record_slug_redirect
 
@@ -45,6 +46,7 @@ def _build_volumes(raw):
 class BookListView(APIView):
     permission_classes = [AllowAny]
 
+    @cache_anonymous_get()
     def get(self, request):
         qs = Book.objects(is_published=True).order_by('order', 'title')
         category = request.query_params.get('category', '').strip()
@@ -62,6 +64,7 @@ class BookListView(APIView):
 class BookDetailView(APIView):
     permission_classes = [AllowAny]
 
+    @cache_anonymous_get()
     def get(self, request, slug):
         try:
             book = Book.objects.get(slug=slug, is_published=True)
@@ -73,6 +76,7 @@ class BookDetailView(APIView):
 class CategoryListView(APIView):
     permission_classes = [AllowAny]
 
+    @cache_anonymous_get()
     def get(self, request):
         cats = Book.objects(is_published=True).distinct('category')
         return Response(sorted(c for c in cats if c))

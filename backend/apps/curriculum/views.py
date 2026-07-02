@@ -5,6 +5,7 @@ from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.permissions import AllowAny
 
+from apps.common.cache import cache_anonymous_get
 from apps.common.permissions import section_required
 from config.redirects import record_slug_redirect
 from .models import Track, Subject, Category, Level
@@ -53,6 +54,7 @@ def _build_levels(raw_list):
 class TrackListView(APIView):
     permission_classes = [AllowAny]
 
+    @cache_anonymous_get()
     def get(self, request):
         tracks = Track.objects(is_published=True).order_by('order')
         visible = [t for t in tracks if t.is_visible_to(request.user)]
@@ -62,6 +64,7 @@ class TrackListView(APIView):
 class TrackDetailView(APIView):
     permission_classes = [AllowAny]
 
+    @cache_anonymous_get()
     def get(self, request, slug):
         track = Track.objects(slug=slug, is_published=True).first()
         if not track or not track.is_visible_to(request.user):
@@ -72,6 +75,7 @@ class TrackDetailView(APIView):
 class SubjectDetailView(APIView):
     permission_classes = [AllowAny]
 
+    @cache_anonymous_get()
     def get(self, request, slug):
         subject = Subject.objects(slug=slug, is_published=True).first()
         if not subject or not (subject.track and subject.track.is_visible_to(request.user)):

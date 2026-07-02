@@ -146,6 +146,22 @@ class TestEmailVerification:
 
 
 @pytest.mark.django_db
+class TestLoginThrottle:
+
+    def test_login_throttled_after_rate_limit(self, client):
+        """auth-login is limited to 10/min per IP; the 11th rapid attempt gets
+        429. Relies on conftest.py clearing the cache between tests, so the
+        counter always starts at zero here (and never leaks into other tests)."""
+        payload = {'email': 'brute@example.com', 'password': 'wrongpassword'}
+        for _ in range(10):
+            response = client.post('/api/v1/auth/login/', payload, format='json')
+            assert response.status_code == 401
+        response = client.post('/api/v1/auth/login/', payload, format='json')
+        assert response.status_code == 429
+        assert response.has_header('Retry-After')
+
+
+@pytest.mark.django_db
 class TestForgotResetPassword:
 
     def test_forgot_password_always_returns_200(self, client):
