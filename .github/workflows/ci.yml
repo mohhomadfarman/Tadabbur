@@ -68,4 +68,8 @@ jobs:
         working-directory: frontend
         env:
           VITE_API_BASE_URL: /api/v1
+          # This job only verifies the frontend compiles — GitHub runner IPs
+          # get 403'd by the prod sitemap anyway. The production image build
+          # (on the server) gets NO fallback: a bad sitemap must fail the deploy.
+          SSG_ALLOW_FALLBACK: '1'
         run: npm run build
