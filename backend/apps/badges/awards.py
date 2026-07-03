@@ -6,13 +6,20 @@ from datetime import datetime, timezone
 from apps.features.service import feature_enabled
 from apps.progress.models import LessonProgress, UserProgress
 from apps.progress.completion import track_is_complete
-from apps.emails.transactional import send_transactional_email, badge_earned_email_body
+from apps.emails.system_templates import send_system_email
+from apps.emails.transactional import badge_earned_email_body
 from .models import Badge, UserBadge
 
 
 def _notify_badge_earned(user, badge):
     try:
-        send_transactional_email.delay(f'You earned a badge: {badge.name}', badge_earned_email_body(badge), user.email)
+        context = {
+            'full_name': user.full_name or user.username, 'email': user.email,
+            'badge_name': badge.name, 'badge_reward': badge.reward or '',
+        }
+        send_system_email('badge_earned', user.email, context,
+                           fallback_subject=f'You earned a badge: {badge.name}',
+                           fallback_html=badge_earned_email_body(badge))
     except Exception:
         pass  # never let a notification failure break badge awarding
 

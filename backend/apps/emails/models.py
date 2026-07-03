@@ -1,8 +1,8 @@
 from datetime import datetime, timezone
 
 from mongoengine import (
-    Document, ReferenceField, StringField, EmailField, DateTimeField, DictField,
-    IntField, BooleanField,
+    Document, EmbeddedDocument, ReferenceField, StringField, EmailField, DateTimeField,
+    DictField, IntField, BooleanField, EmbeddedDocumentListField,
 )
 
 CAMPAIGN_STATUSES = ('draft', 'scheduled', 'paused', 'sending', 'sent', 'failed')
@@ -37,15 +37,37 @@ class EmailSettings(Document):
         return bool((self.host or '').strip())
 
 
+class EmailBlock(EmbeddedDocument):
+    """One block in an email template's drag-and-drop layout. `body` shape varies
+    by `type` (see apps.emails.block_render.EMAIL_BLOCK_TYPES)."""
+    type = StringField(required=True, choices=['text', 'header', 'image', 'button', 'divider', 'spacer'])
+    order = IntField(default=0)
+    body = DictField()
+
+
 class EmailTemplate(Document):
-    """A reusable email layout (subject + raw HTML body) authored in the admin."""
+    """A reusable email layout authored in the admin — either as drag-and-drop
+    `content_blocks` (rendered server-side into `html_body` on save) or, for
+    templates predating the block editor, raw HTML directly in `html_body`.
+
+    `slug` identifies a "system" template that a transactional flow (see
+    apps.emails.system_templates) looks up by convention (e.g. 'verification',
+    'password_reset', 'badge_earned'); blank for ordinary marketing/automation
+    templates. `is_active` lets an admin force a system template's fallback path
+    without deleting it."""
     name = StringField(required=True, max_length=160)
+    slug = StringField(default='', max_length=80)
     subject = StringField(default='', max_length=300)
+    content_blocks = EmbeddedDocumentListField(EmailBlock)
     html_body = StringField(default='')
+    is_active = BooleanField(default=True)
     created_at = DateTimeField(default=lambda: datetime.now(timezone.utc))
     updated_at = DateTimeField(default=lambda: datetime.now(timezone.utc))
 
-    meta = {'collection': 'email_templates', 'indexes': ['-created_at']}
+    meta = {
+        'collection': 'email_templates',
+        'indexes': ['-created_at', {'fields': ['slug'], 'sparse': True}],
+    }
 
     def __str__(self):
         return self.name

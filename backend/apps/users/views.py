@@ -7,9 +7,8 @@ from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.throttling import ScopedRateThrottle
 from rest_framework import status
 
-from apps.emails.transactional import (
-    send_transactional_email, verification_email_body, password_reset_email_body,
-)
+from apps.emails.system_templates import send_system_email
+from apps.emails.transactional import verification_email_body, password_reset_email_body
 from .models import User
 from .serializers import (
     RegisterSerializer, LoginSerializer,
@@ -25,7 +24,10 @@ from .utils import (
 def _send_verification_email(user):
     token = generate_action_token(user, 'verify_email', minutes=60 * 24)
     url = f"{settings.SITE_URL.rstrip('/')}/verify-email?token={token}"
-    send_transactional_email.delay('Verify your Tadabbur email', verification_email_body(url), user.email)
+    context = {'full_name': user.full_name or user.username, 'email': user.email, 'verify_url': url}
+    send_system_email('verification', user.email, context,
+                       fallback_subject='Verify your Tadabbur email',
+                       fallback_html=verification_email_body(url))
 
 
 # Rate limits (scopes/rates in settings REST_FRAMEWORK['DEFAULT_THROTTLE_RATES'])
@@ -203,7 +205,10 @@ class ForgotPasswordView(APIView):
         if user:
             token = generate_action_token(user, 'reset_password', minutes=30)
             url = f"{settings.SITE_URL.rstrip('/')}/reset-password?token={token}"
-            send_transactional_email.delay('Reset your Tadabbur password', password_reset_email_body(url), user.email)
+            context = {'full_name': user.full_name or user.username, 'email': user.email, 'reset_url': url}
+            send_system_email('password_reset', user.email, context,
+                               fallback_subject='Reset your Tadabbur password',
+                               fallback_html=password_reset_email_body(url))
 
         # Always the same response — don't reveal whether the account exists.
         return Response({'detail': 'If an account exists for that email, a reset link has been sent.'})

@@ -1,7 +1,7 @@
 from django.urls import path
 from .views import (
     AdminEmailSettingsView, AdminTestSendView,
-    AdminEmailTemplateListView, AdminEmailTemplateDetailView,
+    AdminEmailTemplateListView, AdminEmailTemplateDetailView, AdminEmailTemplatePreviewView,
     AdminEmailCampaignListView, AdminEmailCampaignDetailView,
     SendCampaignView, PauseCampaignView, TestSendView, AdminSegmentsView, UnsubscribeView,
 )
@@ -14,7 +14,9 @@ urlpatterns = [
     path('admin/settings/', AdminEmailSettingsView.as_view(), name='admin-email-settings'),
     path('admin/test-send/', AdminTestSendView.as_view(), name='admin-email-test-send'),
 
-    # Admin — templates
+    # Admin — templates (preview route registered before the <template_id> detail
+    # route so "preview" is never captured as an id)
+    path('admin/templates/preview/', AdminEmailTemplatePreviewView.as_view(), name='admin-email-template-preview'),
     path('admin/templates/', AdminEmailTemplateListView.as_view(), name='admin-email-template-list'),
     path('admin/templates/<str:template_id>/', AdminEmailTemplateDetailView.as_view(), name='admin-email-template-detail'),
 
