@@ -102,6 +102,7 @@ export const adminApi = {
   createEmailTemplate: (data)     => client.post('/emails/admin/templates/', data).then(r => r.data),
   updateEmailTemplate: (id, data) => client.patch(`/emails/admin/templates/${id}/`, data).then(r => r.data),
   deleteEmailTemplate: (id)       => client.delete(`/emails/admin/templates/${id}/`),
+  previewEmailTemplate: (data)    => client.post('/emails/admin/templates/preview/', data).then(r => r.data),
 
   // Email marketing — campaigns (section: email)
   listEmailCampaigns:  ()         => client.get('/emails/admin/campaigns/').then(r => r.data),

@@ -57,6 +57,13 @@ FEATURE_REGISTRY = [
         'default_enabled': False,  # net-new: beta-first
         'owner_section': 'automations',
     },
+    {
+        'key': 'email_template_editor',
+        'label': 'Email Template Block Editor',
+        'description': 'Drag-and-drop block editor for email templates (replaces raw HTML editing).',
+        'default_enabled': False,  # net-new: beta-first
+        'owner_section': 'email',
+    },
 ]
 
 _BY_KEY = {spec['key']: spec for spec in FEATURE_REGISTRY}

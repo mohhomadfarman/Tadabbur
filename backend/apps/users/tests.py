@@ -13,8 +13,9 @@ def client():
 @pytest.fixture(autouse=True)
 def no_real_email(monkeypatch):
     """Every test in this module hits register/forgot-password, which enqueue a
-    Celery email task — stub `.delay` so tests never need a live broker."""
-    monkeypatch.setattr('apps.users.views.send_transactional_email.delay', lambda *a, **k: None)
+    Celery email task via send_system_email — stub `.delay` so tests never need
+    a live broker."""
+    monkeypatch.setattr('apps.emails.system_templates.send_transactional_email.delay', lambda *a, **k: None)
 
 
 @pytest.fixture(autouse=True)

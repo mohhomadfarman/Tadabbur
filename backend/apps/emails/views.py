@@ -9,9 +9,20 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from apps.common.permissions import section_required
-from .models import EmailTemplate, EmailCampaign, Unsubscribe, EmailSettings
+from .block_render import normalize_email_blocks, render_blocks_to_html
+from .models import EmailBlock, EmailTemplate, EmailCampaign, Unsubscribe, EmailSettings
+from .personalize import render_merge_tags
 from .segments import segment_options, resolve_segment, read_unsub_token
 from .tasks import send_campaign, deliver_message
+
+# Fixed sample data for the "preview with sample data" pane — never a real user.
+_PREVIEW_SAMPLE_CONTEXT = {
+    'full_name': 'Aisha Rahman', 'email': 'aisha@example.com',
+    'verify_url': 'https://thetadabbur.org/verify-email?token=sample',
+    'reset_url': 'https://thetadabbur.org/reset-password?token=sample',
+    'track_title': 'Foundations of Aqeedah',
+    'badge_name': 'First Steps', 'badge_reward': 'A dua for you',
+}
 
 
 def _iso(dt):
@@ -55,12 +66,15 @@ def _template_row(t, with_body=False):
     data = {
         'id': str(t.id),
         'name': t.name,
+        'slug': t.slug,
         'subject': t.subject,
+        'is_active': bool(t.is_active),
         'created_at': _iso(t.created_at),
         'updated_at': _iso(t.updated_at),
     }
     if with_body:
         data['html_body'] = t.html_body
+        data['content_blocks'] = [{'type': b.type, 'order': b.order, 'body': b.body} for b in t.content_blocks]
     return data
 
 
@@ -161,11 +175,25 @@ class AdminEmailTemplateListView(APIView):
         name = (request.data.get('name') or '').strip()
         if not name:
             return Response({'name': 'This field is required.'}, status=status.HTTP_400_BAD_REQUEST)
+
+        blocks_docs = []
+        html_body = request.data.get('html_body') or ''
+        if request.data.get('content_blocks') is not None:
+            normalized, error = normalize_email_blocks(request.data['content_blocks'])
+            if error:
+                return Response({'content_blocks': error}, status=status.HTTP_400_BAD_REQUEST)
+            blocks_docs = [EmailBlock(type=b['type'], order=b['order'], body=b['body']) for b in normalized]
+            if normalized:
+                html_body = render_blocks_to_html(normalized)
+
         now = datetime.now(timezone.utc)
         t = EmailTemplate(
             name=name,
+            slug=(request.data.get('slug') or '').strip(),
             subject=(request.data.get('subject') or '').strip(),
-            html_body=request.data.get('html_body') or '',
+            content_blocks=blocks_docs,
+            html_body=html_body,
+            is_active=request.data.get('is_active', True),
             created_at=now, updated_at=now,
         )
         t.save()
@@ -185,12 +213,29 @@ class AdminEmailTemplateDetailView(APIView):
         t = _get(EmailTemplate, template_id)
         if not t:
             return Response({'detail': 'Not found.'}, status=status.HTTP_404_NOT_FOUND)
-        if 'name' in request.data:
-            t.name = (request.data['name'] or '').strip()
-        if 'subject' in request.data:
-            t.subject = (request.data['subject'] or '').strip()
-        if 'html_body' in request.data:
-            t.html_body = request.data['html_body'] or ''
+        d = request.data
+        if 'name' in d:
+            t.name = (d['name'] or '').strip()
+        if 'slug' in d:
+            t.slug = (d['slug'] or '').strip()
+        if 'subject' in d:
+            t.subject = (d['subject'] or '').strip()
+        if 'is_active' in d:
+            t.is_active = bool(d['is_active'])
+        if 'content_blocks' in d:
+            normalized, error = normalize_email_blocks(d['content_blocks'])
+            if error:
+                return Response({'content_blocks': error}, status=status.HTTP_400_BAD_REQUEST)
+            t.content_blocks = [EmailBlock(type=b['type'], order=b['order'], body=b['body']) for b in normalized]
+            if normalized:
+                t.html_body = render_blocks_to_html(normalized)
+            elif 'html_body' in d:
+                # Blocks cleared but a raw html_body was supplied alongside — use it.
+                t.html_body = d['html_body'] or ''
+            # else: blocks cleared with no html_body supplied — leave the existing
+            # html_body as-is rather than silently blanking a legacy raw-HTML template.
+        elif 'html_body' in d:
+            t.html_body = d['html_body'] or ''
         t.updated_at = datetime.now(timezone.utc)
         t.save()
         return Response(_template_row(t, with_body=True))
@@ -201,6 +246,20 @@ class AdminEmailTemplateDetailView(APIView):
             return Response({'detail': 'Not found.'}, status=status.HTTP_404_NOT_FOUND)
         t.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+class AdminEmailTemplatePreviewView(APIView):
+    """Render draft content_blocks + a fixed sample merge-tag context to HTML,
+    without saving or sending. Used by the block-editor preview pane."""
+    permission_classes = [section_required('email')]
+
+    def post(self, request):
+        normalized, error = normalize_email_blocks(request.data.get('content_blocks') or [])
+        if error:
+            return Response({'content_blocks': error}, status=status.HTTP_400_BAD_REQUEST)
+        html = render_blocks_to_html(normalized)
+        html = render_merge_tags(html, _PREVIEW_SAMPLE_CONTEXT)
+        return Response({'html': html})
 
 
 # ── Campaigns ────────────────────────────────────────────────────────────────

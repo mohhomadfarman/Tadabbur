@@ -13,7 +13,7 @@ def client():
 
 @pytest.fixture(autouse=True)
 def no_real_email(monkeypatch):
-    monkeypatch.setattr('apps.badges.awards.send_transactional_email.delay', lambda *a, **k: None)
+    monkeypatch.setattr('apps.emails.system_templates.send_transactional_email.delay', lambda *a, **k: None)
 
 
 @pytest.fixture
@@ -52,7 +52,7 @@ class TestGrantBadge:
 
     def test_grant_badge_sends_email(self, user, manual_badge, monkeypatch):
         calls = []
-        monkeypatch.setattr('apps.badges.awards.send_transactional_email.delay', lambda *a, **k: calls.append(a))
+        monkeypatch.setattr('apps.emails.system_templates.send_transactional_email.delay', lambda *a, **k: calls.append(a))
         grant_badge(user, manual_badge)
         assert len(calls) == 1
         assert user.email in calls[0]
