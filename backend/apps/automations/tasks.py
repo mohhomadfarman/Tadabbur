@@ -1,5 +1,6 @@
 """Celery task for delayed automation reminders. Auto-discovered via
 app.autodiscover_tasks() (see backend/celery_app.py)."""
+import logging
 from datetime import datetime, timezone
 
 from celery import shared_task
@@ -8,6 +9,8 @@ from apps.users.models import User
 from apps.progress.completion import track_is_complete
 from apps.emails.transactional import send_transactional_email
 from .models import EmailWorkflow, WorkflowSend
+
+logger = logging.getLogger(__name__)
 
 
 @shared_task(ignore_result=True)
@@ -44,9 +47,11 @@ def send_workflow_reminder(rule_id, user_id, track_slug, workflow_send_id):
         send.status = 'sent'
         send.sent_at = datetime.now(timezone.utc)
         send.save()
-    except Exception:
+    except Exception as e:
+        logger.exception('send_workflow_reminder failed for workflow %s user %s', rule_id, user_id)
         try:
             send.status = 'failed'
+            send.reason = str(e)[:500]
             send.save()
         except Exception:
             pass

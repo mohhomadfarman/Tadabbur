@@ -184,6 +184,7 @@ class AdminWorkflowSendsView(APIView):
                 'user_email': email,
                 'track_slug': s.track_slug,
                 'status': s.status,
+                'reason': s.reason,
                 'scheduled_for': _iso(s.scheduled_for),
                 'sent_at': _iso(s.sent_at),
                 'created_at': _iso(s.created_at),

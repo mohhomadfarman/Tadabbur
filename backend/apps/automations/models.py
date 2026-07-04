@@ -58,6 +58,7 @@ class WorkflowSend(Document):
     user = ReferenceField(User, required=True, reverse_delete_rule=2)  # CASCADE
     track_slug = StringField(default='')
     status = StringField(default='sent', choices=SEND_STATUSES)
+    reason = StringField(default='', max_length=500)  # why 'skipped'/'failed', e.g. an exception message
     scheduled_for = DateTimeField()
     sent_at = DateTimeField()
     created_at = DateTimeField(default=lambda: datetime.now(timezone.utc))
