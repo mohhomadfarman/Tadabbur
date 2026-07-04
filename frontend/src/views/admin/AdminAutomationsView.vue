@@ -201,6 +201,7 @@
               <div class="min-w-0">
                 <p class="text-gray-800 truncate">{{ s.user_email }}</p>
                 <p class="text-[11px] text-gray-400">{{ formatDate(s.sent_at || s.scheduled_for || s.created_at) }}</p>
+                <p v-if="s.reason" class="text-[11px] text-red-500 truncate mt-0.5">{{ reasonLabel(s.reason) }}</p>
               </div>
               <span class="text-[11px] font-medium px-2 py-0.5 rounded-full shrink-0" :class="statusClass(s.status)">{{ s.status }}</span>
             </div>
@@ -279,6 +280,11 @@ function statusClass(status) {
   if (status === 'scheduled') return 'bg-amber-50 text-amber-600'
   if (status === 'failed') return 'bg-red-50 text-red-600'
   return 'bg-gray-100 text-gray-500'
+}
+
+function reasonLabel(reason) {
+  if (reason === 'audience') return "Skipped — this user isn't in the workflow's selected audience."
+  return reason
 }
 
 async function load() {
