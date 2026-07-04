@@ -31,6 +31,12 @@ export const createApp = ViteSSG(
       pinia.state.value.ssrData = initialState.pinia.ssrData
     }
 
+    // Production-only: registering in dev would fight Vite's HMR by caching
+    // module scripts the dev server keeps rewriting.
+    if (!import.meta.env.SSR && import.meta.env.PROD && 'serviceWorker' in navigator) {
+      window.addEventListener('load', () => navigator.serviceWorker.register('/sw.js'))
+    }
+
     app.use(i18n)
     app.use(PrimeVue, {
       theme: {
