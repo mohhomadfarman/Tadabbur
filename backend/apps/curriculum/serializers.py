@@ -1,4 +1,5 @@
 from rest_framework import serializers
+from apps.features.service import feature_enabled
 from .models import Track, Subject
 
 
@@ -77,7 +78,10 @@ class TrackSerializer(serializers.Serializer):
     def get_category(self, obj):
         if not obj.category:
             return None
-        return {'slug': obj.category.slug, 'title': obj.category.title}
+        request = self.context.get('request')
+        user = request.user if request else None
+        icon_url = obj.category.icon_url if feature_enabled('learn_page_media', user) else ''
+        return {'slug': obj.category.slug, 'title': obj.category.title, 'icon_url': icon_url}
 
     def get_level(self, obj):
         if not obj.category or not obj.level_slug:

@@ -105,7 +105,23 @@
         <!-- Right: metadata + thumbnail -->
         <div class="lg:col-span-1 lg:sticky lg:top-24 space-y-4">
           <div class="bg-white border border-gray-200 rounded-2xl p-5 shadow-sm space-y-4">
-            <div>
+            <div v-if="features.isEnabled('learn_page_media')">
+              <label class="block text-sm font-medium text-gray-700 mb-1.5">Thumbnail</label>
+              <img
+                v-if="thumbnailValid"
+                :src="form.thumbnail_url"
+                class="rounded-xl aspect-video object-cover w-full mb-2"
+                alt="Thumbnail preview"
+              />
+              <div v-else class="mb-2 rounded-xl aspect-video bg-gray-50 border border-gray-100 flex items-center justify-center">
+                <span class="text-xs text-gray-300">Preview</span>
+              </div>
+              <label class="text-xs font-medium text-[#234ecc] hover:underline cursor-pointer">
+                {{ uploading ? 'Uploading…' : 'Upload image' }}
+                <input type="file" accept="image/*" class="hidden" @change="onThumbnailUpload" :disabled="uploading" />
+              </label>
+            </div>
+            <div v-else>
               <label class="block text-sm font-medium text-gray-700 mb-1.5">Thumbnail URL</label>
               <input
                 v-model="form.thumbnail_url"
@@ -266,9 +282,12 @@
 import { ref, reactive, computed, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { adminApi } from '@/api/admin'
+import { useFeaturesStore } from '@/stores/features'
 
 const route = useRoute()
 const router = useRouter()
+const features = useFeaturesStore()
+const uploading = ref(false)
 
 const isEdit = computed(() => !!route.params.slug)
 
@@ -320,6 +339,23 @@ function removeUser(uid) {
 }
 
 const thumbnailValid = computed(() => form.value.thumbnail_url?.startsWith('http'))
+
+async function onThumbnailUpload(e) {
+  const file = e.target.files?.[0]
+  if (!file) return
+  uploading.value = true
+  try {
+    const { upload_url, public_url } = await adminApi.getUploadUrl(file.name, file.type, 'thumbnail')
+    const res = await fetch(upload_url, { method: 'PUT', body: file, headers: { 'Content-Type': file.type } })
+    if (!res.ok) throw new Error('upload failed')
+    form.value.thumbnail_url = public_url
+  } catch {
+    apiError.value = 'Image upload failed.'
+  } finally {
+    uploading.value = false
+    e.target.value = ''
+  }
+}
 
 function slugify(text) {
   return text.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '')

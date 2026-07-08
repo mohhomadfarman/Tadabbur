@@ -2,9 +2,32 @@
   <div class="max-w-6xl mx-auto px-4 sm:px-6 py-6 sm:py-10">
 
     <!-- Page Header -->
-    <div class="mb-8">
-      <h1 class="text-2xl sm:text-3xl font-bold text-gray-900 mb-1.5">{{ t('curriculum.title') }}</h1>
-      <p class="text-gray-500">{{ t('curriculum.subtitle') }}</p>
+    <div
+      class="mb-8"
+      :class="bannerActive ? 'rounded-2xl overflow-hidden relative px-6 py-12 sm:py-16' : ''"
+      :style="bannerActive ? {
+        backgroundImage: `url(${bannerImage})`,
+        backgroundSize: 'cover', backgroundPosition: 'center'
+      } : {}"
+    >
+      <h1
+        class="text-2xl sm:text-3xl font-bold mb-1.5"
+        :class="bannerActive ? '' : 'text-gray-900'"
+        :style="bannerActive ? {
+          color: bannerTextColor,
+          fontSize: bannerFontSize + 'px',
+          textShadow: bannerTextShadow ? '0 1px 6px rgba(0,0,0,.55)' : 'none',
+        } : {}"
+      >{{ bannerActive && bannerTitle ? bannerTitle : t('curriculum.title') }}</h1>
+      <p
+        :class="bannerActive ? '' : 'text-gray-500'"
+        :style="bannerActive ? {
+          color: bannerTextColor,
+          opacity: 0.9,
+          fontSize: Math.max(14, Math.round(bannerFontSize * 0.45)) + 'px',
+          textShadow: bannerTextShadow ? '0 1px 6px rgba(0,0,0,.55)' : 'none',
+        } : {}"
+      >{{ bannerActive && bannerSubtitle ? bannerSubtitle : t('curriculum.subtitle') }}</p>
     </div>
 
     <!-- Category tabs -->
@@ -16,8 +39,14 @@
         :class="activeCategory === cat.slug
           ? 'bg-emerald-700 text-white border-emerald-700'
           : 'bg-white text-gray-600 border-gray-200 hover:border-emerald-300 hover:text-emerald-700'"
-        class="text-sm font-medium px-4 py-2 rounded-full border transition-all"
+        class="inline-flex items-center gap-1.5 text-sm font-medium px-4 py-2 rounded-full border transition-all"
       >
+        <img
+          v-if="cat.icon_url && features.isEnabled('learn_page_media')"
+          :src="cat.icon_url"
+          class="w-4 h-4 rounded-sm object-cover shrink-0"
+          alt=""
+        />
         {{ cat.title }}
       </button>
     </div>
@@ -324,17 +353,38 @@ import { useAuthStore } from '@/stores/auth'
 import { useProgressStore } from '@/stores/progress'
 import { useSsrDataStore } from '@/stores/ssrData'
 import { useSeo, SEO_ORIGIN } from '@/composables/useSeo'
+import { useFeaturesStore } from '@/stores/features'
 import TrackLanguages from '@/components/TrackLanguages.vue'
 
 const { t } = useI18n()
 const auth = useAuthStore()
 const progress = useProgressStore()
 const ssr = useSsrDataStore()
+const features = useFeaturesStore()
 
 const ssrKey = 'tracks'
 const tracks = ref(ssr.get(ssrKey) ?? [])
 const loading = ref(ssr.get(ssrKey) == null)
 const error = ref('')
+
+const bannerSsrKey = 'learnBanner'
+const bannerCache = ssr.get(bannerSsrKey) ?? {}
+const bannerImage = ref(bannerCache.banner_image ?? '')
+const bannerTitle = ref(bannerCache.banner_title ?? '')
+const bannerSubtitle = ref(bannerCache.banner_subtitle ?? '')
+const bannerTextColor = ref(bannerCache.banner_text_color ?? '#ffffff')
+const bannerFontSize = ref(bannerCache.banner_font_size ?? 30)
+const bannerTextShadow = ref(bannerCache.banner_text_shadow ?? false)
+const bannerActive = computed(() => !!bannerImage.value && features.isEnabled('learn_page_media'))
+
+function applyBannerSettings(s) {
+  bannerImage.value = s.banner_image || ''
+  bannerTitle.value = s.banner_title || ''
+  bannerSubtitle.value = s.banner_subtitle || ''
+  bannerTextColor.value = s.banner_text_color || '#ffffff'
+  bannerFontSize.value = s.banner_font_size || 30
+  bannerTextShadow.value = !!s.banner_text_shadow
+}
 
 // Prerender the track list so /learn ships the full grid + ItemList JSON-LD.
 onServerPrefetch(async () => {
@@ -345,6 +395,13 @@ onServerPrefetch(async () => {
     /* leave empty; client surfaces the error */
   } finally {
     loading.value = false
+  }
+  try {
+    const s = await curriculumApi.getLearnSettings()
+    applyBannerSettings(s)
+    ssr.set(bannerSsrKey, s)
+  } catch {
+    /* banner is optional — never let it affect the tracks grid */
   }
 })
 
@@ -386,12 +443,12 @@ const categoryTabs = computed(() => {
   const seen = new Map()
   for (const track of tracks.value) {
     if (track.category && !seen.has(track.category.slug)) {
-      seen.set(track.category.slug, track.category.title)
+      seen.set(track.category.slug, { title: track.category.title, icon_url: track.category.icon_url || '' })
     }
   }
   return [
-    { slug: 'all', title: t('curriculum.allTracks') },
-    ...[...seen.entries()].map(([slug, title]) => ({ slug, title })),
+    { slug: 'all', title: t('curriculum.allTracks'), icon_url: '' },
+    ...[...seen.entries()].map(([slug, v]) => ({ slug, title: v.title, icon_url: v.icon_url })),
   ]
 })
 
@@ -519,5 +576,8 @@ onMounted(async () => {
   } finally {
     loading.value = false
   }
+
+  // Refresh in case the banner changed since the last static build.
+  curriculumApi.getLearnSettings().then(applyBannerSettings).catch(() => {})
 })
 </script>

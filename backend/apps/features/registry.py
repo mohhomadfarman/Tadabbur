@@ -64,6 +64,13 @@ FEATURE_REGISTRY = [
         'default_enabled': False,  # net-new: beta-first
         'owner_section': 'email',
     },
+    {
+        'key': 'learn_page_media',
+        'label': 'Learn Page Media Uploads',
+        'description': 'Upload track covers/category icons and set a /learn page banner, instead of pasting URLs.',
+        'default_enabled': False,  # net-new: beta-first
+        'owner_section': 'curriculum',
+    },
 ]
 
 _BY_KEY = {spec['key']: spec for spec in FEATURE_REGISTRY}

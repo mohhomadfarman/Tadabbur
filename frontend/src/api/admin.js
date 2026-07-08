@@ -15,6 +15,10 @@ export const adminApi = {
   updateCategory:  (slug, data) => client.patch(`/curriculum/admin/categories/${slug}/`, data).then(r => r.data),
   deleteCategory:  (slug)     => client.delete(`/curriculum/admin/categories/${slug}/`),
 
+  // Learn page settings (banner)
+  getLearnPageSettings:    ()     => client.get('/curriculum/admin/learn-settings/').then(r => r.data),
+  updateLearnPageSettings: (data) => client.patch('/curriculum/admin/learn-settings/', data).then(r => r.data),
+
   // Subjects
   listSubjects: (trackSlug) => client.get('/curriculum/admin/subjects/', { params: { track: trackSlug } }).then(r => r.data),
   getSubject: (slug) => client.get(`/curriculum/admin/subjects/${slug}/`).then(r => r.data),
