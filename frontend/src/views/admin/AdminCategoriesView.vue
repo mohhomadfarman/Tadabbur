@@ -15,6 +15,107 @@
         </button>
       </div>
 
+      <!-- Learn page banner (powers the public /learn page hero) -->
+      <details v-if="features.isEnabled('learn_page_media')" class="bg-white border border-gray-200 rounded-2xl shadow-sm mb-8" open>
+        <summary class="flex items-center justify-between gap-3 px-5 py-4 cursor-pointer select-none">
+          <div>
+            <h2 class="font-semibold text-gray-800">Learn page banner</h2>
+            <p class="text-xs text-gray-400 mt-0.5">Background image shown behind the header on the <span class="font-mono">/learn</span> page.</p>
+          </div>
+          <span v-if="bannerSaved" class="text-xs text-emerald-600 font-semibold shrink-0">Saved ✓</span>
+        </summary>
+        <div class="px-5 pb-5 border-t border-gray-100 pt-5">
+
+          <!-- Live preview — mirrors the actual /learn hero styling -->
+          <div
+            class="rounded-xl overflow-hidden relative px-6 py-10 mb-4 bg-gray-100 bg-cover bg-center"
+            :style="bannerForm.banner_image ? { backgroundImage: `url(${bannerForm.banner_image})` } : {}"
+          >
+            <p v-if="!bannerForm.banner_image" class="text-xs text-gray-400">No banner image — upload one below to preview.</p>
+            <template v-else>
+              <h3
+                class="font-bold mb-1"
+                :style="{
+                  color: bannerForm.banner_text_color,
+                  fontSize: bannerForm.banner_font_size + 'px',
+                  textShadow: bannerForm.banner_text_shadow ? '0 1px 6px rgba(0,0,0,.55)' : 'none',
+                }"
+              >{{ bannerForm.banner_title || 'Learning Tracks' }}</h3>
+              <p
+                :style="{
+                  color: bannerForm.banner_text_color,
+                  opacity: 0.9,
+                  fontSize: Math.max(14, Math.round(bannerForm.banner_font_size * 0.45)) + 'px',
+                  textShadow: bannerForm.banner_text_shadow ? '0 1px 6px rgba(0,0,0,.55)' : 'none',
+                }"
+              >{{ bannerForm.banner_subtitle || 'Choose a field of Islamic knowledge to begin your journey.' }}</p>
+            </template>
+          </div>
+
+          <div class="flex items-center gap-4">
+            <div class="w-32 h-20 rounded-xl overflow-hidden bg-gray-100 border border-gray-100 flex items-center justify-center shrink-0">
+              <img v-if="bannerForm.banner_image" :src="bannerForm.banner_image" class="w-full h-full object-cover" />
+              <span v-else class="text-xs text-gray-300">No banner</span>
+            </div>
+            <div class="flex flex-col gap-2">
+              <label class="text-xs font-medium text-[#234ecc] hover:underline cursor-pointer">
+                {{ bannerUploading ? 'Uploading…' : 'Upload image' }}
+                <input type="file" accept="image/*" class="hidden" @change="onBannerUpload" :disabled="bannerUploading" />
+              </label>
+              <button v-if="bannerForm.banner_image" type="button" @click="bannerForm.banner_image = ''"
+                class="text-xs text-gray-400 hover:text-red-500 text-left transition-colors">Remove banner</button>
+            </div>
+          </div>
+          <div class="mt-4 grid sm:grid-cols-2 gap-4">
+            <div>
+              <label class="block text-xs font-medium text-gray-600 mb-1.5">Title</label>
+              <input v-model="bannerForm.banner_title" type="text" maxlength="200"
+                placeholder="Defaults to &quot;Learning Tracks&quot;"
+                class="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#234ecc]/40" />
+            </div>
+            <div>
+              <label class="block text-xs font-medium text-gray-600 mb-1.5">Subtitle</label>
+              <input v-model="bannerForm.banner_subtitle" type="text" maxlength="300"
+                placeholder="Defaults to the standard subtitle"
+                class="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#234ecc]/40" />
+            </div>
+          </div>
+
+          <!-- Text styling -->
+          <div class="mt-4 grid sm:grid-cols-3 gap-4 items-end">
+            <div>
+              <label class="block text-xs font-medium text-gray-600 mb-1.5">Text color</label>
+              <div class="flex items-center gap-2">
+                <input v-model="bannerForm.banner_text_color" type="color"
+                  class="w-10 h-10 rounded-lg border border-gray-200 cursor-pointer p-0.5 shrink-0" />
+                <input v-model="bannerForm.banner_text_color" type="text" maxlength="20"
+                  class="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-[#234ecc]/40" />
+              </div>
+            </div>
+            <div>
+              <label class="block text-xs font-medium text-gray-600 mb-1.5">Title font size ({{ bannerForm.banner_font_size }}px)</label>
+              <input v-model.number="bannerForm.banner_font_size" type="range" min="16" max="56" step="1"
+                class="w-full cursor-pointer" />
+            </div>
+            <div>
+              <label class="inline-flex items-center gap-2 text-sm text-gray-700 cursor-pointer select-none py-2">
+                <input v-model="bannerForm.banner_text_shadow" type="checkbox"
+                  class="w-4 h-4 rounded border-gray-300 text-[#234ecc] focus:ring-[#234ecc]/40" />
+                Text shadow
+              </label>
+            </div>
+          </div>
+
+          <div class="mt-4 flex flex-wrap items-center gap-3">
+            <button @click="saveBannerSettings" :disabled="bannerSaving"
+              class="bg-[#234ecc] hover:bg-[#1a3ba8] disabled:opacity-60 text-white text-sm font-semibold px-4 py-2.5 rounded-xl transition-colors">
+              {{ bannerSaving ? 'Saving…' : 'Save banner' }}
+            </button>
+            <span v-if="bannerError" class="text-xs text-red-600">{{ bannerError }}</span>
+          </div>
+        </div>
+      </details>
+
       <div v-if="error" class="bg-red-50 border border-red-200 text-red-700 px-5 py-4 rounded-xl text-sm mb-6">{{ error }}</div>
 
       <div v-if="loading" class="space-y-2 animate-pulse">
@@ -66,6 +167,20 @@
             class="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#234ecc]/40" />
         </div>
 
+        <div v-if="features.isEnabled('learn_page_media')">
+          <label class="block text-sm font-medium text-gray-700 mb-1.5">Icon</label>
+          <div class="flex items-center gap-3">
+            <div class="w-12 h-12 rounded-xl bg-gray-100 flex items-center justify-center overflow-hidden shrink-0">
+              <img v-if="form.icon_url" :src="form.icon_url" class="w-full h-full object-cover" />
+              <svg v-else class="w-5 h-5 text-gray-300" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14M4 8h16M4 4h16v16H4V4z"/></svg>
+            </div>
+            <label class="text-xs font-medium text-[#234ecc] hover:underline cursor-pointer">
+              {{ iconUploading ? 'Uploading…' : 'Upload image' }}
+              <input type="file" accept="image/*" class="hidden" @change="onIconUpload" :disabled="iconUploading" />
+            </label>
+          </div>
+        </div>
+
         <div>
           <label class="block text-sm font-medium text-gray-700 mb-1.5">Display order</label>
           <input v-model.number="form.order" type="number" min="0"
@@ -114,19 +229,32 @@
 <script setup>
 import { ref, reactive, onMounted } from 'vue'
 import { adminApi } from '@/api/admin'
+import { useFeaturesStore } from '@/stores/features'
+
+const features = useFeaturesStore()
 
 const items = ref([])
 const loading = ref(true)
 const error = ref('')
 
 const editing = ref(null)
-const form = reactive({ id: null, title: '', order: 0, levels: [] })
+const form = reactive({ id: null, title: '', order: 0, levels: [], icon_url: '' })
 const saving = ref(false)
 const saved = ref(false)
 const formError = ref('')
+const iconUploading = ref(false)
 
 const deleteTarget = ref(null)
 const deleting = ref(false)
+
+const bannerForm = reactive({
+  banner_image: '', banner_title: '', banner_subtitle: '',
+  banner_text_color: '#ffffff', banner_font_size: 30, banner_text_shadow: false,
+})
+const bannerUploading = ref(false)
+const bannerSaving = ref(false)
+const bannerSaved = ref(false)
+const bannerError = ref('')
 
 let originalSlug = ''
 
@@ -142,13 +270,80 @@ async function load() {
 }
 
 function startNew() {
-  Object.assign(form, { id: null, title: '', order: 0, levels: [] })
+  Object.assign(form, { id: null, title: '', order: 0, levels: [], icon_url: '' })
   originalSlug = ''
   formError.value = ''; saved.value = false; editing.value = true
 }
 
 function addLevel() {
   form.levels.push({ name: '', slug: '' })
+}
+
+async function onIconUpload(e) {
+  const file = e.target.files?.[0]
+  if (!file) return
+  iconUploading.value = true
+  try {
+    const { upload_url, public_url } = await adminApi.getUploadUrl(file.name, file.type, 'category_icon')
+    const res = await fetch(upload_url, { method: 'PUT', body: file, headers: { 'Content-Type': file.type } })
+    if (!res.ok) throw new Error('upload failed')
+    form.icon_url = public_url
+  } catch {
+    formError.value = 'Image upload failed.'
+  } finally {
+    iconUploading.value = false
+    e.target.value = ''
+  }
+}
+
+async function loadBannerSettings() {
+  try {
+    const s = await adminApi.getLearnPageSettings()
+    bannerForm.banner_image = s.banner_image || ''
+    bannerForm.banner_title = s.banner_title || ''
+    bannerForm.banner_subtitle = s.banner_subtitle || ''
+    bannerForm.banner_text_color = s.banner_text_color || '#ffffff'
+    bannerForm.banner_font_size = s.banner_font_size || 30
+    bannerForm.banner_text_shadow = !!s.banner_text_shadow
+  } catch { /* banner panel just shows empty — not worth surfacing an error here */ }
+}
+
+async function onBannerUpload(e) {
+  const file = e.target.files?.[0]
+  if (!file) return
+  bannerUploading.value = true
+  try {
+    const { upload_url, public_url } = await adminApi.getUploadUrl(file.name, file.type, 'banner')
+    const res = await fetch(upload_url, { method: 'PUT', body: file, headers: { 'Content-Type': file.type } })
+    if (!res.ok) throw new Error('upload failed')
+    bannerForm.banner_image = public_url
+  } catch {
+    bannerError.value = 'Image upload failed.'
+  } finally {
+    bannerUploading.value = false
+    e.target.value = ''
+  }
+}
+
+async function saveBannerSettings() {
+  bannerError.value = ''
+  bannerSaving.value = true
+  try {
+    await adminApi.updateLearnPageSettings({
+      banner_image: bannerForm.banner_image,
+      banner_title: bannerForm.banner_title,
+      banner_subtitle: bannerForm.banner_subtitle,
+      banner_text_color: bannerForm.banner_text_color,
+      banner_font_size: bannerForm.banner_font_size,
+      banner_text_shadow: bannerForm.banner_text_shadow,
+    })
+    bannerSaved.value = true
+    setTimeout(() => { bannerSaved.value = false }, 2500)
+  } catch {
+    bannerError.value = 'Could not save banner.'
+  } finally {
+    bannerSaving.value = false
+  }
 }
 
 async function startEdit(row) {
@@ -161,6 +356,7 @@ async function startEdit(row) {
       // shouldn't change which tracks it's assigned to. Only brand-new rows
       // (added via "+ Add level") get slug: '' so the backend generates one.
       levels: c.levels.map(l => ({ name: l.name, slug: l.slug })),
+      icon_url: c.icon_url || '',
     })
     originalSlug = c.slug
     editing.value = true
@@ -173,12 +369,13 @@ async function save() {
   const levels = form.levels.filter(l => l.name.trim()).map(l => ({ name: l.name.trim(), slug: l.slug || undefined }))
   saving.value = true
   try {
-    const payload = { title: form.title.trim(), order: form.order || 0, levels }
+    const payload = { title: form.title.trim(), order: form.order || 0, levels, icon_url: form.icon_url }
     const c = form.id
       ? await adminApi.updateCategory(originalSlug, payload)
       : await adminApi.createCategory(payload)
     form.id = c.id
     form.levels = c.levels.map(l => ({ name: l.name, slug: l.slug }))
+    form.icon_url = c.icon_url || ''
     originalSlug = c.slug
     saved.value = true
     setTimeout(() => { saved.value = false }, 2500)
@@ -206,5 +403,8 @@ async function doDelete() {
   }
 }
 
-onMounted(load)
+onMounted(() => {
+  load()
+  loadBannerSettings()
+})
 </script>

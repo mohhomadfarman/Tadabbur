@@ -6,4 +6,5 @@ export const curriculumApi = {
   getSubject: (slug) => client.get(`/curriculum/subjects/${slug}/`).then(r => r.data),
   getLesson: (slug, lang) => client.get(`/lessons/${slug}/`, { params: lang ? { lang } : {} }).then(r => r.data),
   getLanguages: () => client.get('/translations/languages/').then(r => r.data),
+  getLearnSettings: () => client.get('/curriculum/learn-settings/').then(r => r.data),
 }

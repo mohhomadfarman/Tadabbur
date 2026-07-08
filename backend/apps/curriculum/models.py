@@ -20,6 +20,7 @@ class Category(RebuildOnChange, Document):
     slug = StringField(required=True, unique=True, max_length=200)
     order = IntField(default=0)
     levels = EmbeddedDocumentListField(Level)
+    icon_url = StringField(default='')
     created_at = DateTimeField(default=lambda: datetime.now(timezone.utc))
     updated_at = DateTimeField(default=lambda: datetime.now(timezone.utc))
 
@@ -30,6 +31,30 @@ class Category(RebuildOnChange, Document):
 
     def __str__(self):
         return self.title
+
+
+class LearnPageSettings(Document):
+    """Singleton settings for the public /learn page, editable from the admin panel."""
+    key = StringField(default='learn', unique=True)
+    banner_image = StringField(default='')
+    # Blank falls back to the default i18n title/subtitle on the frontend.
+    banner_title = StringField(default='', max_length=200)
+    banner_subtitle = StringField(default='', max_length=300)
+    # Title text styling — tuned per background image from the admin panel.
+    banner_text_color = StringField(default='#ffffff', max_length=20)
+    banner_font_size = IntField(default=30)  # px, title size; subtitle scales proportionally
+    banner_text_shadow = BooleanField(default=False)
+    updated_at = DateTimeField()
+
+    meta = {'collection': 'learn_page_settings'}
+
+    @classmethod
+    def get_solo(cls):
+        obj = cls.objects(key='learn').first()
+        if not obj:
+            obj = cls(key='learn')
+            obj.save()
+        return obj
 
 
 class Track(RebuildOnChange, Document):

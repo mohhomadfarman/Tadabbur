@@ -248,7 +248,17 @@
               />
             </div>
 
-            <div>
+            <div v-if="features.isEnabled('learn_page_media')">
+              <label class="block text-xs font-medium text-gray-600 mb-1.5">Thumbnail</label>
+              <div v-if="form.thumbnail_url" class="mb-2 rounded-xl overflow-hidden h-20 bg-gray-100">
+                <img :src="form.thumbnail_url" class="w-full h-full object-cover" />
+              </div>
+              <label class="text-xs font-medium text-[#234ecc] hover:underline cursor-pointer">
+                {{ uploading ? 'Uploading…' : 'Upload image' }}
+                <input type="file" accept="image/*" class="hidden" @change="onThumbnailUpload" :disabled="uploading" />
+              </label>
+            </div>
+            <div v-else>
               <label class="block text-xs font-medium text-gray-600 mb-1.5">Thumbnail URL</label>
               <input
                 v-model="form.thumbnail_url"
@@ -355,8 +365,10 @@
 import { ref, reactive, computed, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
 import { adminApi } from '@/api/admin'
+import { useFeaturesStore } from '@/stores/features'
 
 const route = useRoute()
+const features = useFeaturesStore()
 
 const track = ref(null)
 const subjects = ref([])
@@ -369,6 +381,7 @@ const deleting = ref(false)
 const deleteTarget = ref(null)
 const saveError = ref('')
 const saveSuccess = ref(false)
+const uploading = ref(false)
 let slugEdited = false
 
 const form = ref({
@@ -447,6 +460,23 @@ async function togglePublishLesson(lesson, subjectSlug) {
     await adminApi.updateLesson(lesson.slug, { status: lesson.status })
   } catch {
     lesson.status = prev
+  }
+}
+
+async function onThumbnailUpload(e) {
+  const file = e.target.files?.[0]
+  if (!file) return
+  uploading.value = true
+  try {
+    const { upload_url, public_url } = await adminApi.getUploadUrl(file.name, file.type, 'thumbnail')
+    const res = await fetch(upload_url, { method: 'PUT', body: file, headers: { 'Content-Type': file.type } })
+    if (!res.ok) throw new Error('upload failed')
+    form.value.thumbnail_url = public_url
+  } catch {
+    saveError.value = 'Image upload failed.'
+  } finally {
+    uploading.value = false
+    e.target.value = ''
   }
 }
 

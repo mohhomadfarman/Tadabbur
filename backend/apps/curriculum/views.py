@@ -7,8 +7,9 @@ from rest_framework.permissions import AllowAny
 
 from apps.common.cache import cache_anonymous_get
 from apps.common.permissions import section_required
+from apps.features.service import feature_enabled
 from config.redirects import record_slug_redirect
-from .models import Track, Subject, Category, Level
+from .models import Track, Subject, Category, Level, LearnPageSettings
 from .serializers import (
     TrackSerializer, TrackDetailSerializer,
     SubjectListSerializer, SubjectDetailSerializer,
@@ -26,6 +27,7 @@ def _category_row(c):
         'slug': c.slug,
         'order': c.order,
         'levels': [{'name': l.name, 'slug': l.slug, 'order': l.order} for l in c.levels],
+        'icon_url': c.icon_url,
     }
 
 
@@ -58,7 +60,7 @@ class TrackListView(APIView):
     def get(self, request):
         tracks = Track.objects(is_published=True).order_by('order')
         visible = [t for t in tracks if t.is_visible_to(request.user)]
-        return Response(TrackSerializer(visible, many=True).data)
+        return Response(TrackSerializer(visible, many=True, context={'request': request}).data)
 
 
 class TrackDetailView(APIView):
@@ -69,7 +71,7 @@ class TrackDetailView(APIView):
         track = Track.objects(slug=slug, is_published=True).first()
         if not track or not track.is_visible_to(request.user):
             return Response({'detail': 'Not found.'}, status=status.HTTP_404_NOT_FOUND)
-        return Response(TrackDetailSerializer(track).data)
+        return Response(TrackDetailSerializer(track, context={'request': request}).data)
 
 
 class SubjectDetailView(APIView):
@@ -310,6 +312,7 @@ class AdminCategoryListView(APIView):
             slug=slug,
             order=int(request.data.get('order', 0)),
             levels=levels,
+            icon_url=(request.data.get('icon_url') or '').strip(),
             created_at=datetime.now(timezone.utc),
             updated_at=datetime.now(timezone.utc),
         )
@@ -335,6 +338,8 @@ class AdminCategoryDetailView(APIView):
             category.title = (request.data['title'] or '').strip()
         if 'order' in request.data:
             category.order = int(request.data['order'])
+        if 'icon_url' in request.data:
+            category.icon_url = (request.data['icon_url'] or '').strip()
         if 'slug' in request.data:
             new_slug = request.data['slug'].strip()
             if new_slug != slug and Category.objects(slug=new_slug).first():
@@ -370,3 +375,53 @@ class AdminCategoryDetailView(APIView):
             )
         category.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+def _learn_settings_row(s):
+    return {
+        'banner_image': s.banner_image,
+        'banner_title': s.banner_title,
+        'banner_subtitle': s.banner_subtitle,
+        'banner_text_color': s.banner_text_color,
+        'banner_font_size': s.banner_font_size,
+        'banner_text_shadow': s.banner_text_shadow,
+    }
+
+
+class LearnSettingsView(APIView):
+    """Public: banner shown behind the /learn hero. Mirrors events.LaunchSettingsView."""
+    permission_classes = [AllowAny]
+
+    def get(self, request):
+        s = LearnPageSettings.get_solo()
+        if not feature_enabled('learn_page_media', request.user):
+            return Response({
+                'banner_image': '', 'banner_title': '', 'banner_subtitle': '',
+                'banner_text_color': '#ffffff', 'banner_font_size': 30, 'banner_text_shadow': False,
+            })
+        return Response(_learn_settings_row(s))
+
+
+class AdminLearnSettingsView(APIView):
+    permission_classes = [section_required('curriculum')]
+
+    def get(self, request):
+        return Response(_learn_settings_row(LearnPageSettings.get_solo()))
+
+    def patch(self, request):
+        s = LearnPageSettings.get_solo()
+        if 'banner_image' in request.data:
+            s.banner_image = (request.data['banner_image'] or '').strip()
+        if 'banner_title' in request.data:
+            s.banner_title = (request.data['banner_title'] or '').strip()
+        if 'banner_subtitle' in request.data:
+            s.banner_subtitle = (request.data['banner_subtitle'] or '').strip()
+        if 'banner_text_color' in request.data:
+            s.banner_text_color = (request.data['banner_text_color'] or '#ffffff').strip()
+        if 'banner_font_size' in request.data:
+            s.banner_font_size = int(request.data['banner_font_size'] or 30)
+        if 'banner_text_shadow' in request.data:
+            s.banner_text_shadow = bool(request.data['banner_text_shadow'])
+        s.updated_at = datetime.now(timezone.utc)
+        s.save()
+        return Response(_learn_settings_row(s))

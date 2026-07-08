@@ -17,14 +17,16 @@ ALLOWED_TYPES = {
 }
 
 FOLDER_MAP = {
-    'image':     'lessons/images',
-    'audio':     'lessons/audio',
-    'video':     'lessons/video',
-    'avatar':    'users/avatars',
-    'thumbnail': 'thumbnails',
-    'book_pdf':  'library/pdfs',
-    'book_audio':'library/audio',
-    'book_cover':'library/covers',
+    'image':         'lessons/images',
+    'audio':         'lessons/audio',
+    'video':         'lessons/video',
+    'avatar':        'users/avatars',
+    'thumbnail':     'thumbnails',
+    'book_pdf':      'library/pdfs',
+    'book_audio':    'library/audio',
+    'book_cover':    'library/covers',
+    'category_icon': 'categories/icons',
+    'banner':        'site/banners',
 }
 
 
