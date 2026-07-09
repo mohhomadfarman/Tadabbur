@@ -44,7 +44,8 @@
         <img
           v-if="cat.icon_url && features.isEnabled('learn_page_media')"
           :src="cat.icon_url"
-          class="w-4 h-4 rounded-sm object-cover shrink-0"
+          class="w-4 h-4 rounded-sm object-cover shrink-0 transition-all"
+          :class="activeCategory === cat.slug ? 'invert' : ''"
           alt=""
         />
         {{ cat.title }}
