@@ -4,7 +4,7 @@
 
       <!-- Text -->
       <div v-if="block.type === 'text'">
-        <p class="text-gray-700 leading-relaxed text-[1.05rem]">
+        <p class="text-gray-700 leading-relaxed text-[1.05rem] whitespace-pre-line">
           {{ block.body.text }}
         </p>
         <p v-if="block.body.source" class="text-xs text-gray-400 mt-1.5">
