@@ -129,6 +129,7 @@ export const adminApi = {
 
   // Overview dashboard (section: analytics)
   getOverviewStats: (days) => client.get('/analytics/admin/overview/', { params: { days } }).then(r => r.data),
+  getTrackStats: (slug, days) => client.get(`/analytics/admin/tracks/${slug}/`, { params: { days } }).then(r => r.data),
 
   // Email automation workflows (section: automations)
   listWorkflows:   ()         => client.get('/automations/admin/workflows/').then(r => r.data),

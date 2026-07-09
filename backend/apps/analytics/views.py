@@ -7,7 +7,7 @@ from apps.common.permissions import section_required
 from apps.users.models import User
 from apps.curriculum.models import Track, Subject
 from apps.lessons.models import Lesson, LessonView
-from apps.progress.models import LessonProgress
+from apps.progress.models import LessonProgress, UserProgress
 from apps.feedback.models import TrackFeedback
 
 
@@ -41,6 +41,22 @@ def _readers_series(days=7):
     cutoff_dt = datetime.combine(cutoff_date, datetime.min.time())
     pipeline = [
         {'$match': {'view_date': {'$gte': cutoff_dt}}},
+        {'$group': {'_id': '$view_date', 'users': {'$addToSet': '$user'}}},
+        {'$project': {'count': {'$size': '$users'}}},
+    ]
+    counts = {}
+    for r in LessonView.objects.aggregate(pipeline):
+        d = r['_id']
+        key = (d.date() if hasattr(d, 'date') else d).isoformat()
+        counts[key] = r['count']
+    return _zero_fill_days(counts, days)
+
+
+def _track_readers_series(track_slug, days=30):
+    cutoff_date = datetime.now(timezone.utc).date() - timedelta(days=days - 1)
+    cutoff_dt = datetime.combine(cutoff_date, datetime.min.time())
+    pipeline = [
+        {'$match': {'view_date': {'$gte': cutoff_dt}, 'track_slug': track_slug}},
         {'$group': {'_id': '$view_date', 'users': {'$addToSet': '$user'}}},
         {'$project': {'count': {'$size': '$users'}}},
     ]
@@ -100,4 +116,61 @@ class AdminOverviewStatsView(APIView):
             'top_tracks': _top_tracks(),
             'signups_series': _signups_series(days),
             'readers_series': _readers_series(),
+        })
+
+
+class AdminTrackStatsView(APIView):
+    """Per-track analytics for the Track detail admin page: completion funnel
+    (enrolled / in-progress / completed), last-opened, and a daily readers
+    chart scoped to this one track."""
+    permission_classes = [section_required('analytics')]
+
+    def get(self, request, track_slug):
+        track = Track.objects(slug=track_slug).first()
+        if not track:
+            return Response({'detail': 'Not found.'}, status=404)
+
+        days = request.query_params.get('days')
+        try:
+            days = max(1, min(int(days), 90))
+        except (TypeError, ValueError):
+            days = 30
+
+        total_lessons = 0
+        for subj in Subject.objects(track=track, is_published=True):
+            total_lessons += Lesson.objects(subject=subj, status='published').count()
+
+        enrolled_count = UserProgress.objects(enrolled_tracks=track_slug).count()
+
+        pipeline = [
+            {'$match': {'track_slug': track_slug, 'completed': True}},
+            {'$group': {'_id': '$user', 'c': {'$sum': 1}}},
+        ]
+        per_user_counts = [r['c'] for r in LessonProgress.objects.aggregate(pipeline)]
+
+        if total_lessons > 0:
+            completed_count = sum(1 for c in per_user_counts if c >= total_lessons)
+            in_progress_count = sum(1 for c in per_user_counts if 0 < c < total_lessons)
+        else:
+            completed_count = 0
+            in_progress_count = 0
+        not_started_count = max(0, enrolled_count - completed_count - in_progress_count)
+
+        last_view = LessonView.objects(track_slug=track_slug).order_by('-viewed_at').first()
+        last_opened = None
+        if last_view:
+            last_opened = {
+                'viewed_at': last_view.viewed_at.isoformat(),
+                'user_name': last_view.user.full_name or last_view.user.username,
+            }
+
+        return Response({
+            'track_slug': track_slug,
+            'total_lessons': total_lessons,
+            'enrolled_count': enrolled_count,
+            'completed_count': completed_count,
+            'in_progress_count': in_progress_count,
+            'not_started_count': not_started_count,
+            'last_opened': last_opened,
+            'readers_series': _track_readers_series(track_slug, days),
         })

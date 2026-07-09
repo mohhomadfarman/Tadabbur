@@ -330,6 +330,64 @@
         </div>
       </div>
 
+      <!-- Analytics -->
+      <div class="lg:col-span-3 space-y-5">
+        <div class="flex items-center justify-between">
+          <h2 class="text-base font-semibold text-gray-700">Analytics</h2>
+          <div v-if="trackStats" class="flex rounded-lg border border-gray-200 overflow-hidden text-xs">
+            <button
+              v-for="d in [7, 30, 90]"
+              :key="d"
+              @click="statsDays = d"
+              class="px-2.5 py-1 transition-colors"
+              :class="statsDays === d ? 'bg-[#234ecc] text-white font-semibold' : 'text-gray-500 hover:text-gray-700'"
+            >
+              {{ d }}d
+            </button>
+          </div>
+        </div>
+
+        <div v-if="loadingStats" class="grid grid-cols-2 lg:grid-cols-4 gap-4 animate-pulse">
+          <div v-for="n in 4" :key="n" class="bg-gray-100 rounded-2xl h-24" />
+        </div>
+
+        <template v-else-if="trackStats">
+          <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
+            <div class="bg-white border border-gray-200 rounded-2xl p-5 shadow-sm">
+              <p class="text-xs text-gray-400 mb-1">Enrolled</p>
+              <p class="text-2xl font-bold text-gray-900">{{ trackStats.enrolled_count.toLocaleString() }}</p>
+              <p class="text-[11px] text-gray-400 mt-1">{{ trackStats.not_started_count.toLocaleString() }} not started yet</p>
+            </div>
+            <div class="bg-white border border-gray-200 rounded-2xl p-5 shadow-sm">
+              <p class="text-xs text-gray-400 mb-1">In progress</p>
+              <p class="text-2xl font-bold text-gray-900">{{ trackStats.in_progress_count.toLocaleString() }}</p>
+              <p class="text-[11px] text-gray-400 mt-1">started, not finished</p>
+            </div>
+            <div class="bg-white border border-gray-200 rounded-2xl p-5 shadow-sm">
+              <p class="text-xs text-gray-400 mb-1">Completed</p>
+              <p class="text-2xl font-bold text-gray-900">{{ trackStats.completed_count.toLocaleString() }}</p>
+              <p class="text-[11px] text-gray-400 mt-1">finished every lesson</p>
+            </div>
+            <div class="bg-white border border-gray-200 rounded-2xl p-5 shadow-sm">
+              <p class="text-xs text-gray-400 mb-1">Last opened</p>
+              <p v-if="trackStats.last_opened" class="text-sm font-bold text-gray-900 leading-tight">{{ formatLastOpened(trackStats.last_opened.viewed_at) }}</p>
+              <p v-else class="text-2xl font-bold text-gray-300">—</p>
+              <p v-if="trackStats.last_opened" class="text-[11px] text-gray-400 mt-1 truncate">by {{ trackStats.last_opened.user_name }}</p>
+            </div>
+          </div>
+
+          <div class="bg-white border border-gray-200 rounded-2xl p-5 shadow-sm">
+            <h3 class="text-sm font-semibold text-gray-900 mb-4">Readers, last {{ statsDays }} days</h3>
+            <div class="h-56">
+              <Bar :data="readersData" :options="chartOptions" />
+            </div>
+          </div>
+        </template>
+
+        <div v-else class="text-sm text-gray-400 py-6 text-center border-2 border-dashed border-gray-200 rounded-2xl">
+          Could not load analytics.
+        </div>
+      </div>
     </div>
 
     <!-- Delete modal -->
@@ -362,10 +420,16 @@
 </template>
 
 <script setup>
-import { ref, reactive, computed, onMounted } from 'vue'
+import { ref, reactive, computed, watch, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
+import { Bar } from 'vue-chartjs'
+import {
+  Chart as ChartJS, CategoryScale, LinearScale, BarElement, Tooltip,
+} from 'chart.js'
 import { adminApi } from '@/api/admin'
 import { useFeaturesStore } from '@/stores/features'
+
+ChartJS.register(CategoryScale, LinearScale, BarElement, Tooltip)
 
 const route = useRoute()
 const features = useFeaturesStore()
@@ -383,6 +447,55 @@ const saveError = ref('')
 const saveSuccess = ref(false)
 const uploading = ref(false)
 let slugEdited = false
+
+const trackStats = ref(null)
+const loadingStats = ref(true)
+const statsDays = ref(30)
+
+const readersData = computed(() => {
+  const series = trackStats.value?.readers_series || []
+  return {
+    labels: series.map(p => new Date(p.date).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })),
+    datasets: [{
+      label: 'Readers',
+      data: series.map(p => p.count),
+      backgroundColor: '#234ecc',
+      borderRadius: 6,
+      maxBarThickness: 28,
+    }],
+  }
+})
+
+const chartOptions = {
+  responsive: true,
+  maintainAspectRatio: false,
+  interaction: { mode: 'index', intersect: false },
+  plugins: {
+    legend: { display: false },
+    tooltip: { backgroundColor: '#0c0c0e', padding: 10, cornerRadius: 8, titleFont: { size: 12 }, bodyFont: { size: 12 } },
+  },
+  scales: {
+    x: { grid: { display: false }, ticks: { font: { size: 11 }, color: '#9ca3af' } },
+    y: { beginAtZero: true, ticks: { precision: 0, font: { size: 11 }, color: '#9ca3af' }, grid: { color: '#f3f4f6' } },
+  },
+}
+
+function formatLastOpened(iso) {
+  return new Date(iso).toLocaleString('en-GB', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })
+}
+
+async function loadStats() {
+  loadingStats.value = true
+  try {
+    trackStats.value = await adminApi.getTrackStats(route.params.slug, statsDays.value)
+  } catch {
+    trackStats.value = null
+  } finally {
+    loadingStats.value = false
+  }
+}
+
+watch(statsDays, loadStats)
 
 const form = ref({
   title: '',
@@ -525,6 +638,7 @@ async function doDelete() {
 }
 
 onMounted(async () => {
+  loadStats()
   try {
     const [trackData, subjectsData] = await Promise.all([
       adminApi.getTrack(route.params.slug),
